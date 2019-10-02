@@ -128,7 +128,8 @@ namespace SyncMLViewer
             {
                 if (htmlDecode)
                 {
-                    return WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                    //return WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                    return XElement.Parse(text).ToString().Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
                 }
                 else
                 {
@@ -162,6 +163,7 @@ namespace SyncMLViewer
             if (((CheckBox)sender).IsChecked == true)
             {
                 decode = true;
+                mainTextBox.Text = TryFormatXml(mainTextBox.Text, decode);
             }
         }
     }
