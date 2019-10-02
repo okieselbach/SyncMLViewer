@@ -73,7 +73,7 @@ namespace SyncMLViewer
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                     throw new InvalidOperationException($"The session name '{SessionName}' is already in use.");
-
+                
                 using (var traceEventSession = new TraceEventSession(SessionName))
                 {
                     traceEventSession.StopOnDispose = true;
@@ -162,6 +162,7 @@ namespace SyncMLViewer
             ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
             var returnedObject = ps.Invoke();
 
+            // Alternate implementation... was not working...
             //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
             //    .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
             //{
@@ -182,6 +183,11 @@ namespace SyncMLViewer
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
             mainTextBox.Clear();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            TraceEventSession.GetActiveSession(SessionName).Stop(true);
         }
     }
 }

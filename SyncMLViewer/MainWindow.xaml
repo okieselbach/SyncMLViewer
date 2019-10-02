@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyncMLViewer"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="800" Width="1024">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="800" Width="1024" Closed="Window_Closed">
     <Grid>
         <TextBox x:Name="mainTextBox" Margin="10,10,9.6,44.4" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
         <CheckBox Content="HTML Decode" HorizontalAlignment="Left" Margin="10,0,0,23" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom"/>
