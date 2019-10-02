@@ -32,8 +32,11 @@ namespace SyncMLViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Inspired by M.Niehaus blog: https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
+        // Inspired by M.Niehaus blog about monitoring realtime MDM activity
+        // https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
 
+        // thanks to Matt Graeber - @mattifestation - for the ETWProvider list
+        // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
         // https://gist.githubusercontent.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/raw/857bfbb31d0e12a8ebc48a95f95d298222bae1f6/NiftyETWProviders.json
         // ProviderName: Microsoft.Windows.DeviceManagement.OmaDmClient
         private static readonly Guid OmaDmClient = new Guid("{0EC685CD-64E4-4375-92AD-4086B6AF5F1D}");
@@ -43,28 +46,27 @@ namespace SyncMLViewer
         private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
 
         private const string SessionName = "SyncMLViewer";
-
-        private bool decode = false;
-
-        Runspace rs;
+        private readonly BackgroundWorker _backgroundWorker;
+        private readonly Runspace _rs;
+        private bool _decode = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            rs = RunspaceFactory.CreateRunspace();
-            rs.Open();
+            _rs = RunspaceFactory.CreateRunspace();
+            _rs.Open();
 
-            var backgroundWorker = new BackgroundWorker()
+            _backgroundWorker = new BackgroundWorker
             {
                 WorkerReportsProgress = true
             };
-            backgroundWorker.DoWork += WorkerTraceEvents;
-            backgroundWorker.ProgressChanged += WorkerProgressChanged;
-            backgroundWorker.RunWorkerAsync();
+            _backgroundWorker.DoWork += WorkerTraceEvents;
+            _backgroundWorker.ProgressChanged += WorkerProgressChanged;
+            _backgroundWorker.RunWorkerAsync();
         }
 
-        private void WorkerTraceEvents(object sender, DoWorkEventArgs e)
+        private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
         {
             try
             {
@@ -73,7 +75,9 @@ namespace SyncMLViewer
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                     throw new InvalidOperationException($"The session name '{SessionName}' is already in use.");
-                
+
+                // An End-To-End ETW Tracing Example: EventSource and TraceEvent
+                // https://blogs.msdn.microsoft.com/vancem/2012/12/20/an-end-to-end-etw-tracing-example-eventsource-and-traceevent/
                 using (var traceEventSession = new TraceEventSession(SessionName))
                 {
                     traceEventSession.StopOnDispose = true;
@@ -100,8 +104,10 @@ namespace SyncMLViewer
                 if (!(e.UserState is TraceEvent userState))
                     throw new ArgumentException("No TraceEvent received");
 
+                // show all events
                 //AppendText(userState.EventName);
 
+                // we are interested in just a few with relevant data
                 if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -120,7 +126,7 @@ namespace SyncMLViewer
                     var startIndex = dataText.IndexOf("<SyncML");
                     if (startIndex == -1) return;
 
-                    var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1), decode);
+                    var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1), _decode);
                     AppendText(prettyDataText);
                 }
             }
@@ -134,15 +140,8 @@ namespace SyncMLViewer
         {
             try
             {
-                if (htmlDecode)
-                {
-                    //return WebUtility.HtmlDecode(XElement.Parse(text).ToString());
-                    return XElement.Parse(text).ToString().Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
-                }
-                else
-                {
-                    return XElement.Parse(text).ToString();
-                }
+                // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                return htmlDecode ? XElement.Parse(text).ToString().Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"") : XElement.Parse(text).ToString();
             }
             catch (Exception)
             {
@@ -157,8 +156,11 @@ namespace SyncMLViewer
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
         {
+            // trigger MDM sync via scheduled task with PowerShell
+            // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
+
             var ps = PowerShell.Create();
-            ps.Runspace = rs;
+            ps.Runspace = _rs;
             ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
             var returnedObject = ps.Invoke();
 
@@ -176,7 +178,7 @@ namespace SyncMLViewer
         {
             if (((CheckBox)sender).IsChecked == true)
             {
-                decode = true;
+                _decode = true;
             }
         }
 
@@ -188,6 +190,7 @@ namespace SyncMLViewer
         private void Window_Closed(object sender, EventArgs e)
         {
             TraceEventSession.GetActiveSession(SessionName).Stop(true);
+            _backgroundWorker.Dispose();
         }
     }
 }
