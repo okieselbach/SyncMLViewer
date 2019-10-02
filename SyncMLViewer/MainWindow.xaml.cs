@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -39,6 +40,8 @@ namespace SyncMLViewer
         private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
 
         private const string SessionName = "SyncMLViewer";
+
+        private bool decode = false;
 
         public MainWindow()
         {
@@ -109,7 +112,7 @@ namespace SyncMLViewer
                     var startIndex = dataText.IndexOf("<SyncML");
                     if (startIndex == -1) return;
 
-                    var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1));
+                    var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1), decode);
                     AppendText(prettyDataText);
                 }
             }
@@ -119,11 +122,18 @@ namespace SyncMLViewer
             }
         }
 
-        private static string TryFormatXml(string text)
+        private static string TryFormatXml(string text, bool htmlDecode = false)
         {
             try
             {
-                return XElement.Parse(text).ToString().Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
+                if (htmlDecode)
+                {
+                    return WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                }
+                else
+                {
+                    return XElement.Parse(text).ToString();
+                }
             }
             catch (Exception)
             {
@@ -144,6 +154,14 @@ namespace SyncMLViewer
                 if (registryKey == null) return;
                 var id = ((IEnumerable<string>) registryKey.GetSubKeyNames()).First<string>();
                 Process.Start($"{Environment.SystemDirectory}\\DeviceEnroller.exe", $"/o \"{id}\" /c /b");
+            }
+        }
+
+        private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
+        {
+            if (((CheckBox)sender).IsChecked == true)
+            {
+                decode = true;
             }
         }
     }
