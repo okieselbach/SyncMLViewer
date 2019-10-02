@@ -3,9 +3,12 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -43,9 +46,14 @@ namespace SyncMLViewer
 
         private bool decode = false;
 
+        Runspace rs;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            rs = RunspaceFactory.CreateRunspace();
+            rs.Open();
 
             var backgroundWorker = new BackgroundWorker()
             {
@@ -149,13 +157,18 @@ namespace SyncMLViewer
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
         {
-            using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
-                .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
-            {
-                if (registryKey == null) return;
-                var id = ((IEnumerable<string>) registryKey.GetSubKeyNames()).First<string>();
-                Process.Start($"{Environment.SystemDirectory}\\DeviceEnroller.exe", $"/o \"{id}\" /c /b");
-            }
+            var ps = PowerShell.Create();
+            ps.Runspace = rs;
+            ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
+            var returnedObject = ps.Invoke();
+
+            //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+            //    .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
+            //{
+            //    if (registryKey == null) return;
+            //    var id = ((IEnumerable<string>) registryKey.GetSubKeyNames()).First<string>();
+            //    Process.Start($"{Environment.SystemDirectory}\\DeviceEnroller.exe", $"/o \"{id}\" /c /b");
+            //}
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
