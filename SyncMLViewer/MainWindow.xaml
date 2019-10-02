@@ -8,7 +8,7 @@
         Title="SyncML Viewer - oliverkieselbach.com" Height="800" Width="1024">
     <Grid>
         <TextBox x:Name="mainTextBox" Margin="10,10,9.6,44.4" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
-        <Button x:Name="buttonSync" Content="Sync" Margin="897,731,9.6,14.4" Click="ButtonSync_Click" IsEnabled="False"/>
+        <Button x:Name="buttonClear" Content="Sync" Margin="897,731,9.6,10.4" Click="ButtonClear_Click" IsEnabled="False"/>
         <CheckBox Content="HTML Decode" HorizontalAlignment="Left" Margin="10,731,0,0" VerticalAlignment="Top" Checked="CheckBoxHtmlDecode_Checked"/>
     </Grid>
 </Window>

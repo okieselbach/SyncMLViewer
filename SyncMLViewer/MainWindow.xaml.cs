@@ -163,8 +163,12 @@ namespace SyncMLViewer
             if (((CheckBox)sender).IsChecked == true)
             {
                 decode = true;
-                mainTextBox.Text = TryFormatXml(mainTextBox.Text, decode);
             }
+        }
+
+        private void ButtonClear_Click(object sender, RoutedEventArgs e)
+        {
+            mainTextBox.Clear();
         }
     }
 }
