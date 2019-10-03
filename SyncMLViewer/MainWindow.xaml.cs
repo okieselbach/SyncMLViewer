@@ -45,8 +45,10 @@ namespace SyncMLViewer
         private static readonly Guid OmaDmClient = new Guid("{0EC685CD-64E4-4375-92AD-4086B6AF5F1D}");
 
         // https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10
-        // Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
-        private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
+        // 3b9602ff-e09b-4c6c-bc19-1a3dfa8f2250	= Microsoft-WindowsPhone-OmaDm-Client-Provider
+        // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
+        private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
+        private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
@@ -86,7 +88,7 @@ namespace SyncMLViewer
                     traceEventSession.StopOnDispose = true;
                     using (var traceEventSource = new ETWTraceEventSource(SessionName, TraceEventSourceType.Session))
                     {
-                        traceEventSession.EnableProvider(OmaDmClient);
+                        //traceEventSession.EnableProvider(OmaDmClient);
                         traceEventSession.EnableProvider(EnterpriseDiagnosticsProvider);
 
                         new RegisteredTraceEventParser(traceEventSource).All += (data => (sender as BackgroundWorker).ReportProgress(0, data.Clone()));
