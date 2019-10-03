@@ -48,7 +48,8 @@ namespace SyncMLViewer
         // 3b9602ff-e09b-4c6c-bc19-1a3dfa8f2250	= Microsoft-WindowsPhone-OmaDm-Client-Provider
         // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
         private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
-        private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
+        // interstingly it seems not to be needed...
+        //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
@@ -88,8 +89,8 @@ namespace SyncMLViewer
                     traceEventSession.StopOnDispose = true;
                     using (var traceEventSource = new ETWTraceEventSource(SessionName, TraceEventSourceType.Session))
                     {
-                        //traceEventSession.EnableProvider(OmaDmClient);
-                        traceEventSession.EnableProvider(EnterpriseDiagnosticsProvider);
+                        traceEventSession.EnableProvider(OmaDmClient);
+                        traceEventSession.EnableProvider(OmaDmClientProvider);
 
                         new RegisteredTraceEventParser(traceEventSource).All += (data => (sender as BackgroundWorker).ReportProgress(0, data.Clone()));
                         traceEventSource.Process();
