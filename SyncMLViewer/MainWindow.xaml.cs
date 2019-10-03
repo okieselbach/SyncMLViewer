@@ -35,7 +35,10 @@ namespace SyncMLViewer
         // Inspired by M.Niehaus blog about monitoring realtime MDM activity
         // https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
 
-        // thanks to Matt Graeber - @mattifestation - for the ETWProvider list
+        // [MS-MDM]: Mobile Device Management Protocol
+        // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/
+
+        // thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
         // https://gist.githubusercontent.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/raw/857bfbb31d0e12a8ebc48a95f95d298222bae1f6/NiftyETWProviders.json
         // ProviderName: Microsoft.Windows.DeviceManagement.OmaDmClient
