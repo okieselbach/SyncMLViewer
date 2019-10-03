@@ -32,13 +32,13 @@ namespace SyncMLViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Inspired by M.Niehaus blog about monitoring realtime MDM activity
+        // Inspired by Michael Niehaus - @mniehaus - blog about monitoring realtime MDM activity
         // https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
 
         // [MS-MDM]: Mobile Device Management Protocol
         // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/
 
-        // thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
+        // Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
         // https://gist.githubusercontent.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/raw/857bfbb31d0e12a8ebc48a95f95d298222bae1f6/NiftyETWProviders.json
         // ProviderName: Microsoft.Windows.DeviceManagement.OmaDmClient
@@ -48,7 +48,7 @@ namespace SyncMLViewer
         // 3b9602ff-e09b-4c6c-bc19-1a3dfa8f2250	= Microsoft-WindowsPhone-OmaDm-Client-Provider
         // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
         private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
-        // interstingly it seems not to be needed...
+        // interestingly it seems not to be needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
         private const string SessionName = "SyncMLViewer";
@@ -113,7 +113,7 @@ namespace SyncMLViewer
                 // show all events
                 //AppendText(userState.EventName);
 
-                // we are interested in just a few with relevant data
+                // we are interested in just a few events with relevant data
                 if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -157,7 +157,7 @@ namespace SyncMLViewer
 
         private void AppendText(string text)
         {
-            mainTextBox.Text = mainTextBox.Text + Environment.NewLine + text + Environment.NewLine;
+            mainTextBox.Text = $"{mainTextBox.Text}{Environment.NewLine}{text}{Environment.NewLine}";
         }
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
@@ -165,10 +165,12 @@ namespace SyncMLViewer
             // trigger MDM sync via scheduled task with PowerShell
             // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
 
-            var ps = PowerShell.Create();
-            ps.Runspace = _rs;
-            ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
-            var returnedObject = ps.Invoke();
+            using (var ps = PowerShell.Create())
+            {
+                ps.Runspace = _rs;
+                ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
+                var returnedObject = ps.Invoke();
+            }
 
             // Alternate implementation... was not working...
             //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
