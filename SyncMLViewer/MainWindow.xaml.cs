@@ -164,7 +164,8 @@ namespace SyncMLViewer
 
         private void AppendText(string text)
         {
-            mainTextBox.Text = $"{mainTextBox.Text}{Environment.NewLine}{text}{Environment.NewLine}";
+            //mainTextBox.Text = $"{mainTextBox.Text}{Environment.NewLine}{text}{Environment.NewLine}";
+            mainTextBox.Document.Blocks.Add(new Paragraph(new Run($"{text}")));
         }
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
@@ -199,13 +200,30 @@ namespace SyncMLViewer
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            mainTextBox.Clear();
+            //mainTextBox.Clear();
+            mainTextBox.Document.Blocks.Clear();
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
             TraceEventSession.GetActiveSession(SessionName).Stop(true);
             _backgroundWorker.Dispose();
+        }
+
+        private void ButtonSearch_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        public static void SetText(RichTextBox richTextBox, string text)
+        {
+            richTextBox.Document.Blocks.Clear();
+            richTextBox.Document.Blocks.Add(new Paragraph(new Run(text)));
+        }
+
+        public static string GetText(RichTextBox richTextBox)
+        {
+            return new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
         }
     }
 }

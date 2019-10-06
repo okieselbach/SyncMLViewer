@@ -7,9 +7,18 @@
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="800" Width="1024" Closed="Window_Closed">
     <Grid>
-        <TextBox x:Name="mainTextBox" Margin="10,10,9.6,44.4" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+        <!--<TextBox x:Name="mainTextBox" Margin="10,10,9.6,44.4" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>-->
         <CheckBox Content="HTML Decode" HorizontalAlignment="Left" Margin="10,0,0,23" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom"/>
-        <Button x:Name="buttonClear" Content="Clear" Margin="0,0,16,9" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
-        <Button x:Name="buttonSync" Content="Sync" Margin="0,0,124,9" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+        <Button x:Name="buttonClear" Content="Clear" Margin="0,0,124,9" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+        <Button x:Name="buttonSync" Content="Sync" Margin="0,0,16,9" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+        <RichTextBox x:Name="mainTextBox" Margin="10,10,9.6,43.4" VerticalScrollBarVisibility="Auto" IsReadOnly="True">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text=""/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <TextBox x:Name="textBoxSearch" HorizontalAlignment="Right" Height="29" Margin="0,0,346,9" TextWrapping="Wrap" Text="" VerticalAlignment="Bottom" Width="144"/>
+        <Button x:Name="buttonSearch" Content="Search" HorizontalAlignment="Right" Margin="0,0,236,9" VerticalAlignment="Bottom" Width="97" Height="29" Click="ButtonSearch_Click"/>
     </Grid>
 </Window>
