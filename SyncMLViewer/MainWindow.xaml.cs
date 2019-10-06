@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -67,6 +68,8 @@ namespace SyncMLViewer
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
         private bool _decode = false;
+
+        private bool _firstHit = true;
 
         public MainWindow()
         {
@@ -186,8 +189,7 @@ namespace SyncMLViewer
             }
 
             // Alternate implementation... was not working...
-            //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
-            //    .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
+            //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default).OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
             //{
             //    if (registryKey == null) return;
             //    var id = ((IEnumerable<string>) registryKey.GetSubKeyNames()).First<string>();
@@ -233,34 +235,43 @@ namespace SyncMLViewer
                 var regex = new Regex(searchText);
                 var countMatchFound = Regex.Matches(textBoxText, regex.ToString(), RegexOptions.IgnoreCase).Count;
 
-                var firstRun = true;
-
-                for (var startPointer = mainTextBox.Document.ContentStart;
-                            startPointer.CompareTo(mainTextBox.Document.ContentEnd) <= 0;
-                                startPointer = startPointer.GetNextContextPosition(LogicalDirection.Forward))
+                if (countMatchFound > 0)
                 {
-                    if (startPointer.CompareTo(mainTextBox.Document.ContentEnd) == 0) { break; }
-
-                    var parsedString = startPointer.GetTextInRun(LogicalDirection.Forward);
-                    var indexOfParseString = parsedString.ToLower().IndexOf(searchText.ToLower());
-
-                    if (indexOfParseString >= 0)
+                    if (countMatchFound > 1)
                     {
-                        startPointer = startPointer.GetPositionAtOffset(indexOfParseString);
+                        buttonSearch.Content = "Find next";
+                    }
 
-                        if (startPointer != null)
+                    for (var startPointer = mainTextBox.Document.ContentStart;
+                        startPointer.CompareTo(mainTextBox.Document.ContentEnd) <= 0;
+                        startPointer = startPointer.GetNextContextPosition(LogicalDirection.Forward))
+                    {
+                        if (startPointer.CompareTo(mainTextBox.Document.ContentEnd) == 0)
                         {
-                            var nextPointer = startPointer.GetPositionAtOffset(searchText.Length);
-                            var searchedTextRange = new TextRange(startPointer, nextPointer);
+                            break;
+                        }
 
-                            searchedTextRange.ApplyPropertyValue(TextElement.BackgroundProperty, new SolidColorBrush(Colors.Yellow));
+                        var parsedString = startPointer.GetTextInRun(LogicalDirection.Forward);
+                        var indexOfParseString = parsedString.ToLower().IndexOf(searchText.ToLower());
 
-                            // jump to the first match
-                            if (firstRun)
+                        if (indexOfParseString >= 0)
+                        {
+                            startPointer = startPointer.GetPositionAtOffset(indexOfParseString);
+
+                            // we found the string
+                            if (startPointer != null)
                             {
-                                var r = startPointer.GetCharacterRect(LogicalDirection.Backward);
-                                mainTextBox.ScrollToVerticalOffset(r.Y);
-                                firstRun = false;
+                                var nextPointer = startPointer.GetPositionAtOffset(searchText.Length);
+                                var searchedTextRange = new TextRange(startPointer, nextPointer);
+
+                                searchedTextRange.ApplyPropertyValue(TextElement.BackgroundProperty, new SolidColorBrush(Colors.Yellow));
+
+                                if (_firstHit)
+                                {
+                                    var r = startPointer.GetCharacterRect(LogicalDirection.Backward);
+                                    mainTextBox.ScrollToVerticalOffset(r.Y);
+                                    _firstHit = false;
+                                }
                             }
                         }
                     }
@@ -291,7 +302,25 @@ namespace SyncMLViewer
             {
                 textRange.ClearAllProperties();
                 labelSearchStatus.Content = "";
+                buttonSearch.Content = "Search";
+                _firstHit = true;
             }
+        }
+
+        private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
+        {
+            FileDialog fileDialog = new SaveFileDialog();
+            fileDialog.Filter = "All files|*.*";
+            fileDialog.FilterIndex = 0;
+            fileDialog.DefaultExt = "txt";
+            fileDialog.AddExtension = true;
+            fileDialog.CheckPathExists = true;
+            fileDialog.Title = "Save SyncML stream";
+            fileDialog.FileOk += (o, args) =>
+            {
+                File.WriteAllText(((FileDialog) o).FileName, GetText(mainTextBox));
+            };
+            fileDialog.ShowDialog();
         }
     }
 }
