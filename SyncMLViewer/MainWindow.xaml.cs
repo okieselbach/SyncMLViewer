@@ -58,6 +58,11 @@ namespace SyncMLViewer
         // interestingly it seems not to be needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
+        // for a tool we have too many libraries we can use ILMerge to combine them to a single assembly or embed them in the resources
+        // https://www.nuget.org/packages/ilmerge
+        // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
+
+
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
@@ -212,7 +217,47 @@ namespace SyncMLViewer
 
         private void ButtonSearch_Click(object sender, RoutedEventArgs e)
         {
+            var textRange = new TextRange(mainTextBox.Document.ContentStart, mainTextBox.Document.ContentEnd);
+            textRange.ClearAllProperties();
+            labelSearchStatus.Content = "";
 
+            var textBoxText = textRange.Text;
+            var searchText = textBoxSearch.Text;
+
+            if (string.IsNullOrWhiteSpace(textBoxText) || string.IsNullOrWhiteSpace(searchText))
+            {
+                labelSearchStatus.Content = "Search text is missing!";
+            }
+            else
+            {
+                var regex = new Regex(searchText);
+                var countMatchFound = Regex.Matches(textBoxText, regex.ToString(), RegexOptions.IgnoreCase).Count;
+
+                for (var startPointer = mainTextBox.Document.ContentStart;
+                            startPointer.CompareTo(mainTextBox.Document.ContentEnd) <= 0;
+                                startPointer = startPointer.GetNextContextPosition(LogicalDirection.Forward))
+                {
+                    if (startPointer.CompareTo(mainTextBox.Document.ContentEnd) == 0) { break; }
+
+                    var parsedString = startPointer.GetTextInRun(LogicalDirection.Forward);
+                    var indexOfParseString = parsedString.ToLower().IndexOf(searchText.ToLower());
+
+                    if (indexOfParseString >= 0)
+                    {
+                        startPointer = startPointer.GetPositionAtOffset(indexOfParseString);
+
+                        if (startPointer != null)
+                        {
+                            var nextPointer = startPointer.GetPositionAtOffset(searchText.Length);
+                            var searchedTextRange = new TextRange(startPointer, nextPointer);
+
+                            searchedTextRange.ApplyPropertyValue(TextElement.BackgroundProperty, new SolidColorBrush(Colors.Yellow));
+                        }
+                    }
+                }
+
+                labelSearchStatus.Content = countMatchFound > 0 ? $"{countMatchFound} matches found." : "Nothing found!";
+            }
         }
 
         public static void SetText(RichTextBox richTextBox, string text)
@@ -224,6 +269,19 @@ namespace SyncMLViewer
         public static string GetText(RichTextBox richTextBox)
         {
             return new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
+        }
+
+        private void TextBoxSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textRange = new TextRange(mainTextBox.Document.ContentStart, mainTextBox.Document.ContentEnd);
+            var textBoxText = textRange.Text;
+            var searchText = textBoxSearch.Text;
+
+            if (string.IsNullOrWhiteSpace(textBoxText) || string.IsNullOrWhiteSpace(searchText))
+            {
+                textRange.ClearAllProperties();
+                labelSearchStatus.Content = "";
+            }
         }
     }
 }
