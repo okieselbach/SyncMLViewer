@@ -233,6 +233,8 @@ namespace SyncMLViewer
                 var regex = new Regex(searchText);
                 var countMatchFound = Regex.Matches(textBoxText, regex.ToString(), RegexOptions.IgnoreCase).Count;
 
+                var firstRun = true;
+
                 for (var startPointer = mainTextBox.Document.ContentStart;
                             startPointer.CompareTo(mainTextBox.Document.ContentEnd) <= 0;
                                 startPointer = startPointer.GetNextContextPosition(LogicalDirection.Forward))
@@ -252,6 +254,14 @@ namespace SyncMLViewer
                             var searchedTextRange = new TextRange(startPointer, nextPointer);
 
                             searchedTextRange.ApplyPropertyValue(TextElement.BackgroundProperty, new SolidColorBrush(Colors.Yellow));
+
+                            // jump to the first match
+                            if (firstRun)
+                            {
+                                var r = startPointer.GetCharacterRect(LogicalDirection.Backward);
+                                mainTextBox.ScrollToVerticalOffset(r.Y);
+                                firstRun = false;
+                            }
                         }
                     }
                 }

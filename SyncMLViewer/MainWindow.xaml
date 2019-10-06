@@ -18,7 +18,7 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <TextBox x:Name="textBoxSearch" HorizontalAlignment="Right" Height="29" Margin="0,0,346,9" TextWrapping="Wrap" Text="" VerticalAlignment="Bottom" Width="144" TextChanged="TextBoxSearch_TextChanged" VerticalContentAlignment="Center"/>
+        <TextBox x:Name="textBoxSearch" HorizontalAlignment="Right" Height="29" Margin="0,0,345.6,9.4" Text="" VerticalAlignment="Bottom" Width="328" TextChanged="TextBoxSearch_TextChanged" VerticalContentAlignment="Center"/>
         <Button x:Name="buttonSearch" Content="Search" HorizontalAlignment="Right" Margin="0,0,236,9" VerticalAlignment="Bottom" Width="97" Height="29" Click="ButtonSearch_Click"/>
         <Label x:Name="labelSearchStatus" Content="" HorizontalAlignment="Right" Margin="0,0,736,9" VerticalAlignment="Bottom"/>
     </Grid>
