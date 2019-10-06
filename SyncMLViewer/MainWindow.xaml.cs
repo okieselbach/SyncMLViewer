@@ -209,6 +209,8 @@ namespace SyncMLViewer
         {
             //mainTextBox.Clear();
             mainTextBox.Document.Blocks.Clear();
+            labelSearchStatus.Content = string.Empty;
+            textBoxSearch.Text = string.Empty;
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -221,7 +223,7 @@ namespace SyncMLViewer
         {
             var textRange = new TextRange(mainTextBox.Document.ContentStart, mainTextBox.Document.ContentEnd);
             textRange.ClearAllProperties();
-            labelSearchStatus.Content = "";
+            labelSearchStatus.Content = string.Empty;
 
             var textBoxText = textRange.Text;
             var searchText = textBoxSearch.Text;
@@ -301,7 +303,7 @@ namespace SyncMLViewer
             if (string.IsNullOrWhiteSpace(textBoxText) || string.IsNullOrWhiteSpace(searchText))
             {
                 textRange.ClearAllProperties();
-                labelSearchStatus.Content = "";
+                labelSearchStatus.Content = string.Empty;
                 buttonSearch.Content = "Search";
                 _firstHit = true;
             }
