@@ -102,21 +102,21 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
-            textEditorStream.AppendText("<Results>\r\n"+
-                       " <CmdID>3</CmdID>\r\n" +
-                       " <MsgRef>1</MsgRef>\r\n" +
-                       " <CmdRef>2</CmdRef>\r\n" +
-                       " <Item>\r\n" +
-                       "  <Source>\r\n" +
-                       "   <LocURI>./Vendor/MSFT/EnterpriseExtFileSystem/Persistent/filename.txt</LocURI>\r\n" +
-                       "  </Source>\r\n" +
-                       "  <Meta>\r\n" +
-                       "   <Format xmlns=\"syncml:metinf\">b64</Format>\r\n" +
-                       "   <Type xmlns=\"syncml:metinf\">application/octet-stream</Type>\r\n" +
-                       "  </Meta>\r\n" +
-                       "  <Data>aGVsbG8gd29ybGQ=</Data>\r\n" +
-                       " </Item>\r\n" +
-                       "</Results>");
+            //textEditorStream.AppendText("<Results>\r\n"+
+            //           " <CmdID>3</CmdID>\r\n" +
+            //           " <MsgRef>1</MsgRef>\r\n" +
+            //           " <CmdRef>2</CmdRef>\r\n" +
+            //           " <Item>\r\n" +
+            //           "  <Source>\r\n" +
+            //           "   <LocURI>./Vendor/MSFT/EnterpriseExtFileSystem/Persistent/filename.txt</LocURI>\r\n" +
+            //           "  </Source>\r\n" +
+            //           "  <Meta>\r\n" +
+            //           "   <Format xmlns=\"syncml:metinf\">b64</Format>\r\n" +
+            //           "   <Type xmlns=\"syncml:metinf\">application/octet-stream</Type>\r\n" +
+            //           "  </Meta>\r\n" +
+            //           "  <Data>aGVsbG8gd29ybGQ=</Data>\r\n" +
+            //           " </Item>\r\n" +
+            //           "</Results>");
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
@@ -185,7 +185,7 @@ namespace SyncMLViewer
                     var startIndex = eventDataText.IndexOf("<SyncML");
                     if (startIndex == -1) return;
 
-                    var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1), _decode);
+                    var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
                     textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
                     textEditorMessages.Text = Environment.NewLine + valueSyncMl + Environment.NewLine;
                     //foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
@@ -204,6 +204,7 @@ namespace SyncMLViewer
                         valueMsgId = matchMsgId.Groups[1].Value;
 
                     listBoxMessages.Items.Add(new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl));
+                    listBoxMessages.SelectedItems.Add(listBoxMessages.Items.GetItemAt(listBoxMessages.Items.Count));
                 }
             }
             catch (Exception)
@@ -212,12 +213,12 @@ namespace SyncMLViewer
             }
         }
 
-        private static string TryFormatXml(string text, bool htmlDecode = false)
+        private static string TryFormatXml(string text)
         {
             try
             {
                 // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
-                return htmlDecode ? XElement.Parse(text).ToString().Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"") : XElement.Parse(text).ToString();
+                return XElement.Parse(text).ToString();
             }
             catch (Exception)
             {
@@ -242,7 +243,12 @@ namespace SyncMLViewer
         {
             if (((CheckBox)sender).IsChecked == true)
             {
-                _decode = true;
+                textEditorMessages.Text = textEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
+                    .Replace("&quot;", "\"");
+            }
+            else
+            {
+                textEditorMessages.Text = ((SyncMlMessage) listBoxMessages.SelectedItems[0]).Xml;
             }
         }
 
@@ -276,7 +282,7 @@ namespace SyncMLViewer
 
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            textEditorMessages.Text = ((SyncMlMessage) sender).Xml;
+            textEditorMessages.Text = ((SyncMlMessage) e.AddedItems[0]).Xml;
         }
     }
 }
