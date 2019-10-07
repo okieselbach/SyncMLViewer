@@ -75,9 +75,7 @@ namespace SyncMLViewer
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
         // TODO:
-        // Implement Find Next
-        // Clear button overlay on searchTextBox to empty searchTextBox
-        // Recognize Session End and lock UI during Sync
+        // Session change handler!!!
 
 
         private const string SessionName = "SyncMLViewer";
@@ -85,7 +83,8 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
-        private bool _decode = false;
+        public SyncMlSession CurrentSyncMlSession { get; set; }
+
 
         public MainWindow()
         {
@@ -196,15 +195,20 @@ namespace SyncMLViewer
                         valueSessionId = matchSessionId.Groups[1].Value;
 
                     if (!listBoxSessions.Items.Contains(valueSessionId))
-                        listBoxSessions.Items.Add(valueSessionId);
+                    {
+                        var syncMlSession = new SyncMlSession(valueSessionId);
+                        listBoxSessions.Items.Add(syncMlSession);
+                        CurrentSyncMlSession = syncMlSession;
+                    }
 
                     var valueMsgId = "0";
                     var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(valueSyncMl);
                     if (matchMsgId.Success)
                         valueMsgId = matchMsgId.Groups[1].Value;
 
-                    listBoxMessages.Items.Add(new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl));
-                    listBoxMessages.SelectedItems.Add(listBoxMessages.Items.GetItemAt(listBoxMessages.Items.Count));
+                    var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
+                    listBoxMessages.Items.Add(syncMlMessage);
+                    CurrentSyncMlSession.Messages.Add(syncMlMessage);
                 }
             }
             catch (Exception)
@@ -283,6 +287,7 @@ namespace SyncMLViewer
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             textEditorMessages.Text = ((SyncMlMessage) e.AddedItems[0]).Xml;
+            checkBoxHtmlDecode.IsChecked = false;
         }
     }
 }

@@ -3,25 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.PowerShell.Commands;
 
 namespace SyncMLViewer
 {
-    public class SyncMlMessage
+    public class SyncMlSession
     {
         public string SessionId { get; set; }
-        public string MsgId { get; set; }
-        public string Xml { get; set; }
+
+        public List<SyncMlMessage> Messages { get; set; }
 
         public override string ToString()
         {
-            return MsgId.ToString();
+            return SessionId.ToString();
         }
 
-        public SyncMlMessage(string sessionId, string msgId, string xml)
+        public SyncMlSession(string sessionId)
         {
             this.SessionId = sessionId;
-            this.MsgId = msgId;
-            this.Xml = xml;
         }
     }
 }
