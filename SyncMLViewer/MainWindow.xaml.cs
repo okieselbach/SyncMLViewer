@@ -187,18 +187,20 @@ namespace SyncMLViewer
                     var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
                     textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
                     textEditorMessages.Text = Environment.NewLine + valueSyncMl + Environment.NewLine;
-                    //foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
+                    foldingStrategy.UpdateFoldings(foldingManager, textEditorMessages.Document);
 
                     var valueSessionId = "0";
-                    var matchSessionId = new Regex("<SessionID>([0-9]+)</SessionID>").Match(valueSyncMl);
+                    var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
                     if (matchSessionId.Success)
                         valueSessionId = matchSessionId.Groups[1].Value;
 
-                    if (!listBoxSessions.Items.Contains(valueSessionId))
+                    var syncMlSession = new SyncMlSession(valueSessionId);
+                    if (!listBoxSessions.Items.Cast<SyncMlSession>().Any(item => item.SessionId == syncMlSession.SessionId))
                     {
-                        var syncMlSession = new SyncMlSession(valueSessionId);
                         listBoxSessions.Items.Add(syncMlSession);
+                        listBoxSessions.SelectedItem = syncMlSession;
                         CurrentSyncMlSession = syncMlSession;
+                        listBoxMessages.Items.Clear();
                     }
 
                     var valueMsgId = "0";
@@ -208,7 +210,11 @@ namespace SyncMLViewer
 
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                     listBoxMessages.Items.Add(syncMlMessage);
-                    CurrentSyncMlSession.Messages.Add(syncMlMessage);
+                    // not working...
+                    // TODO: re-work with data binding...
+                    // TODO: lock sync until final message....
+                    ((SyncMlSession)listBoxSessions.SelectedItem).Messages.Add(syncMlMessage);
+                    
                 }
             }
             catch (Exception)
@@ -288,6 +294,15 @@ namespace SyncMLViewer
         {
             textEditorMessages.Text = ((SyncMlMessage) e.AddedItems[0]).Xml;
             checkBoxHtmlDecode.IsChecked = false;
+        }
+
+        private void listBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            listBoxMessages.Items.Clear();
+            foreach (SyncMlMessage syncMlMessage in ((SyncMlSession)e.AddedItems[0]).Messages)
+            {
+                listBoxMessages.Items.Add(syncMlMessage);
+            }
         }
     }
 }
