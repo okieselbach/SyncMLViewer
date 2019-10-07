@@ -23,7 +23,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 using System.Xml.Linq;
+using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 
 namespace SyncMLViewer
@@ -44,6 +46,15 @@ namespace SyncMLViewer
 
         // SyncML response status codes
         // https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support#syncml-response-codes
+        // http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf
+
+        // inspired by ILspy and the controls used there:
+
+        // AvalonEdit
+        // http://avalonedit.net/
+
+        // SharpTreeView
+        // https://github.com/icsharpcode/SharpDevelop/tree/master/src/Libraries/SharpTreeView
 
         // Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
@@ -63,13 +74,18 @@ namespace SyncMLViewer
         // https://www.nuget.org/packages/ilmerge
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
+        // TODO:
+        // Implement Find Next
+        // Clear button overlay on searchTextBox to empty searchTextBox
+        // Recognize Session End and lock UI during Sync
+
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
+        private FoldingManager foldingManager;
+        private XmlFoldingStrategy foldingStrategy;
         private bool _decode = false;
-
-        private bool _firstHit = true;
 
         public MainWindow()
         {
@@ -85,6 +101,27 @@ namespace SyncMLViewer
             _backgroundWorker.DoWork += WorkerTraceEvents;
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
+
+            textEditor.AppendText("<Results>\r\n"+
+                       " <CmdID>3</CmdID>\r\n" +
+                       " <MsgRef>1</MsgRef>\r\n" +
+                       " <CmdRef>2</CmdRef>\r\n" +
+                       " <Item>\r\n" +
+                       "  <Source>\r\n" +
+                       "   <LocURI>./Vendor/MSFT/EnterpriseExtFileSystem/Persistent/filename.txt</LocURI>\r\n" +
+                       "  </Source>\r\n" +
+                       "  <Meta>\r\n" +
+                       "   <Format xmlns=\"syncml:metinf\">b64</Format>\r\n" +
+                       "   <Type xmlns=\"syncml:metinf\">application/octet-stream</Type>\r\n" +
+                       "  </Meta>\r\n" +
+                       "  <Data>aGVsbG8gd29ybGQ=</Data>\r\n" +
+                       " </Item>\r\n" +
+                       "</Results>");
+
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditor);
+            foldingManager = FoldingManager.Install(textEditor.TextArea);
+            foldingStrategy = new XmlFoldingStrategy();
+            foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -148,7 +185,8 @@ namespace SyncMLViewer
                     if (startIndex == -1) return;
 
                     var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1), _decode);
-                    AppendText(prettyDataText);
+                    textEditor.AppendText(prettyDataText);
+                    foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
                 }
             }
             catch (Exception)
@@ -168,12 +206,6 @@ namespace SyncMLViewer
             {
                 return text;
             }
-        }
-
-        private void AppendText(string text)
-        {
-            //mainTextBox.Text = $"{mainTextBox.Text}{Environment.NewLine}{text}{Environment.NewLine}";
-            mainTextBox.Document.Blocks.Add(new Paragraph(new Run($"{text}")));
         }
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
@@ -207,106 +239,13 @@ namespace SyncMLViewer
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            //mainTextBox.Clear();
-            mainTextBox.Document.Blocks.Clear();
-            labelSearchStatus.Content = string.Empty;
-            textBoxSearch.Text = string.Empty;
+            textEditor.Clear();
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
             TraceEventSession.GetActiveSession(SessionName).Stop(true);
             _backgroundWorker.Dispose();
-        }
-
-        private void ButtonSearch_Click(object sender, RoutedEventArgs e)
-        {
-            var textRange = new TextRange(mainTextBox.Document.ContentStart, mainTextBox.Document.ContentEnd);
-            textRange.ClearAllProperties();
-            labelSearchStatus.Content = string.Empty;
-
-            var textBoxText = textRange.Text;
-            var searchText = textBoxSearch.Text;
-
-            if (string.IsNullOrWhiteSpace(textBoxText) || string.IsNullOrWhiteSpace(searchText))
-            {
-                labelSearchStatus.Content = "Search text is missing!";
-            }
-            else
-            {
-                var regex = new Regex(searchText);
-                var countMatchFound = Regex.Matches(textBoxText, regex.ToString(), RegexOptions.IgnoreCase).Count;
-
-                if (countMatchFound > 0)
-                {
-                    if (countMatchFound > 1)
-                    {
-                        buttonSearch.Content = "Find next";
-                    }
-
-                    for (var startPointer = mainTextBox.Document.ContentStart;
-                        startPointer.CompareTo(mainTextBox.Document.ContentEnd) <= 0;
-                        startPointer = startPointer.GetNextContextPosition(LogicalDirection.Forward))
-                    {
-                        if (startPointer.CompareTo(mainTextBox.Document.ContentEnd) == 0)
-                        {
-                            break;
-                        }
-
-                        var parsedString = startPointer.GetTextInRun(LogicalDirection.Forward);
-                        var indexOfParseString = parsedString.ToLower().IndexOf(searchText.ToLower());
-
-                        if (indexOfParseString >= 0)
-                        {
-                            startPointer = startPointer.GetPositionAtOffset(indexOfParseString);
-
-                            // we found the string
-                            if (startPointer != null)
-                            {
-                                var nextPointer = startPointer.GetPositionAtOffset(searchText.Length);
-                                var searchedTextRange = new TextRange(startPointer, nextPointer);
-
-                                searchedTextRange.ApplyPropertyValue(TextElement.BackgroundProperty, new SolidColorBrush(Colors.Yellow));
-
-                                if (_firstHit)
-                                {
-                                    var r = startPointer.GetCharacterRect(LogicalDirection.Backward);
-                                    mainTextBox.ScrollToVerticalOffset(r.Y);
-                                    _firstHit = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                labelSearchStatus.Content = countMatchFound > 0 ? $"{countMatchFound} matches found." : "Nothing found!";
-            }
-        }
-
-        public static void SetText(RichTextBox richTextBox, string text)
-        {
-            richTextBox.Document.Blocks.Clear();
-            richTextBox.Document.Blocks.Add(new Paragraph(new Run(text)));
-        }
-
-        public static string GetText(RichTextBox richTextBox)
-        {
-            return new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
-        }
-
-        private void TextBoxSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var textRange = new TextRange(mainTextBox.Document.ContentStart, mainTextBox.Document.ContentEnd);
-            var textBoxText = textRange.Text;
-            var searchText = textBoxSearch.Text;
-
-            if (string.IsNullOrWhiteSpace(textBoxText) || string.IsNullOrWhiteSpace(searchText))
-            {
-                textRange.ClearAllProperties();
-                labelSearchStatus.Content = string.Empty;
-                buttonSearch.Content = "Search";
-                _firstHit = true;
-            }
         }
 
         private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
@@ -317,12 +256,30 @@ namespace SyncMLViewer
             fileDialog.DefaultExt = "txt";
             fileDialog.AddExtension = true;
             fileDialog.CheckPathExists = true;
+            fileDialog.RestoreDirectory = true;
             fileDialog.Title = "Save SyncML stream";
             fileDialog.FileOk += (o, args) =>
             {
-                File.WriteAllText(((FileDialog) o).FileName, GetText(mainTextBox));
+                File.WriteAllText(((FileDialog)o).FileName, textEditor.Text);
             };
             fileDialog.ShowDialog();
+        }
+
+        private void ButtonLoadTreeView_Click(object sender, RoutedEventArgs e)
+        {
+            if (textEditor.Text != string.Empty)
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(textEditor.Text);
+
+                // Make an XmlDataProvider that uses the XmlDocument.
+                var provider = new XmlDataProvider();
+                provider.Document = doc;
+                provider.XPath = "./*";
+
+                // Make the TreeView display the XmlDataProvider's data.
+                treeViewProtocol.DataContext = provider;
+            }
         }
     }
 }
