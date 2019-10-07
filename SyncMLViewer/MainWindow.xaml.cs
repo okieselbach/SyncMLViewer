@@ -102,7 +102,7 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
-            textEditor.AppendText("<Results>\r\n"+
+            textEditorStream.AppendText("<Results>\r\n"+
                        " <CmdID>3</CmdID>\r\n" +
                        " <MsgRef>1</MsgRef>\r\n" +
                        " <CmdRef>2</CmdRef>\r\n" +
@@ -118,10 +118,11 @@ namespace SyncMLViewer
                        " </Item>\r\n" +
                        "</Results>");
 
-            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditor);
-            foldingManager = FoldingManager.Install(textEditor.TextArea);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
+            foldingManager = FoldingManager.Install(textEditorMessages.TextArea);
             foldingStrategy = new XmlFoldingStrategy();
-            foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
+            foldingStrategy.UpdateFoldings(foldingManager, textEditorMessages.Document);
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -163,30 +164,45 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received");
 
                 // show all events
-                //AppendText(userState.EventName);
+                //textEditor.AppendText(userState.EventName);
 
                 // we are interested in just a few events with relevant data
                 if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    string dataText = null;
+                    string eventDataText = null;
                     try
                     {
-                        dataText = Encoding.UTF8.GetString(userState.EventData());
+                        eventDataText = Encoding.UTF8.GetString(userState.EventData());
                     }
                     catch (Exception)
                     {
                         // ignored
                     }
 
-                    if (dataText == null) return;
+                    if (eventDataText == null) return;
 
-                    var startIndex = dataText.IndexOf("<SyncML");
+                    var startIndex = eventDataText.IndexOf("<SyncML");
                     if (startIndex == -1) return;
 
-                    var prettyDataText = TryFormatXml(dataText.Substring(startIndex, dataText.Length - startIndex - 1), _decode);
-                    textEditor.AppendText(prettyDataText);
-                    foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
+                    var syncMlXml = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1), _decode);
+                    textEditorStream.AppendText(Environment.NewLine + syncMlXml + Environment.NewLine);
+                    textEditorMessages.AppendText(Environment.NewLine + syncMlXml + Environment.NewLine);
+                    //foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
+
+                    var valueSessionId = "0";
+                    var matchSessionId = new Regex("<SessionID>([0-9]+)</SessionID>").Match(syncMlXml);
+                    if (matchSessionId.Success)
+                        valueSessionId = matchSessionId.Groups[1].Value;
+
+                    listBoxSessions.Items.Add(valueSessionId);
+
+                    var valueMsgId = "0";
+                    var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(syncMlXml);
+                    if (matchMsgId.Success)
+                        valueMsgId = matchMsgId.Groups[1].Value;
+
+                    listBoxMessages.Items.Add(valueMsgId);
                 }
             }
             catch (Exception)
@@ -219,14 +235,6 @@ namespace SyncMLViewer
                 ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
                 var returnedObject = ps.Invoke();
             }
-
-            // Alternate implementation... was not working...
-            //using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default).OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
-            //{
-            //    if (registryKey == null) return;
-            //    var id = ((IEnumerable<string>) registryKey.GetSubKeyNames()).First<string>();
-            //    Process.Start($"{Environment.SystemDirectory}\\DeviceEnroller.exe", $"/o \"{id}\" /c /b");
-            //}
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
@@ -239,7 +247,7 @@ namespace SyncMLViewer
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            textEditor.Clear();
+            textEditorStream.Clear();
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -260,26 +268,9 @@ namespace SyncMLViewer
             fileDialog.Title = "Save SyncML stream";
             fileDialog.FileOk += (o, args) =>
             {
-                File.WriteAllText(((FileDialog)o).FileName, textEditor.Text);
+                File.WriteAllText(((FileDialog)o).FileName, textEditorStream.Text);
             };
             fileDialog.ShowDialog();
-        }
-
-        private void ButtonLoadTreeView_Click(object sender, RoutedEventArgs e)
-        {
-            if (textEditor.Text != string.Empty)
-            {
-                var doc = new XmlDocument();
-                doc.LoadXml(textEditor.Text);
-
-                // Make an XmlDataProvider that uses the XmlDocument.
-                var provider = new XmlDataProvider();
-                provider.Document = doc;
-                provider.XPath = "./*";
-
-                // Make the TreeView display the XmlDataProvider's data.
-                treeViewProtocol.DataContext = provider;
-            }
         }
     }
 }

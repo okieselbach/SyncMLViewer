@@ -1,36 +1,61 @@
-﻿<Window x:Class="SyncMLViewer.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyncMLViewer"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="800" Width="1124" Closed="Window_Closed" MinWidth="1124">
-    <Window.Resources>
-        <HierarchicalDataTemplate x:Key="NodeTemplate" ItemsSource="{Binding XPath=./*}">
-            <TextBlock x:Name="nodetext"/>
-            <HierarchicalDataTemplate.Triggers>
-                <DataTrigger Binding="{Binding Path=NodeType}" Value="Element">
-                    <Setter TargetName="nodetext" Property="Text" Value="{Binding Path=Name}" />
-                </DataTrigger>
-            </HierarchicalDataTemplate.Triggers>
-        </HierarchicalDataTemplate>
-    </Window.Resources>
+        Title="SyncML Viewer - oliverkieselbach.com" Height="1000" Width="1124" Closed="Window_Closed" MinWidth="1124" MinHeight="1000">
     <Grid>
-        <avalonEdit:TextEditor
-            xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-            Name="textEditor"
-            SyntaxHighlighting="XML"
-            FontFamily="Consolas"
-            FontSize="10pt" Margin="302,10,9.6,43.4"
-            HorizontalScrollBarVisibility="Auto"
-            ShowLineNumbers="True"
-            IsReadOnly="True"/>
-        <CheckBox Content="HTML Decode" HorizontalAlignment="Left" Margin="10,0,0,16.4" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom"/>
-        <Button x:Name="buttonClear" Content="Clear All" Margin="0,0,252.6,9.4" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
-        <Button x:Name="buttonSaveAs" Content="Save As" Margin="0,0,140.6,9.4" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
-        <Button x:Name="buttonSync" Content="Sync" Margin="0,0,16,9" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
-        <TreeView x:Name="treeViewProtocol" HorizontalAlignment="Left" Height="717" Margin="10,10,0,0" VerticalAlignment="Top" Width="287" ItemsSource="{Binding}" ItemTemplate="{StaticResource NodeTemplate}"/>
-        <Button x:Name="buttonLoadTreeView" Content="Load" Margin="0,0,366.6,9.4" Click="ButtonLoadTreeView_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+        <Button x:Name="buttonSync" Content="MDM _Sync" Margin="0,0,995.6,10.4" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+        <TabControl Margin="0,26,0,55">
+            <TabItem Header="SyncML XML Representation Protocol Stream">
+                <Grid Background="White" Margin="0,0,0,-0.4">
+                    <avalonedit:TextEditor
+                        x:Name="textEditorStream"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt" Margin="10,10,10,44.4"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        IsReadOnly="True"/>
+                    <Button x:Name="buttonClear" Content="Clear All" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+                    <Button x:Name="buttonSaveAs" Content="Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="SyncML Sessions/Messages">
+                <Grid Background="White">
+                    <CheckBox Content="HTML Decode" Margin="0,0,30,10" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="95"/>
+                    <avalonedit:TextEditor
+                        x:Name="textEditorMessages"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt" Margin="340,10,10,34"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        IsReadOnly="True"/>
+                    <ListBox x:Name="listBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="325"/>
+                    <ListBox x:Name="listBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="325"/>
+                    <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
+                    <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,361,0,0" VerticalAlignment="Top"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Menu HorizontalAlignment="Left" Height="21" VerticalAlignment="Top" Width="1108" Background="White">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Save As" />
+                <Separator />
+                <MenuItem Header="_Exit"  />
+            </MenuItem>
+            <MenuItem Header="_Action">
+                <MenuItem Header="_Sync" />
+                <MenuItem Header="_Clear All" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_SyncML Reference Codes" />
+                <MenuItem Header="_About" />
+            </MenuItem>
+        </Menu>
     </Grid>
 </Window>
