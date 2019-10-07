@@ -185,24 +185,25 @@ namespace SyncMLViewer
                     var startIndex = eventDataText.IndexOf("<SyncML");
                     if (startIndex == -1) return;
 
-                    var syncMlXml = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1), _decode);
-                    textEditorStream.AppendText(Environment.NewLine + syncMlXml + Environment.NewLine);
-                    textEditorMessages.AppendText(Environment.NewLine + syncMlXml + Environment.NewLine);
+                    var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1), _decode);
+                    textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
+                    textEditorMessages.Text = Environment.NewLine + valueSyncMl + Environment.NewLine;
                     //foldingStrategy.UpdateFoldings(foldingManager, textEditor.Document);
 
                     var valueSessionId = "0";
-                    var matchSessionId = new Regex("<SessionID>([0-9]+)</SessionID>").Match(syncMlXml);
+                    var matchSessionId = new Regex("<SessionID>([0-9]+)</SessionID>").Match(valueSyncMl);
                     if (matchSessionId.Success)
                         valueSessionId = matchSessionId.Groups[1].Value;
 
-                    listBoxSessions.Items.Add(valueSessionId);
+                    if (!listBoxSessions.Items.Contains(valueSessionId))
+                        listBoxSessions.Items.Add(valueSessionId);
 
                     var valueMsgId = "0";
-                    var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(syncMlXml);
+                    var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(valueSyncMl);
                     if (matchMsgId.Success)
                         valueMsgId = matchMsgId.Groups[1].Value;
 
-                    listBoxMessages.Items.Add(valueMsgId);
+                    listBoxMessages.Items.Add(new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl));
                 }
             }
             catch (Exception)
@@ -271,6 +272,11 @@ namespace SyncMLViewer
                 File.WriteAllText(((FileDialog)o).FileName, textEditorStream.Text);
             };
             fileDialog.ShowDialog();
+        }
+
+        private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            textEditorMessages.Text = ((SyncMlMessage) sender).Xml;
         }
     }
 }
