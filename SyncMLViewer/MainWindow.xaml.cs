@@ -53,9 +53,6 @@ namespace SyncMLViewer
         // AvalonEdit
         // http://avalonedit.net/
 
-        // SharpTreeView
-        // https://github.com/icsharpcode/SharpDevelop/tree/master/src/Libraries/SharpTreeView
-
         // Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
         // https://gist.githubusercontent.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/raw/857bfbb31d0e12a8ebc48a95f95d298222bae1f6/NiftyETWProviders.json
@@ -78,8 +75,8 @@ namespace SyncMLViewer
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
-        private FoldingManager foldingManager;
-        private XmlFoldingStrategy foldingStrategy;
+        private readonly FoldingManager _foldingManager;
+        private readonly XmlFoldingStrategy _foldingStrategy;
 
         public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
@@ -124,17 +121,17 @@ namespace SyncMLViewer
 
             DataContext = this;
 
-            listBoxSessions.ItemsSource = SyncMlSessions;
-            listBoxSessions.DisplayMemberPath = "SessionId";
+            ListBoxSessions.ItemsSource = SyncMlSessions;
+            ListBoxSessions.DisplayMemberPath = "SessionId";
 
-            listBoxMessages.ItemsSource = SyncMlMlMessages;
-            listBoxMessages.DisplayMemberPath = "MsgId";
+            ListBoxMessages.ItemsSource = SyncMlMlMessages;
+            ListBoxMessages.DisplayMemberPath = "MsgId";
 
-            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
-            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
-            foldingManager = FoldingManager.Install(textEditorMessages.TextArea);
-            foldingStrategy = new XmlFoldingStrategy();
-            foldingStrategy.UpdateFoldings(foldingManager, textEditorMessages.Document);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
+            _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
+            _foldingStrategy = new XmlFoldingStrategy();
+            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -179,13 +176,13 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received");
 
                 // show all events
-                if (checkBoxShowTraceEvents.IsChecked == true)
+                if (CheckBoxShowTraceEvents.IsChecked == true)
                 {
                     if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
                         !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
                         !string.Equals(userState.EventName, "GenericLogEvent", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        textEditorStream.AppendText(userState.EventName + " ");
+                        TextEditorStream.AppendText(userState.EventName + " ");
                     }
                 }
 
@@ -194,7 +191,7 @@ namespace SyncMLViewer
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
-                    labelSyncInProgress.Visibility = Visibility.Visible;
+                    LabelSyncInProgress.Visibility = Visibility.Visible;
 
                     string eventDataText = null;
                     try
@@ -213,17 +210,17 @@ namespace SyncMLViewer
 
                     var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
 
-                    if (textEditorStream.Text.Length == 0)
+                    if (TextEditorStream.Text.Length == 0)
                     { 
-                        textEditorStream.AppendText(valueSyncMl + Environment.NewLine); 
+                        TextEditorStream.AppendText(valueSyncMl + Environment.NewLine); 
                     }
                     else 
                     { 
-                        textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine); 
+                        TextEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine); 
                     }
 
-                    textEditorMessages.Text = valueSyncMl;
-                    foldingStrategy.UpdateFoldings(foldingManager, textEditorMessages.Document);
+                    TextEditorMessages.Text = valueSyncMl;
+                    _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
                     var valueSessionId = "0";
                     var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
@@ -249,13 +246,13 @@ namespace SyncMLViewer
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionStart", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    textEditorStream.AppendText("<!--- OmaDmSessionStart --->" + Environment.NewLine);
+                    TextEditorStream.AppendText("<!--- OmaDmSessionStart --->" + Environment.NewLine);
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
+                    TextEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
                     SyncMlProgress.NotInProgress = true;
-                    labelSyncInProgress.Visibility = Visibility.Hidden;
+                    LabelSyncInProgress.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception)
@@ -294,18 +291,18 @@ namespace SyncMLViewer
         {
             if (((CheckBox)sender).IsChecked == true)
             {
-                textEditorMessages.Text = textEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
+                TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
                     .Replace("&quot;", "\"");
             }
             else
             {
-                textEditorMessages.Text = ((SyncMlMessage) listBoxMessages.SelectedItems[0]).Xml;
+                TextEditorMessages.Text = ((SyncMlMessage) ListBoxMessages.SelectedItems[0]).Xml;
             }
         }
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            textEditorStream.Clear();
+            TextEditorStream.Clear();
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -326,33 +323,38 @@ namespace SyncMLViewer
             fileDialog.Title = "Save SyncML stream";
             fileDialog.FileOk += (o, args) =>
             {
-                File.WriteAllText(((FileDialog)o).FileName, textEditorStream.Text);
+                File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
             };
             fileDialog.ShowDialog();
         }
 
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(listBoxMessages.SelectedItem is SyncMlMessage selectedItem))
+            if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
                 return;
-            textEditorMessages.Text = selectedItem.Xml;
+            TextEditorMessages.Text = selectedItem.Xml;
 
-            checkBoxHtmlDecode.IsChecked = false;
+            CheckBoxHtmlDecode.IsChecked = false;
         }
 
         private void listBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!(listBoxSessions.SelectedItem is SyncMlSession selectedItem))
+            if (!(ListBoxSessions.SelectedItem is SyncMlSession selectedItem))
                 return;
 
-            listBoxMessages.ItemsSource = selectedItem.Messages;
-            listBoxMessages.Items.Refresh();
+            ListBoxMessages.ItemsSource = selectedItem.Messages;
+            ListBoxMessages.Items.Refresh();
 
-            if (listBoxMessages.Items.Count > 0)
-                listBoxMessages.SelectedIndex = 0;
+            if (ListBoxMessages.Items.Count > 0)
+                ListBoxMessages.SelectedIndex = 0;
 
             CurrentSessionId = selectedItem.SessionId;
             SyncMlMlMessages = selectedItem.Messages;
+        }
+
+        private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown(0);
         }
     }
 }
