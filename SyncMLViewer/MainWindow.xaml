@@ -35,8 +35,8 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <ListBox x:Name="listBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="325" SelectionChanged="listBoxSessions_SelectionChanged"/>
-                    <ListBox x:Name="listBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="325" SelectionChanged="ListBoxMessages_SelectionChanged"/>
+                    <ListBox x:Name="listBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="325" SelectionChanged="listBoxSessions_SelectionChanged" ItemsSource="{Binding SyncMlSessions}" DisplayMemberPath="SessionId"/>
+                    <ListBox x:Name="listBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="325" SelectionChanged="ListBoxMessages_SelectionChanged" ItemsSource="{Binding SyncMlMessages}" DisplayMemberPath="MsgId"/>
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,361,0,0" VerticalAlignment="Top"/>
                 </Grid>

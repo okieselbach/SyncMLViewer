@@ -83,9 +83,9 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
-        private string CurrentSessionId { get; set; }
-        private ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
-        private ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
+        public string CurrentSessionId { get; set; }
+        public ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
+        public ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {
@@ -118,8 +118,10 @@ namespace SyncMLViewer
             //           " </Item>\r\n" +
             //           "</Results>");
 
-            listBoxSessions.ItemsSource = SyncMlSessions;
-            listBoxMessages.ItemsSource = SyncMlMlMessages;
+            DataContext = this;
+
+            //listBoxSessions.ItemsSource = SyncMlSessions;
+            //listBoxMessages.ItemsSource = SyncMlMlMessages;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
