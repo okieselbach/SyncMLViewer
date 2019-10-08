@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +16,7 @@ namespace SyncMLViewer
 
         public SyncMlProgress()
         {
+            _notInProgress = true;
         }
 
         public bool NotInProgress
@@ -23,14 +25,13 @@ namespace SyncMLViewer
             set
             {
                 _notInProgress = value;
-                OnPropertyChanged("NotInProgress");
+                OnPropertyChanged();
             }
         }
 
-        protected void OnPropertyChanged(string inProgress)
+        protected void OnPropertyChanged([CallerMemberName] String propertyName = "")
         {
-            var handler = PropertyChanged;
-            handler?.Invoke(this, new PropertyChangedEventArgs(inProgress));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

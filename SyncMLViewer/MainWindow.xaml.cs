@@ -74,15 +74,13 @@ namespace SyncMLViewer
         // https://www.nuget.org/packages/ilmerge
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
-        // TODO:
-        // Session change handler!!!
-
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
+
         public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
@@ -90,11 +88,11 @@ namespace SyncMLViewer
 
         public MainWindow()
         {
+            InitializeComponent();
+
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
             SyncMlMlMessages = new ObservableCollection<SyncMlMessage>();
-
-            InitializeComponent();
 
             _rs = RunspaceFactory.CreateRunspace();
             _rs.Open();
@@ -107,7 +105,8 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
-            //textEditorStream.AppendText("<Results>\r\n"+
+            //textEditorStream.AppendText("<!-- DEMO SyncML content -->\r\n" +
+            //           "<Results>\r\n" +
             //           " <CmdID>3</CmdID>\r\n" +
             //           " <MsgRef>1</MsgRef>\r\n" +
             //           " <CmdRef>2</CmdRef>\r\n" +
@@ -124,8 +123,6 @@ namespace SyncMLViewer
             //           "</Results>");
 
             DataContext = this;
-
-            // <!--ItemsSource="{Binding SyncMlSessions}" DisplayMemberPath="SessionId"-->
 
             listBoxSessions.ItemsSource = SyncMlSessions;
             listBoxSessions.DisplayMemberPath = "SessionId";
@@ -184,9 +181,11 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received");
 
                 // show all events
-                if (checkBoxDebugEvents.IsEnabled)
+                if (checkBoxShowTraceEvents.IsEnabled)
                 {
-                    if (userState.EventName != "FunctionExit" || userState.EventName != "GeneralLog")
+                    if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "GenericLogEvent", StringComparison.CurrentCultureIgnoreCase))
                     {
                         textEditorStream.AppendText(userState.EventName + " ");
                     }
