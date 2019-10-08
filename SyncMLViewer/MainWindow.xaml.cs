@@ -89,6 +89,9 @@ namespace SyncMLViewer
 
         public MainWindow()
         {
+            SyncMlSessions = new ObservableCollection<SyncMlSession>();
+            SyncMlMlMessages = new ObservableCollection<SyncMlMessage>();
+
             InitializeComponent();
 
             _rs = RunspaceFactory.CreateRunspace();
