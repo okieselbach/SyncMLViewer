@@ -339,6 +339,7 @@ namespace SyncMLViewer
             if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
                 return;
             TextEditorMessages.Text = selectedItem.Xml;
+            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
             CheckBoxHtmlDecode.IsChecked = false;
         }
