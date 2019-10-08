@@ -90,6 +90,7 @@ namespace SyncMLViewer
 
         public MainWindow()
         {
+            SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
             SyncMlMlMessages = new ObservableCollection<SyncMlMessage>();
 
@@ -132,7 +133,7 @@ namespace SyncMLViewer
             listBoxMessages.ItemsSource = SyncMlMlMessages;
             listBoxMessages.DisplayMemberPath = "MsgId";
 
-            buttonSync.IsEnabled = SyncMlProgress.InProgress;
+            buttonSync.IsEnabled = SyncMlProgress.EnableSyncButton;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);

@@ -32,5 +32,7 @@ namespace SyncMLViewer
             PropertyChangedEventHandler handler = PropertyChanged;
             handler?.Invoke(this, new PropertyChangedEventArgs(inProgress));
         }
+
+        public bool EnableSyncButton => !InProgress;
     }
 }
