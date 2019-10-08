@@ -100,6 +100,8 @@ namespace SyncMLViewer
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
+            LabelDeviceName.Content = Environment.MachineName;
+
             TextEditorAbout.Text = "SyncML Viewer\r\n"+
                                    "\r\n" +
                                    "This small tool uses ETW to trace the MDM Sync session. This tool can be very handy to troubleshoot policy issues. Tracing what the client actually receives, provides confirmation about settings and how they are applied. Happy tracing!\r\n" +

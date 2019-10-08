@@ -82,5 +82,6 @@
             </MenuItem>
         </Menu>
         <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,923,0,0" VerticalAlignment="Top" Visibility="Visible"/>
+        <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,20.6,13.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18"/>
     </Grid>
 </Window>
