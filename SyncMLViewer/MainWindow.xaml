@@ -81,7 +81,7 @@
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,20" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
+        <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,20.6,13.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18"/>
     </Grid>
 </Window>
