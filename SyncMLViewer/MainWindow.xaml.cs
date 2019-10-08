@@ -130,8 +130,6 @@ namespace SyncMLViewer
             listBoxMessages.ItemsSource = SyncMlMlMessages;
             listBoxMessages.DisplayMemberPath = "MsgId";
 
-            buttonSync.IsEnabled = SyncMlProgress.NotInProgress;
-
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
             foldingManager = FoldingManager.Install(textEditorMessages.TextArea);

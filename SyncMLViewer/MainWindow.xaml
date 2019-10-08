@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="1000" Width="1124" Closed="Window_Closed" MinWidth="1124" MinHeight="1000">
     <Grid>
-        <Button x:Name="buttonSync" Content="MDM _Sync" Margin="25,0,0,10" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97"/>
+        <Button x:Name="buttonSync" Content="MDM _Sync" Margin="25,0,0,10" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding NotInProgress}"/>
         <TabControl Margin="0,26,0,55">
             <TabItem Header="SyncML XML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
