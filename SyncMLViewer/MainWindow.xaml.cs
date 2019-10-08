@@ -83,7 +83,9 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
+        private string CurrentSessionId { get; set; }
         private ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
+        private ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {
@@ -117,6 +119,7 @@ namespace SyncMLViewer
             //           "</Results>");
 
             listBoxSessions.ItemsSource = SyncMlSessions;
+            listBoxMessages.ItemsSource = SyncMlMlMessages;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
@@ -197,9 +200,9 @@ namespace SyncMLViewer
 
                     if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
                     {
+                        CurrentSessionId = valueSessionId;
                         var syncMlSession = new SyncMlSession(valueSessionId);
                         SyncMlSessions.Add(syncMlSession);
-                        listBoxMessages.ItemsSource = syncMlSession.Messages;
                     }
 
                     var valueMsgId = "0";
@@ -209,6 +212,7 @@ namespace SyncMLViewer
 
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                     SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
+                    SyncMlMlMessages.Add(syncMlMessage);
 
                     //listBoxMessages.Items.Add(syncMlMessage);
                     // not working...
@@ -299,11 +303,10 @@ namespace SyncMLViewer
 
         private void listBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            listBoxMessages.Items.Clear();
-            foreach (SyncMlMessage syncMlMessage in ((SyncMlSession)e.AddedItems[0]).Messages)
-            {
-                listBoxMessages.Items.Add(syncMlMessage);
-            }
+            CurrentSessionId = ((SyncMlSession) e.AddedItems[0]).SessionId;
+            SyncMlMlMessages.Clear();
+            SyncMlMlMessages = SyncMlSessions.FirstOrDefault(item => item.SessionId == CurrentSessionId)?.Messages;
+            textEditorMessages.Text = string.Empty;
         }
     }
 }
