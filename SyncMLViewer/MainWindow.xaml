@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SyncMLViewer"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="1000" Width="1124" Closed="Window_Closed" MinWidth="1124" MinHeight="1000">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="1000" Width="1080" Closed="Window_Closed" MinWidth="1080" MinHeight="1000">
     <Grid>
         <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
