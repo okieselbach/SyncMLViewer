@@ -181,7 +181,7 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received");
 
                 // show all events
-                if (checkBoxShowTraceEvents.IsEnabled)
+                if (checkBoxShowTraceEvents.IsChecked == true)
                 {
                     if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
                         !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
@@ -247,20 +247,10 @@ namespace SyncMLViewer
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                     SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     SyncMlMlMessages.Add(syncMlMessage);
-
-                    // select first item
-                    if (listBoxMessages.SelectedIndex != -1 || listBoxMessages.Items.Count <= 0)
-                        return;
-                    listBoxMessages.SelectedIndex = 0;
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionStart", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionStart --->" + Environment.NewLine);
-
-                    // select first item
-                    if (listBoxSessions.SelectedIndex != -1 || listBoxSessions.Items.Count <= 0)
-                        return;
-                    listBoxSessions.SelectedIndex = 0;
+                    textEditorStream.AppendText("<!--- OmaDmSessionStart --->" + Environment.NewLine);
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
                 {
