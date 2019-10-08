@@ -120,8 +120,13 @@ namespace SyncMLViewer
 
             DataContext = this;
 
-            //listBoxSessions.ItemsSource = SyncMlSessions;
-            //listBoxMessages.ItemsSource = SyncMlMlMessages;
+            // <!--ItemsSource="{Binding SyncMlSessions}" DisplayMemberPath="SessionId"-->
+
+            listBoxSessions.ItemsSource = SyncMlSessions;
+            listBoxSessions.DisplayMemberPath = "SessionId";
+
+            listBoxMessages.ItemsSource = SyncMlMlMessages;
+            listBoxMessages.DisplayMemberPath = "MsgId";
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
