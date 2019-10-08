@@ -133,7 +133,7 @@ namespace SyncMLViewer
             listBoxMessages.ItemsSource = SyncMlMlMessages;
             listBoxMessages.DisplayMemberPath = "MsgId";
 
-            buttonSync.IsEnabled = SyncMlProgress.EnableSyncButton;
+            buttonSync.IsEnabled = SyncMlProgress.NotInProgress;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
@@ -185,13 +185,18 @@ namespace SyncMLViewer
 
                 // show all events
                 if (checkBoxDebugEvents.IsEnabled)
-                    textEditorStream.AppendText(userState.EventName);
+                {
+                    if (userState.EventName != "FunctionExit" || userState.EventName != "GeneralLog")
+                    {
+                        textEditorStream.AppendText(userState.EventName + " ");
+                    }
+                }
 
                 // we are interested in just a few events with relevant data
                 if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    SyncMlProgress.InProgress = true;
+                    SyncMlProgress.NotInProgress = false;
 
                     string eventDataText = null;
                     try
@@ -261,7 +266,7 @@ namespace SyncMLViewer
                 else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
                 {
                     textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
-                    SyncMlProgress.InProgress = false;
+                    SyncMlProgress.NotInProgress = true;
                 }
             }
             catch (Exception)

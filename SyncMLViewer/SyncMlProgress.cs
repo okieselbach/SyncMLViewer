@@ -9,7 +9,7 @@ namespace SyncMLViewer
 {
     public class SyncMlProgress : INotifyPropertyChanged
     {
-        private bool _inProgress;
+        private bool _notInProgress;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -17,22 +17,20 @@ namespace SyncMLViewer
         {
         }
 
-        public bool InProgress
+        public bool NotInProgress
         {
-            get => _inProgress;
+            get => _notInProgress;
             set
             {
-                _inProgress = value;
-                OnPropertyChanged("InProgress");
+                _notInProgress = value;
+                OnPropertyChanged("NotInProgress");
             }
         }
 
         protected void OnPropertyChanged(string inProgress)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             handler?.Invoke(this, new PropertyChangedEventArgs(inProgress));
         }
-
-        public bool EnableSyncButton => !InProgress;
     }
 }
