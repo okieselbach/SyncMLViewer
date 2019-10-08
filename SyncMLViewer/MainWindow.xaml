@@ -58,6 +58,6 @@
                 <MenuItem Header="_About" />
             </MenuItem>
         </Menu>
-        <Label x:Name="labelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="145,933,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
+        <Label x:Name="labelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="143,931,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
     </Grid>
 </Window>

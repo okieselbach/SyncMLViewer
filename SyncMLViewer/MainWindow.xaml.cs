@@ -194,6 +194,7 @@ namespace SyncMLViewer
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
+                    labelSyncInProgress.Visibility = Visibility.Visible;
 
                     string eventDataText = null;
                     try
@@ -254,6 +255,7 @@ namespace SyncMLViewer
                 {
                     textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
                     SyncMlProgress.NotInProgress = true;
+                    labelSyncInProgress.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception)
