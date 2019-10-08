@@ -90,6 +90,8 @@ namespace SyncMLViewer
         {
             InitializeComponent();
 
+            labelSyncInProgress.Visibility = Visibility.Hidden;
+
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
             SyncMlMlMessages = new ObservableCollection<SyncMlMessage>();
