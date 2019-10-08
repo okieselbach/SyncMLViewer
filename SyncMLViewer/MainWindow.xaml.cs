@@ -83,6 +83,7 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
+        public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
         public ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
@@ -130,6 +131,8 @@ namespace SyncMLViewer
 
             listBoxMessages.ItemsSource = SyncMlMlMessages;
             listBoxMessages.DisplayMemberPath = "MsgId";
+
+            buttonSync.IsEnabled = SyncMlProgress.InProgress;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
@@ -180,12 +183,15 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received");
 
                 // show all events
-                //textEditor.AppendText(userState.EventName);
+                if (checkBoxDebugEvents.IsEnabled)
+                    textEditorStream.AppendText(userState.EventName);
 
                 // we are interested in just a few events with relevant data
                 if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
                     string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    SyncMlProgress.InProgress = true;
+
                     string eventDataText = null;
                     try
                     {
@@ -236,6 +242,25 @@ namespace SyncMLViewer
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                     SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     SyncMlMlMessages.Add(syncMlMessage);
+
+                    // select first item
+                    if (listBoxMessages.SelectedIndex != -1 || listBoxMessages.Items.Count <= 0)
+                        return;
+                    listBoxMessages.SelectedIndex = 0;
+                }
+                else if (string.Equals(userState.EventName, "OmaDmSessionStart", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionStart --->" + Environment.NewLine);
+
+                    // select first item
+                    if (listBoxSessions.SelectedIndex != -1 || listBoxSessions.Items.Count <= 0)
+                        return;
+                    listBoxSessions.SelectedIndex = 0;
+                }
+                else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    textEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
+                    SyncMlProgress.InProgress = false;
                 }
             }
             catch (Exception)
