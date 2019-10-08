@@ -14,7 +14,7 @@ namespace SyncMLViewer
 
         public DateTime DateTime { get; set; }
 
-        public string Entry { get => $"{SessionId} - {DateTime}"; }
+        public string Entry => $"{SessionId} - {DateTime}";
 
         public override string ToString()
         {
