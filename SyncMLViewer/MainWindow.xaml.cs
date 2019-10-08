@@ -83,8 +83,7 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private FoldingManager foldingManager;
         private XmlFoldingStrategy foldingStrategy;
-        public SyncMlSession CurrentSyncMlSession { get; set; }
-
+        private ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
 
         public MainWindow()
         {
@@ -116,6 +115,8 @@ namespace SyncMLViewer
             //           "  <Data>aGVsbG8gd29ybGQ=</Data>\r\n" +
             //           " </Item>\r\n" +
             //           "</Results>");
+
+            listBoxSessions.ItemsSource = SyncMlSessions;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(textEditorMessages);
@@ -181,7 +182,7 @@ namespace SyncMLViewer
 
                     if (eventDataText == null) return;
 
-                    var startIndex = eventDataText.IndexOf("<SyncML");
+                    var startIndex = eventDataText.IndexOf("<SyncML", StringComparison.CurrentCultureIgnoreCase);
                     if (startIndex == -1) return;
 
                     var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
@@ -194,13 +195,11 @@ namespace SyncMLViewer
                     if (matchSessionId.Success)
                         valueSessionId = matchSessionId.Groups[1].Value;
 
-                    var syncMlSession = new SyncMlSession(valueSessionId);
-                    if (!listBoxSessions.Items.Cast<SyncMlSession>().Any(item => item.SessionId == syncMlSession.SessionId))
+                    if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
                     {
-                        listBoxSessions.Items.Add(syncMlSession);
-                        listBoxSessions.SelectedItem = syncMlSession;
-                        CurrentSyncMlSession = syncMlSession;
-                        listBoxMessages.Items.Clear();
+                        var syncMlSession = new SyncMlSession(valueSessionId);
+                        SyncMlSessions.Add(syncMlSession);
+                        listBoxMessages.ItemsSource = syncMlSession.Messages;
                     }
 
                     var valueMsgId = "0";
@@ -209,11 +208,13 @@ namespace SyncMLViewer
                         valueMsgId = matchMsgId.Groups[1].Value;
 
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                    listBoxMessages.Items.Add(syncMlMessage);
+                    SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
+
+                    //listBoxMessages.Items.Add(syncMlMessage);
                     // not working...
                     // TODO: re-work with data binding and observable collection with property changed notification...
                     // TODO: lock sync until final message....
-                    ((SyncMlSession)listBoxSessions.SelectedItem).Messages.Add(syncMlMessage);
+                    //((SyncMlSession)listBoxSessions.SelectedItem).Messages.Add(syncMlMessage);
                     
                 }
             }
