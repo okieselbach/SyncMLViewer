@@ -22,6 +22,7 @@ namespace SyncMLViewer
         public SyncMlSession(string sessionId)
         {
             this.SessionId = sessionId;
+            this.Messages = new ObservableCollection<SyncMlMessage>();
         }
     }
 }

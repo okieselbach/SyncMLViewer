@@ -146,8 +146,11 @@ namespace SyncMLViewer
                     throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
-                    throw new InvalidOperationException($"The session name '{SessionName}' is already in use.");
-
+                {
+                    Debug.WriteLine($"The session name '{SessionName}' is already in use, stopping.");
+                    TraceEventSession.GetActiveSession(SessionName).Stop(true);
+                }
+                    
                 // An End-To-End ETW Tracing Example: EventSource and TraceEvent
                 // https://blogs.msdn.microsoft.com/vancem/2012/12/20/an-end-to-end-etw-tracing-example-eventsource-and-traceevent/
                 using (var traceEventSession = new TraceEventSession(SessionName))
@@ -199,8 +202,17 @@ namespace SyncMLViewer
                     if (startIndex == -1) return;
 
                     var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
-                    textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
-                    textEditorMessages.Text = Environment.NewLine + valueSyncMl + Environment.NewLine;
+
+                    if (textEditorStream.Text.Length == 0)
+                    { 
+                        textEditorStream.AppendText(valueSyncMl + Environment.NewLine); 
+                    }
+                    else 
+                    { 
+                        textEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine); 
+                    }
+
+                    textEditorMessages.Text = valueSyncMl;
                     foldingStrategy.UpdateFoldings(foldingManager, textEditorMessages.Document);
 
                     var valueSessionId = "0";
@@ -213,6 +225,7 @@ namespace SyncMLViewer
                         CurrentSessionId = valueSessionId;
                         var syncMlSession = new SyncMlSession(valueSessionId);
                         SyncMlSessions.Add(syncMlSession);
+                        SyncMlMlMessages.Clear();
                     }
 
                     var valueMsgId = "0";
@@ -223,13 +236,6 @@ namespace SyncMLViewer
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                     SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     SyncMlMlMessages.Add(syncMlMessage);
-
-                    //listBoxMessages.Items.Add(syncMlMessage);
-                    // not working...
-                    // TODO: re-work with data binding and observable collection with property changed notification...
-                    // TODO: lock sync until final message....
-                    //((SyncMlSession)listBoxSessions.SelectedItem).Messages.Add(syncMlMessage);
-                    
                 }
             }
             catch (Exception)
@@ -307,16 +313,26 @@ namespace SyncMLViewer
 
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            textEditorMessages.Text = ((SyncMlMessage) e.AddedItems[0]).Xml;
+            if (!(listBoxMessages.SelectedItem is SyncMlMessage selectedItem))
+                return;
+            textEditorMessages.Text = selectedItem.Xml;
+
             checkBoxHtmlDecode.IsChecked = false;
         }
 
         private void listBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CurrentSessionId = ((SyncMlSession) e.AddedItems[0]).SessionId;
-            SyncMlMlMessages.Clear();
-            SyncMlMlMessages = SyncMlSessions.FirstOrDefault(item => item.SessionId == CurrentSessionId)?.Messages;
-            textEditorMessages.Text = string.Empty;
+            if (!(listBoxSessions.SelectedItem is SyncMlSession selectedItem))
+                return;
+
+            listBoxMessages.ItemsSource = selectedItem.Messages;
+            listBoxMessages.Items.Refresh();
+
+            if (listBoxMessages.Items.Count > 0)
+                listBoxMessages.SelectedIndex = 0;
+
+            CurrentSessionId = selectedItem.SessionId;
+            SyncMlMlMessages = selectedItem.Messages;
         }
     }
 }
