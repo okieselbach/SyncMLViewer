@@ -8,8 +8,8 @@
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="1000" Width="1124" Closed="Window_Closed" MinWidth="1124" MinHeight="1000">
     <Grid>
-        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="25,0,0,10" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
-        <TabControl Margin="0,26,0,55">
+        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
+        <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
             <TabItem Header="SyncML XML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
                     <avalonedit:TextEditor
@@ -32,17 +32,17 @@
                         x:Name="TextEditorMessages"
                         SyntaxHighlighting="XML"
                         FontFamily="Consolas"
-                        FontSize="10pt" Margin="340,10,10,34"
+                        FontSize="10pt" Margin="200,10,10,34"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <ListBox x:Name="ListBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="325" SelectionChanged="listBoxSessions_SelectionChanged" />
-                    <ListBox x:Name="ListBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="325" SelectionChanged="ListBoxMessages_SelectionChanged" />
+                    <ListBox x:Name="ListBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="listBoxSessions_SelectionChanged" />
+                    <ListBox x:Name="ListBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,361,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="SyncML Response Codes Reference">
+            <TabItem x:Name="TabItemCodes" Header="SyncML Response Codes Reference">
                 <Grid Background="White">
                     <avalonedit:TextEditor
                         x:Name="TextEditorCodes"
@@ -53,7 +53,7 @@
                         IsReadOnly="True"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="About">
+            <TabItem x:Name="TabItemAbout" Header="About">
                 <Grid Background="White">
                     <avalonedit:TextEditor
                         x:Name="TextEditorAbout"
@@ -77,10 +77,10 @@
                 <MenuItem Header="_Clear All" Click="ButtonClear_Click" />
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_SyncML Reference Codes" />
-                <MenuItem Header="_About" />
+                <MenuItem Header="_SyncML Reference Codes" Click="MenuItemCodes_Click"/>
+                <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="130,925,0,0" VerticalAlignment="Top" Visibility="Visible"/>
+        <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,923,0,0" VerticalAlignment="Top" Visibility="Visible"/>
     </Grid>
 </Window>

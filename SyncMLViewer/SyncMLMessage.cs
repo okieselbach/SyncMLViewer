@@ -12,6 +12,7 @@ namespace SyncMLViewer
         public string MsgId { get; set; }
         public string Xml { get; set; }
         public DateTime DateTime { get; set; }
+        public string Entry { get => $"{MsgId} - {DateTime}"; }
 
         public override string ToString()
         {

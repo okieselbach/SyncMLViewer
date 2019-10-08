@@ -12,17 +12,22 @@ namespace SyncMLViewer
     {
         public string SessionId { get; set; }
 
-        public ObservableCollection<SyncMlMessage> Messages { get; set; }
+        public DateTime DateTime { get; set; }
+
+        public string Entry { get => $"{SessionId} - {DateTime}"; }
 
         public override string ToString()
         {
-            return SessionId.ToString();
+            return $"{SessionId} - {DateTime}";
         }
+
+        public ObservableCollection<SyncMlMessage> Messages { get; set; }
 
         public SyncMlSession(string sessionId)
         {
             this.SessionId = sessionId;
             this.Messages = new ObservableCollection<SyncMlMessage>();
+            this.DateTime = DateTime.Now;
         }
     }
 }

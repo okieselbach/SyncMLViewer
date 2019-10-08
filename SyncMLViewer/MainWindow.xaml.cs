@@ -89,10 +89,10 @@ namespace SyncMLViewer
             DataContext = this;
 
             ListBoxSessions.ItemsSource = SyncMlSessions;
-            ListBoxSessions.DisplayMemberPath = "SessionId";
+            ListBoxSessions.DisplayMemberPath = "Entry";
 
             ListBoxMessages.ItemsSource = SyncMlMlMessages;
-            ListBoxMessages.DisplayMemberPath = "MsgId";
+            ListBoxMessages.DisplayMemberPath = "Entry";
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
@@ -362,6 +362,16 @@ namespace SyncMLViewer
         private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown(0);
+        }
+
+        private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemAbout;
+        }
+
+        private void MenuItemCodes_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemCodes;
         }
     }
 }
