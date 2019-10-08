@@ -11,10 +11,11 @@ namespace SyncMLViewer
         public string SessionId { get; set; }
         public string MsgId { get; set; }
         public string Xml { get; set; }
+        public DateTime DateTime { get; set; }
 
         public override string ToString()
         {
-            return MsgId.ToString();
+            return $"{MsgId} - {DateTime}";
         }
 
         public SyncMlMessage(string sessionId, string msgId, string xml)
@@ -22,6 +23,7 @@ namespace SyncMLViewer
             this.SessionId = sessionId;
             this.MsgId = msgId;
             this.Xml = xml;
+            this.DateTime = DateTime.Now;
         }
     }
 }

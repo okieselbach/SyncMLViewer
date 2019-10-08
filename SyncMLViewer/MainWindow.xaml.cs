@@ -35,24 +35,6 @@ namespace SyncMLViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Inspired by Michael Niehaus - @mniehaus - blog about monitoring realtime MDM activity
-        // https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
-
-        // [MS-MDM]: Mobile Device Management Protocol
-        // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/
-
-        // OMA DM protocol support - Get all the details how it is working...
-        // https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support
-
-        // SyncML response status codes
-        // https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support#syncml-response-codes
-        // http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf
-
-        // inspired by ILspy and the controls used there:
-
-        // AvalonEdit
-        // http://avalonedit.net/
-
         // Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
         // https://gist.githubusercontent.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/raw/857bfbb31d0e12a8ebc48a95f95d298222bae1f6/NiftyETWProviders.json
@@ -67,7 +49,7 @@ namespace SyncMLViewer
         // interestingly it seems not to be needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
-        // for a tool we have too many libraries we can use ILMerge to combine them to a single assembly or embed them in the resources
+        // ILMerge to combine all assemblies to a single assembly or embed them in the resources
         // https://www.nuget.org/packages/ilmerge
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
@@ -104,23 +86,6 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
-            //textEditorStream.AppendText("<!-- DEMO SyncML content -->\r\n" +
-            //           "<Results>\r\n" +
-            //           " <CmdID>3</CmdID>\r\n" +
-            //           " <MsgRef>1</MsgRef>\r\n" +
-            //           " <CmdRef>2</CmdRef>\r\n" +
-            //           " <Item>\r\n" +
-            //           "  <Source>\r\n" +
-            //           "   <LocURI>./Vendor/MSFT/EnterpriseExtFileSystem/Persistent/filename.txt</LocURI>\r\n" +
-            //           "  </Source>\r\n" +
-            //           "  <Meta>\r\n" +
-            //           "   <Format xmlns=\"syncml:metinf\">b64</Format>\r\n" +
-            //           "   <Type xmlns=\"syncml:metinf\">application/octet-stream</Type>\r\n" +
-            //           "  </Meta>\r\n" +
-            //           "  <Data>aGVsbG8gd29ybGQ=</Data>\r\n" +
-            //           " </Item>\r\n" +
-            //           "</Results>");
-
             DataContext = this;
 
             ListBoxSessions.ItemsSource = SyncMlSessions;
@@ -134,6 +99,45 @@ namespace SyncMLViewer
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+
+            TextEditorAbout.Text = "SyncML Viewer\r\n"+
+                                   "\r\n" +
+                                   "This small tool uses ETW to trace the MDM Sync session. This tool can be very handy to troubleshoot policy issues. Tracing what the client actually receives, provides confirmation about settings and how they are applied. Happy tracing!\r\n" +
+                                   "\r\n" +
+                                   "Oliver Kieselbach (@okieselb) - oliverkieselbach.com\r\n" +
+                                   "\r\n" +
+                                   "Inspired by Michael Niehaus - @mniehaus - blog about monitoring realtime MDM activity\r\n" +
+                                   "https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/\r\n" +
+                                   "\r\n" +
+                                   "Event Tracing for Windows (ETW)\r\n" +
+                                   "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
+                                   "\r\n" + 
+                                   "Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list\r\n" +
+                                   "https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/\r\n" +
+                                   "\r\n" +
+                                   "more MDM ETW Provider details\r\n" +
+                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10\r\n" +
+                                   "\r\n" +
+                                   "[MS-MDM]: Mobile Device Management Protocol\r\n" +
+                                   "https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/\r\n" +
+                                   "\r\n" +
+                                   "OMA DM protocol support - Get all the details how it is working...\r\n" +
+                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support\r\n" +
+                                   "\r\n" +
+                                   "SyncML response status codes\r\n" +
+                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support#syncml-response-codes\r\n" +
+                                   "http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf\r\n" +
+                                   "\r\n" +
+                                   "UI Controls inspired by ILspy (https://github.com/icsharpcode/ILSpy) and the controls used there:\r\n" +
+                                   "\r\n" +
+                                   "AvalonEdit\r\n" +
+                                   "http://avalonedit.net/\r\n" +
+                                   "released under MIT License - https://opensource.org/licenses/MIT\r\n" +
+                                   "\r\n" +
+                                   "for a troubleshooting tool we combine many libraries to a single binary. ILMerge is used to combine them to a single assembly.\r\n" +
+                                   "https://www.nuget.org/packages/ilmerge\r\n" +
+                                   "even a coding way exists for that\r\n" +
+                                   "https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/\r\n";
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -145,7 +149,7 @@ namespace SyncMLViewer
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
-                    Debug.WriteLine($"The session name '{SessionName}' is already in use, stopping.");
+                    Debug.WriteLine($"The session name '{SessionName}' is already in use, stopping existing and restart a new one.");
                     TraceEventSession.GetActiveSession(SessionName).Stop(true);
                 }
                     
