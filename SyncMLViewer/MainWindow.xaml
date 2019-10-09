@@ -10,7 +10,7 @@
     <Grid>
         <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
-            <TabItem Header="SyncML XML Representation Protocol Stream">
+            <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
                     <avalonedit:TextEditor
                         x:Name="TextEditorStream"
@@ -42,7 +42,7 @@
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,361,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabItemCodes" Header="SyncML Response Codes Reference">
+            <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
                 <Grid Background="White">
                     <avalonedit:TextEditor
                         x:Name="TextEditorCodes"
@@ -77,7 +77,7 @@
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click" />
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_SyncML Reference Codes" Click="MenuItemCodes_Click"/>
+                <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
