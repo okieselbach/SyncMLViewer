@@ -50,7 +50,8 @@
                         FontSize="10pt"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="False"
-                        IsReadOnly="True"/>
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemAbout" Header="About">
@@ -62,7 +63,8 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="False"
                         IsReadOnly="True"
-                        WordWrap="True"/>
+                        WordWrap="True" 
+                        Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
         </TabControl>
@@ -70,14 +72,17 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_Save As" Click="ButtonSaveAs_Click"/>
                 <Separator />
-                <MenuItem Header="_Exit" Click="MenuItemExit_OnClick"  />
+                <MenuItem Header="_Exit" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Action">
                 <MenuItem Header="_Sync" Click="ButtonSync_Click"/>
-                <MenuItem Header="_Clear Stream" Click="ButtonClear_Click" />
+                <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
+                <Separator />
+                <MenuItem Header="_Check for SyncML Viewer Update" Click="MenuItemCheckUpdate_OnClick"/>
+                <Separator />
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>

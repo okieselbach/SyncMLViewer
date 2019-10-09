@@ -96,25 +96,35 @@ namespace SyncMLViewer
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorCodes);
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
             LabelDeviceName.Content = Environment.MachineName;
 
-            TextEditorAbout.Text = "SyncML Viewer\r\n"+
+            TextEditorStream.Options.HighlightCurrentLine = true;
+            TextEditorMessages.Options.HighlightCurrentLine = true;
+
+            TextEditorCodes.Options.EnableHyperlinks = true;
+            TextEditorCodes.Options.RequireControlModifierForHyperlinkClick = false;
+
+            TextEditorAbout.Options.EnableHyperlinks = true;
+            TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
+            TextEditorAbout.Text = "-SyncML Viewer\r\n"+
                                    "\r\n" +
                                    "This small tool uses ETW to trace the MDM Sync session. This tool can be very handy to troubleshoot policy issues. Tracing what the client actually receives, provides confirmation about settings and how they are applied. Happy tracing!\r\n" +
                                    "\r\n" +
-                                   "Oliver Kieselbach (@okieselb) - oliverkieselbach.com\r\n" +
+                                   "Oliver Kieselbach (@okieselb) - https://oliverkieselbach.com\r\n" +
                                    "\r\n" +
-                                   "Inspired by Michael Niehaus - @mniehaus - blog about monitoring realtime MDM activity\r\n" +
+                                   "\r\n" +
+                                   "Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity\r\n" +
                                    "https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/\r\n" +
                                    "\r\n" +
-                                   "Event Tracing for Windows (ETW)\r\n" +
+                                   "possible due to Event Tracing for Windows (ETW)\r\n" +
                                    "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
                                    "\r\n" + 
-                                   "Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list\r\n" +
+                                   "Thanks to Matt Graeber (@mattifestation) - for the extended ETW Provider list\r\n" +
                                    "https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/\r\n" +
                                    "\r\n" +
                                    "more MDM ETW Provider details\r\n" +
@@ -136,10 +146,12 @@ namespace SyncMLViewer
                                    "http://avalonedit.net/\r\n" +
                                    "released under MIT License - https://opensource.org/licenses/MIT\r\n" +
                                    "\r\n" +
-                                   "for a troubleshooting tool we combine many libraries to a single binary. ILMerge is used to combine them to a single assembly.\r\n" +
+                                   "for a troubleshooting tool we combine many libraries to a single binary. ILMerge is used to combine them to a single assembly:\r\n" +
                                    "https://www.nuget.org/packages/ilmerge\r\n" +
-                                   "even a coding way exists for that\r\n" +
+                                   "even a coding way exists for that...\r\n" +
                                    "https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/\r\n";
+
+            TextEditorCodes.Text = Properties.Settings.Default.StatusCodes;
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -374,6 +386,11 @@ namespace SyncMLViewer
         private void MenuItemCodes_Click(object sender, RoutedEventArgs e)
         {
             TabControlSyncMlViewer.SelectedItem = TabItemCodes;
+        }
+
+        private void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Update check is currently not implemented, stay tuned.", "Check for updates", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
