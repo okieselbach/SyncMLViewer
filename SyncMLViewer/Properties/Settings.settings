@@ -3,8 +3,11 @@
   <Profiles />
   <Settings>
     <Setting Name="StatusCodes" Type="System.String" Scope="User">
-      <Value Profile="(Default)">taken from official documentation: http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf
-use Ctrl + F to use search to find a particular status code.
+      <Value Profile="(Default)">Info taken from official OMA SyncML documentation here: 
+http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf
+
+Use [Ctrl] + [F] to use search to find a particular status code.
+
 
 
 --Informational (1xx)

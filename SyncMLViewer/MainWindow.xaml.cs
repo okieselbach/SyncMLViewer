@@ -57,6 +57,7 @@ namespace SyncMLViewer
         // https://www.nuget.org/packages/ilmerge
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
+        private const string updateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
@@ -65,6 +66,8 @@ namespace SyncMLViewer
         private readonly XmlFoldingStrategy _foldingStrategy;
         private readonly string _version;
         private string _updateTempFileName;
+        private bool _updateStarted;
+        private bool _updateCheckInitial;
 
         public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
@@ -98,6 +101,11 @@ namespace SyncMLViewer
 
             DataContext = this;
 
+            this.Loaded += delegate
+            {
+                MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs());
+            };
+
             ListBoxSessions.ItemsSource = SyncMlSessions;
             ListBoxSessions.DisplayMemberPath = "Entry";
 
@@ -112,6 +120,8 @@ namespace SyncMLViewer
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
             LabelDeviceName.Content = Environment.MachineName;
+            _updateStarted = false;
+            _updateCheckInitial = true;
 
             TextEditorStream.Options.HighlightCurrentLine = true;
             TextEditorMessages.Options.HighlightCurrentLine = true;
@@ -123,8 +133,15 @@ namespace SyncMLViewer
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
             TextEditorAbout.Text = "-SyncML Viewer\r\n" +
                                    "\r\n" +
-                                   "This small tool uses ETW to trace the MDM Sync session. This tool can be very handy to troubleshoot policy issues. Tracing what the client actually receives, provides confirmation about settings and how they are applied. Happy tracing!\r\n" +
-                                   "I'm happy to take feedback. The easiest way is to create an issue at my GitHub solution https://github.com/okieselbach/SyncMLViewer\r\n" +
+                                   "This tool is able to present the SyncML protocol stream between the client and management system. In addition it does some extra parsing to extract details and make the analyzing a bit easier.\r\n" +
+                                   "The tool uses ETW to trace the MDM Sync session. In general the tool can be very handy to troubleshoot policy issues. Tracing what the client actually sends and receives provides deep protocol insights.\r\n"+
+                                   "It makes it easy to get confirmation about queried or applied settings. Happy tracing!\r\n" +
+                                   "\r\n"+
+                                   "The tool supports manual online updates. When a new version is available it will be indicated.\r\n" +
+                                   "Use Menu Item > Help > Check for SyncML Viewer Update to trigger a download.\r\n" +
+                                   "\r\n" +
+                                   "I'm happy to take feedback.\r\n" +
+                                   "The easiest way is to create an issue at my GitHub solution https://github.com/okieselbach/SyncMLViewer\r\n" +
                                    "\r\n" +
                                    "Oliver Kieselbach (@okieselb)\r\n" +
                                    "https://github.com/okieselbach\r\n" +
@@ -134,7 +151,7 @@ namespace SyncMLViewer
                                    "Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity\r\n" +
                                    "https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/\r\n" +
                                    "\r\n" +
-                                   "possible due to Event Tracing for Windows (ETW)\r\n" +
+                                   "all possible due to Event Tracing for Windows (ETW)\r\n" +
                                    "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
                                    "\r\n" +
                                    "Thanks to Matt Graeber (@mattifestation) - for the extended ETW Provider list\r\n" +
@@ -157,7 +174,7 @@ namespace SyncMLViewer
                                    "\r\n" +
                                    "AvalonEdit\r\n" +
                                    "http://avalonedit.net/\r\n" +
-                                   "released under MIT License - https://opensource.org/licenses/MIT\r\n";
+                                   "released under MIT License (https://opensource.org/licenses/MIT)\r\n";
 
             TextEditorCodes.Text = Properties.Settings.Default.StatusCodes;
         }
@@ -201,7 +218,7 @@ namespace SyncMLViewer
             try
             {
                 if (!(e.UserState is TraceEvent userState))
-                    throw new ArgumentException("No TraceEvent received");
+                    throw new ArgumentException("No TraceEvent received.");
 
                 // show all events
                 if (CheckBoxShowTraceEvents.IsChecked == true)
@@ -335,8 +352,22 @@ namespace SyncMLViewer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            TraceEventSession.GetActiveSession(SessionName).Stop(true);
+            // Cleanup TraceSession and temp update files...
+
+            TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
             _backgroundWorker.Dispose();
+
+            if (_updateStarted) return;
+            try
+            {
+                if (_updateTempFileName == null) return;
+                if (!File.Exists(_updateTempFileName))
+                    File.Delete(_updateTempFileName);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
@@ -383,6 +414,22 @@ namespace SyncMLViewer
 
         private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
         {
+            if (!_updateStarted)
+            {
+                try
+                {
+                    if (_updateTempFileName != null)
+                    {
+                        if (!File.Exists(_updateTempFileName))
+                            File.Delete(_updateTempFileName);
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
             Application.Current.Shutdown(0);
         }
 
@@ -406,30 +453,38 @@ namespace SyncMLViewer
                     systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
                     webClient.Proxy = systemWebProxy;
 
-                    var data = await webClient.DownloadDataTaskAsync(
-                        new Uri("https://github.com/okieselbach/Helpers/raw/master/update.xml"));
+                    var data = await webClient.DownloadDataTaskAsync(new Uri(updateXmlUri));
                     var xDocument = XDocument.Load(new MemoryStream(data));
                     var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
                     var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
 
-                    if (version != null)
+                    if (url == null || !url.StartsWith("https")) return;
+                    if (version == null) return;
+                    if (string.CompareOrdinal(version, 0, _version, 0, version.Length) <= 0) return;
+
+                    if (_updateCheckInitial)
                     {
-                        if (string.CompareOrdinal(version, 0, _version, 0, version.Length) > 0)
-                        {
-                            ButtonRestartUpdate.Content =
-                                ButtonRestartUpdate.Content.ToString().Replace("[0.0.0.0]", version);
-
-                            if (url == null || !url.StartsWith("https")) return;
-                            _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
-                            await webClient.DownloadFileTaskAsync(new Uri(url), _updateTempFileName);
-
-                            if (!File.Exists(_updateTempFileName)) return;
-
-                            // bigger than 10KB so it is not a dummy or broken binary
-                            if (new FileInfo(_updateTempFileName)?.Length > 1024*10)
-                                ButtonRestartUpdate.Visibility = Visibility.Visible;
-                        }
+                        LabelUpdateIndicator.Content =
+                            LabelUpdateIndicator.Content.ToString().Replace("[0.0.0.0]", version);
+                        LabelUpdateIndicator.Visibility = Visibility.Visible;
+                        _updateCheckInitial = false;
+                        return;
                     }
+
+                    LabelUpdateIndicator.Visibility = Visibility.Hidden;
+                    ButtonRestartUpdate.Content =
+                        ButtonRestartUpdate.Content.ToString().Replace("[0.0.0.0]", version);
+
+                    _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
+                    if (_updateTempFileName == null) return;
+
+                    await webClient.DownloadFileTaskAsync(new Uri(url), _updateTempFileName);
+
+                    if (!File.Exists(_updateTempFileName)) return;
+
+                    // bigger than 10KB so it is not a dummy or broken binary
+                    if (new FileInfo(_updateTempFileName)?.Length > 1024*10)
+                        ButtonRestartUpdate.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex)
@@ -454,6 +509,8 @@ namespace SyncMLViewer
                                             "\" -Force; Start-Process \"" + path + "\"}";
                     p.StartInfo.CreateNoWindow = true;
                     p.Start();
+
+                    _updateStarted = true;
                 }
             }
             catch (Exception ex)
@@ -461,8 +518,11 @@ namespace SyncMLViewer
                 Debug.WriteLine(ex.Message);
                 try
                 {
-                    if (!File.Exists(_updateTempFileName))
-                        File.Delete(_updateTempFileName);
+                    if (_updateTempFileName != null)
+                    {
+                        if (!File.Exists(_updateTempFileName))
+                            File.Delete(_updateTempFileName);
+                    }
                 }
                 catch (Exception)
                 {

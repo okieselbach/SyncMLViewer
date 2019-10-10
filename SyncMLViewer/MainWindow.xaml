@@ -20,14 +20,14 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
-                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
-                    <CheckBox x:Name="CheckBoxShowTraceEvents" Content="Show _TraceEvents" HorizontalAlignment="Left" Margin="10,0,0,10" Height="15" VerticalAlignment="Bottom"/>
+                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream. Does not affect the Sessions tab data."/>
+                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as txt file."/>
+                    <CheckBox x:Name="CheckBoxShowTraceEvents" Content="Show _TraceEvents" HorizontalAlignment="Left" Margin="10,0,0,10" Height="15" VerticalAlignment="Bottom" ToolTip="Show additional ETW Trace Events."/>
                 </Grid>
             </TabItem>
             <TabItem Header="SyncML Sessions/Messages">
                 <Grid Background="White">
-                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML Decode" Margin="0,0,30,10" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="95"/>
+                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="0,0,30,10" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
                         SyntaxHighlighting="XML"
@@ -68,7 +68,7 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <Menu HorizontalAlignment="Left" Height="21" VerticalAlignment="Top" Width="1108" Background="White">
+        <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
             <MenuItem Header="_File">
                 <MenuItem Header="_Save As" Click="ButtonSaveAs_Click"/>
                 <Separator />
@@ -76,6 +76,7 @@
             </MenuItem>
             <MenuItem Header="_Action">
                 <MenuItem Header="_Sync" Click="ButtonSync_Click"/>
+                <Separator />
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
@@ -88,6 +89,7 @@
         </Menu>
         <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18"/>
-        <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom"/>
+        <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
+        <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
     </Grid>
 </Window>
