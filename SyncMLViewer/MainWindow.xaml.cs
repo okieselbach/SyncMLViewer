@@ -12,6 +12,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -57,8 +58,7 @@ namespace SyncMLViewer
         // https://www.nuget.org/packages/ilmerge
         // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
-        private const string updateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
-
+        private const string UpdateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
@@ -128,56 +128,11 @@ namespace SyncMLViewer
 
             TextEditorCodes.Options.EnableHyperlinks = true;
             TextEditorCodes.Options.RequireControlModifierForHyperlinkClick = false;
+            TextEditorCodes.Text = Properties.Resources.StatusCodes;
 
             TextEditorAbout.Options.EnableHyperlinks = true;
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
-            TextEditorAbout.Text = "-SyncML Viewer\r\n" +
-                                   "\r\n" +
-                                   "This tool is able to present the SyncML protocol stream between the client and management system. In addition it does some extra parsing to extract details and make the analyzing a bit easier.\r\n" +
-                                   "The tool uses ETW to trace the MDM Sync session. In general the tool can be very handy to troubleshoot policy issues. Tracing what the client actually sends and receives provides deep protocol insights.\r\n"+
-                                   "It makes it easy to get confirmation about queried or applied settings. Happy tracing!\r\n" +
-                                   "\r\n"+
-                                   "The tool supports manual online updates. When a new version is available it will be indicated.\r\n" +
-                                   "Use Menu Item > Help > Check for SyncML Viewer Update to trigger a download.\r\n" +
-                                   "\r\n" +
-                                   "I'm happy to take feedback.\r\n" +
-                                   "The easiest way is to create an issue at my GitHub solution https://github.com/okieselbach/SyncMLViewer\r\n" +
-                                   "\r\n" +
-                                   "Oliver Kieselbach (@okieselb)\r\n" +
-                                   "https://github.com/okieselbach\r\n" +
-                                   "https://oliverkieselbach.com\r\n" +
-                                   "\r\n" +
-                                   "\r\n" +
-                                   "Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity\r\n" +
-                                   "https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/\r\n" +
-                                   "\r\n" +
-                                   "All possible due to Event Tracing for Windows (ETW)\r\n" +
-                                   "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
-                                   "\r\n" +
-                                   "Special thanks to Matt Graeber (@mattifestation) - for the published extended ETW Provider list\r\n" +
-                                   "...without this info the tool wouldn't be possible for me to write!\r\n" +
-                                   "https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/\r\n" +
-                                   "\r\n" +
-                                   "More MDM ETW Provider details\r\n" +
-                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10\r\n" +
-                                   "\r\n" +
-                                   "[MS-MDM]: Mobile Device Management Protocol\r\n" +
-                                   "https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/\r\n" +
-                                   "\r\n" +
-                                   "OMA DM protocol support - Get all the details how it is working...\r\n" +
-                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support\r\n" +
-                                   "\r\n" +
-                                   "SyncML response status codes\r\n" +
-                                   "https://docs.microsoft.com/en-us/windows/client-management/mdm/oma-dm-protocol-support#syncml-response-codes\r\n" +
-                                   "http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf\r\n" +
-                                   "\r\n" +
-                                   "UI Controls inspired by ILspy (https://github.com/icsharpcode/ILSpy) and the controls used there:\r\n" +
-                                   "\r\n" +
-                                   "AvalonEdit\r\n" +
-                                   "http://avalonedit.net/\r\n" +
-                                   "released under MIT License (https://opensource.org/licenses/MIT)\r\n";
-
-            TextEditorCodes.Text = Properties.Settings.Default.StatusCodes;
+            TextEditorAbout.Text = Properties.Resources.About;
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -454,7 +409,7 @@ namespace SyncMLViewer
                     systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
                     webClient.Proxy = systemWebProxy;
 
-                    var data = await webClient.DownloadDataTaskAsync(new Uri(updateXmlUri));
+                    var data = await webClient.DownloadDataTaskAsync(new Uri(UpdateXmlUri));
                     var xDocument = XDocument.Load(new MemoryStream(data));
                     var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
                     var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
@@ -500,6 +455,8 @@ namespace SyncMLViewer
 
             try
             {
+                // call a separate process (PowerShell) to extract and overwrite the app binaries after app shutdown...
+                // to give the app enough time for shutdown we wait 2 seconds before replacing - prevent currently in use scenarios
                 using (var p = new Process())
                 {
                     p.StartInfo.UseShellExecute = false;
