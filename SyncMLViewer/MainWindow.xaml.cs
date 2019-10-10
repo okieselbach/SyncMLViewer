@@ -40,7 +40,7 @@ namespace SyncMLViewer
         // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
         private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
 
-        // interestingly it seems not to be needed...
+        // interestingly Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider is not needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
         private const string UpdateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
