@@ -151,13 +151,14 @@ namespace SyncMLViewer
                                    "Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity\r\n" +
                                    "https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/\r\n" +
                                    "\r\n" +
-                                   "all possible due to Event Tracing for Windows (ETW)\r\n" +
+                                   "All possible due to Event Tracing for Windows (ETW)\r\n" +
                                    "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
                                    "\r\n" +
-                                   "Thanks to Matt Graeber (@mattifestation) - for the extended ETW Provider list\r\n" +
+                                   "Special thanks to Matt Graeber (@mattifestation) - for the published extended ETW Provider list\r\n" +
+                                   "...without this info the tool wouldn't be possible for me to write!\r\n" +
                                    "https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/\r\n" +
                                    "\r\n" +
-                                   "more MDM ETW Provider details\r\n" +
+                                   "More MDM ETW Provider details\r\n" +
                                    "https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10\r\n" +
                                    "\r\n" +
                                    "[MS-MDM]: Mobile Device Management Protocol\r\n" +
