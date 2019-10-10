@@ -11,8 +11,10 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,8 +27,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
+using Path = System.IO.Path;
 
 namespace SyncMLViewer
 {
@@ -59,6 +63,8 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private readonly FoldingManager _foldingManager;
         private readonly XmlFoldingStrategy _foldingStrategy;
+        private readonly string _version;
+        private string _updateTempFileName;
 
         public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
@@ -70,6 +76,10 @@ namespace SyncMLViewer
             InitializeComponent();
 
             LabelSyncInProgress.Visibility = Visibility.Hidden;
+            ButtonRestartUpdate.Visibility = Visibility.Hidden;
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            _version = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            this.Title += $" - {_version}";
 
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
@@ -111,11 +121,14 @@ namespace SyncMLViewer
 
             TextEditorAbout.Options.EnableHyperlinks = true;
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
-            TextEditorAbout.Text = "-SyncML Viewer\r\n"+
+            TextEditorAbout.Text = "-SyncML Viewer\r\n" +
                                    "\r\n" +
                                    "This small tool uses ETW to trace the MDM Sync session. This tool can be very handy to troubleshoot policy issues. Tracing what the client actually receives, provides confirmation about settings and how they are applied. Happy tracing!\r\n" +
+                                   "I'm happy to take feedback. The easiest way is to create an issue at my GitHub solution https://github.com/okieselbach/SyncMLViewer\r\n" +
                                    "\r\n" +
-                                   "Oliver Kieselbach (@okieselb) - https://oliverkieselbach.com\r\n" +
+                                   "Oliver Kieselbach (@okieselb)\r\n" +
+                                   "https://github.com/okieselbach\r\n" +
+                                   "https://oliverkieselbach.com\r\n" +
                                    "\r\n" +
                                    "\r\n" +
                                    "Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity\r\n" +
@@ -123,7 +136,7 @@ namespace SyncMLViewer
                                    "\r\n" +
                                    "possible due to Event Tracing for Windows (ETW)\r\n" +
                                    "https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal\r\n" +
-                                   "\r\n" + 
+                                   "\r\n" +
                                    "Thanks to Matt Graeber (@mattifestation) - for the extended ETW Provider list\r\n" +
                                    "https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/\r\n" +
                                    "\r\n" +
@@ -144,12 +157,7 @@ namespace SyncMLViewer
                                    "\r\n" +
                                    "AvalonEdit\r\n" +
                                    "http://avalonedit.net/\r\n" +
-                                   "released under MIT License - https://opensource.org/licenses/MIT\r\n" +
-                                   "\r\n" +
-                                   "for a troubleshooting tool we combine many libraries to a single binary. ILMerge is used to combine them to a single assembly:\r\n" +
-                                   "https://www.nuget.org/packages/ilmerge\r\n" +
-                                   "even a coding way exists for that...\r\n" +
-                                   "https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/\r\n";
+                                   "released under MIT License - https://opensource.org/licenses/MIT\r\n";
 
             TextEditorCodes.Text = Properties.Settings.Default.StatusCodes;
         }
@@ -388,9 +396,81 @@ namespace SyncMLViewer
             TabControlSyncMlViewer.SelectedItem = TabItemCodes;
         }
 
-        private void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
+        private async void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Update check is currently not implemented, stay tuned.", "Check for updates", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                using (var webClient = new WebClient())
+                {
+                    var systemWebProxy = WebRequest.GetSystemWebProxy();
+                    systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
+                    webClient.Proxy = systemWebProxy;
+
+                    var data = await webClient.DownloadDataTaskAsync(
+                        new Uri("https://github.com/okieselbach/Helpers/raw/master/update.xml"));
+                    var xDocument = XDocument.Load(new MemoryStream(data));
+                    var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
+                    var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
+
+                    if (version != null)
+                    {
+                        if (string.CompareOrdinal(version, 0, _version, 0, version.Length) > 0)
+                        {
+                            ButtonRestartUpdate.Content =
+                                ButtonRestartUpdate.Content.ToString().Replace("[0.0.0.0]", version);
+
+                            if (url == null || !url.StartsWith("https")) return;
+                            _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
+                            await webClient.DownloadFileTaskAsync(new Uri(url), _updateTempFileName);
+
+                            if (!File.Exists(_updateTempFileName)) return;
+
+                            // bigger than 10KB so it is not a dummy or broken binary
+                            if (new FileInfo(_updateTempFileName)?.Length > 1024*10)
+                                ButtonRestartUpdate.Visibility = Visibility.Visible;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void ButtonRestartUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            var path = Assembly.GetExecutingAssembly().Location;
+
+            try
+            {
+                using (var p = new Process())
+                {
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.FileName = "PowerShell.exe";
+                    p.StartInfo.Arguments = "-ex bypass -command &{ Start-Sleep 2; Expand-Archive -Path \"" +
+                                            _updateTempFileName + "\" -DestinationPath \"" + Path.GetDirectoryName(path) +
+                                            "\" -Force; Remove-Item -Path \"" + _updateTempFileName +
+                                            "\" -Force; Start-Process \"" + path + "\"}";
+                    p.StartInfo.CreateNoWindow = true;
+                    p.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                try
+                {
+                    if (!File.Exists(_updateTempFileName))
+                        File.Delete(_updateTempFileName);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            Application.Current.Shutdown(0);
         }
     }
 }
