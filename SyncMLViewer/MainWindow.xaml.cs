@@ -1,8 +1,9 @@
-﻿using Microsoft.Diagnostics.Tracing;
+﻿using ICSharpCode.AvalonEdit.Folding;
+using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
+using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,25 +13,12 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Reflection;
-using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using ICSharpCode.AvalonEdit.Folding;
-using Microsoft.Win32;
 using Path = System.IO.Path;
 
 namespace SyncMLViewer
@@ -51,12 +39,9 @@ namespace SyncMLViewer
         // 3b9602ff-e09b-4c6c-bc19-1a3dfa8f2250	= Microsoft-WindowsPhone-OmaDm-Client-Provider
         // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
         private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
+
         // interestingly it seems not to be needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
-
-        // ILMerge to combine all assemblies to a single assembly or embed them in the resources
-        // https://www.nuget.org/packages/ilmerge
-        // https://blogs.msdn.microsoft.com/microsoft_press/2010/02/03/jeffrey-richter-excerpt-2-from-clr-via-c-third-edition/
 
         private const string UpdateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
         private const string SessionName = "SyncMLViewer";
@@ -179,6 +164,7 @@ namespace SyncMLViewer
                 // show all events
                 if (CheckBoxShowTraceEvents.IsChecked == true)
                 {
+                    // filter a bit otherwise too much noise...
                     if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
                         !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
                         !string.Equals(userState.EventName, "GenericLogEvent", StringComparison.CurrentCultureIgnoreCase))
