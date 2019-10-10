@@ -286,6 +286,8 @@ namespace SyncMLViewer
                 ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
                 var returnedObject = ps.Invoke();
             }
+
+            SyncMlProgress.NotInProgress = false;
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
