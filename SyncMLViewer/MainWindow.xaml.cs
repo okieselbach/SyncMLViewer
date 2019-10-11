@@ -66,7 +66,7 @@ namespace SyncMLViewer
             LabelSyncInProgress.Visibility = Visibility.Hidden;
             ButtonRestartUpdate.Visibility = Visibility.Hidden;
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            _version = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            _version = $"{version.Major}.{version.Minor}.{version.Build}";
             this.Title += $" - {_version}";
 
             SyncMlProgress = new SyncMlProgress();
@@ -409,7 +409,7 @@ namespace SyncMLViewer
                     if (_updateCheckInitial)
                     {
                         LabelUpdateIndicator.Content =
-                            LabelUpdateIndicator.Content.ToString().Replace("[0.0.0.0]", version);
+                            LabelUpdateIndicator.Content.ToString().Replace("[0.0.0]", version);
                         LabelUpdateIndicator.Visibility = Visibility.Visible;
                         _updateCheckInitial = false;
                         return;
@@ -417,7 +417,7 @@ namespace SyncMLViewer
 
                     LabelUpdateIndicator.Visibility = Visibility.Hidden;
                     ButtonRestartUpdate.Content =
-                        ButtonRestartUpdate.Content.ToString().Replace("[0.0.0.0]", version);
+                        ButtonRestartUpdate.Content.ToString().Replace("[0.0.0]", version);
 
                     _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
                     if (_updateTempFileName == null) return;
