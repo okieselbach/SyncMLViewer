@@ -1,6 +1,6 @@
 # SyncMLViewer
 
-This tool is able to present the SyncML protocol stream between the client and management system. In addition it does some extra parsing to extract details and make the analyzing a bit easier.
+This tool is able to present the SyncML protocol stream between the Windows 10 client and management system. In addition it does some extra parsing to extract details and make the analyzing a bit easier.
 
 The tool uses ETW to trace the MDM Sync session. In general the tool can be very handy to troubleshoot policy issues. Tracing what the client actually sends and receives provides deep protocol insights. Verifying OMA-URIs and data field definitions. 
 It makes it easy to get confirmation about queried or applied settings. 
