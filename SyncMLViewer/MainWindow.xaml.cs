@@ -43,7 +43,7 @@ namespace SyncMLViewer
         // interestingly Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider is not needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
-        private const string UpdateXmlUri = "https://github.com/okieselbach/Helpers/raw/master/update.xml";
+        private const string UpdateXmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
