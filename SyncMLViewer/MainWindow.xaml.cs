@@ -342,7 +342,7 @@ namespace SyncMLViewer
             CheckBoxHtmlDecode.IsChecked = false;
         }
 
-        private void listBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListBoxSessions.SelectedItem is SyncMlSession selectedItem))
                 return;
