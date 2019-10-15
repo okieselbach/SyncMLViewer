@@ -26,7 +26,7 @@ namespace SyncMLViewer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         // Thanks to Matt Graeber - @mattifestation - for the extended ETW Provider list
         // https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
@@ -143,7 +143,8 @@ namespace SyncMLViewer
                         traceEventSession.EnableProvider(OmaDmClient);
                         traceEventSession.EnableProvider(OmaDmClientProvider);
 
-                        new RegisteredTraceEventParser(traceEventSource).All += (data => (sender as BackgroundWorker).ReportProgress(0, data.Clone()));
+                        new RegisteredTraceEventParser(traceEventSource).All += (data =>
+                            (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
                         traceEventSource.Process();
                     }
                 }
@@ -270,7 +271,7 @@ namespace SyncMLViewer
             {
                 ps.Runspace = _rs;
                 ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
-                var returnedObject = ps.Invoke();
+                ps.Invoke();
             }
 
             SyncMlProgress.NotInProgress = false;
@@ -427,7 +428,7 @@ namespace SyncMLViewer
                     if (!File.Exists(_updateTempFileName)) return;
 
                     // bigger than 10KB so it is not a dummy or broken binary
-                    if (new FileInfo(_updateTempFileName)?.Length > 1024*10)
+                    if (new FileInfo(_updateTempFileName).Length > 1024*10)
                         ButtonRestartUpdate.Visibility = Visibility.Visible;
                 }
             }
