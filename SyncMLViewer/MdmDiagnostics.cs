@@ -11,10 +11,10 @@ namespace SyncMLViewer
     {
         // TODO: 
 
-        public string OmaDmAccountId { get; set; }
-        public string Hostname { get; set; }
-        public string AadTenantId { get; set; }
-        public string Upn { get; set; }
+        public string OmaDmAccountId { get; }
+        public string Hostname { get; }
+        public string AadTenantId { get; }
+        public string Upn { get; }
 
         public MdmDiagnostics()
         {

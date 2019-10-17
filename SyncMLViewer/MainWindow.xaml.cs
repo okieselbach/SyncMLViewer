@@ -58,10 +58,10 @@ namespace SyncMLViewer
 
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
-        public SyncMlProgress SyncMlProgress { get; set; }
-        public string CurrentSessionId { get; set; }
-        public ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
-        public ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
+        private SyncMlProgress SyncMlProgress { get; set; }
+        private string CurrentSessionId { get; set; }
+        private ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
+        private ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {

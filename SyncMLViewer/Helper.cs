@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace SyncMLViewer
 {
-    internal class Helper
+    internal static class Helper
     {
         public static void OpenRegistry(string path)
         {
