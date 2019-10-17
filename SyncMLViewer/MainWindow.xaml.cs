@@ -15,6 +15,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
@@ -58,16 +59,16 @@ namespace SyncMLViewer
 
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
-        private SyncMlProgress SyncMlProgress { get; set; }
-        private string CurrentSessionId { get; set; }
-        private ObservableCollection<SyncMlSession> SyncMlSessions { get; set; }
+        private SyncMlProgress SyncMlProgress { get; }
+        private ObservableCollection<SyncMlSession> SyncMlSessions { get; }
         private ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            LabelSyncInProgress.Visibility = Visibility.Hidden;
+            LabelStatus.Visibility = Visibility.Hidden;
+            LabelStatusTop.Visibility = Visibility.Hidden;
             ButtonRestartUpdate.Visibility = Visibility.Hidden;
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"{version.Major}.{version.Minor}.{version.Build}";
@@ -194,7 +195,7 @@ namespace SyncMLViewer
                         StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
-                    LabelSyncInProgress.Visibility = Visibility.Visible;
+                    LabelStatus.Visibility = Visibility.Visible;
 
                     string eventDataText = null;
                     try
@@ -233,7 +234,6 @@ namespace SyncMLViewer
 
                     if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
                     {
-                        CurrentSessionId = valueSessionId;
                         var syncMlSession = new SyncMlSession(valueSessionId);
                         SyncMlSessions.Add(syncMlSession);
                         SyncMlMlMessages.Clear();
@@ -260,7 +260,7 @@ namespace SyncMLViewer
                     TextEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" +
                                                 Environment.NewLine);
                     SyncMlProgress.NotInProgress = true;
-                    LabelSyncInProgress.Visibility = Visibility.Hidden;
+                    LabelStatus.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception)
@@ -370,7 +370,6 @@ namespace SyncMLViewer
             if (ListBoxMessages.Items.Count > 0)
                 ListBoxMessages.SelectedIndex = 0;
 
-            CurrentSessionId = selectedItem.SessionId;
             SyncMlMlMessages = selectedItem.Messages;
         }
 
@@ -403,6 +402,11 @@ namespace SyncMLViewer
         private void MenuItemCodes_Click(object sender, RoutedEventArgs e)
         {
             TabControlSyncMlViewer.SelectedItem = TabItemCodes;
+        }
+
+        private void MenuItemDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemDiagnostics;
         }
 
         private async void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
@@ -506,6 +510,181 @@ namespace SyncMLViewer
         private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
+        }
+
+        private async void MenuItemMdmDiagnostics_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool\\");
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = $"-out {path}",
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsAutopilot_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = $"-area Autopilot -zip {Path.Combine(path, "Autopilot.zip")}",
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsDeviceEnrollment_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = $"-area DeviceEnrollment -zip {Path.Combine(path, "DeviceEnrollment.zip")}",
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsDeviceProvisioning_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = $"-area DeviceProvisioning -zip {Path.Combine(path, "DeviceProvisioning.zip")}",
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsTpm_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = $"-area TPM -zip {Path.Combine(path, "TPM.zip")}",
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
         }
     }
 }

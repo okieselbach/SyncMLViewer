@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace SyncMLViewer
@@ -27,7 +24,7 @@ namespace SyncMLViewer
                 .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
             {
                 if (registryKey == null) return;
-                OmaDmAccountId = registryKey.GetSubKeyNames().FirstOrDefault<string>();
+                OmaDmAccountId = registryKey.GetSubKeyNames().FirstOrDefault();
             }
 
             try

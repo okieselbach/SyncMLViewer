@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SyncMLViewer"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
         Title="oliverkieselbach.com - SyncML Viewer" Height="1000" Width="1080" Closed="Window_Closed" MinWidth="1080" MinHeight="1000" Icon="sync-icon.ico">
@@ -91,19 +90,28 @@
                 <Separator />
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
                 <Separator />
+                <MenuItem Header="Run"/>
+                <MenuItem Header="-> _MdmDiagnosticsTool" Click="MenuItemMdmDiagnostics_OnClick"/>
+                <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
+                <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
+                <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
+                <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
+                <Separator />
                 <MenuItem Header="Open Registry"/>
                 <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
+                <MenuItem Header="_MDM Diagnostics" Click="MenuItemDiagnostics_Click"/>
                 <Separator />
                 <MenuItem Header="_Check for SyncML Viewer Update" Click="MenuItemCheckUpdate_OnClick"/>
                 <Separator />
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="LabelSyncInProgress" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
+        <Label x:Name="LabelStatus" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
+        <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,10,9.6,0" Visibility="Visible" HorizontalAlignment="Right" Width="165" Height="26" VerticalAlignment="Top"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18"/>
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>

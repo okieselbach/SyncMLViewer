@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Microsoft.Win32;
 
 namespace SyncMLViewer
@@ -15,7 +10,7 @@ namespace SyncMLViewer
             using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default)
                 .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", true))
             {
-                registryKey.SetValue("Lastkey", path);
+                registryKey?.SetValue("Lastkey", path);
             }
 
             var p = new Process
