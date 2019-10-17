@@ -114,6 +114,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helper.cs" />
+    <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="SyncMlMessage.cs" />
     <Compile Include="SyncMlProgress.cs" />
     <Compile Include="SyncMlSession.cs" />

@@ -43,7 +43,9 @@ namespace SyncMLViewer
         // interestingly Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider is not needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
-        private const string UpdateXmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
+        private const string UpdateXmlUri =
+            "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
+
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
@@ -53,6 +55,8 @@ namespace SyncMLViewer
         private string _updateTempFileName;
         private bool _updateStarted;
         private bool _updateCheckInitial;
+
+        private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
         public SyncMlProgress SyncMlProgress { get; set; }
         public string CurrentSessionId { get; set; }
@@ -86,10 +90,7 @@ namespace SyncMLViewer
 
             DataContext = this;
 
-            this.Loaded += delegate
-            {
-                MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs());
-            };
+            this.Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
 
             ListBoxSessions.ItemsSource = SyncMlSessions;
             ListBoxSessions.DisplayMemberPath = "Entry";
@@ -100,6 +101,7 @@ namespace SyncMLViewer
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorCodes);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorDiagnostics);
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
@@ -118,6 +120,8 @@ namespace SyncMLViewer
             TextEditorAbout.Options.EnableHyperlinks = true;
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
             TextEditorAbout.Text = Properties.Resources.About;
+
+            TextEditorDiagnostics.Text += $"Hostname: {_mdmDiagnostics.Hostname}\r\nUPN: {_mdmDiagnostics.Upn}\r\nAAD Tenant ID: {_mdmDiagnostics.AadTenantId}\r\nOMA DM Account ID: {_mdmDiagnostics.OmaDmAccountId}";
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -125,14 +129,16 @@ namespace SyncMLViewer
             try
             {
                 if (TraceEventSession.IsElevated() != true)
-                    throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                    throw new InvalidOperationException(
+                        "Collecting ETW trace events requires administrative privileges.");
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
-                    Debug.WriteLine($"The session name '{SessionName}' is already in use, stopping existing and restart a new one.");
+                    Debug.WriteLine(
+                        $"The session name '{SessionName}' is already in use, stopping existing and restart a new one.");
                     TraceEventSession.GetActiveSession(SessionName).Stop(true);
                 }
-                    
+
                 // An End-To-End ETW Tracing Example: EventSource and TraceEvent
                 // https://blogs.msdn.microsoft.com/vancem/2012/12/20/an-end-to-end-etw-tracing-example-eventsource-and-traceevent/
                 using (var traceEventSession = new TraceEventSession(SessionName))
@@ -166,17 +172,22 @@ namespace SyncMLViewer
                 if (CheckBoxShowTraceEvents.IsChecked == true)
                 {
                     // filter a bit otherwise too much noise...
-                    if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
-                        !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
-                        !string.Equals(userState.EventName, "GenericLogEvent", StringComparison.CurrentCultureIgnoreCase))
+                    if (!string.Equals(userState.EventName, "FunctionEntry",
+                            StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "FunctionExit",
+                            StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "GenericLogEvent",
+                            StringComparison.CurrentCultureIgnoreCase))
                     {
                         TextEditorStream.AppendText(userState.EventName + " ");
                     }
                 }
 
                 // we are interested in just a few events with relevant data
-                if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) || 
-                    string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(userState.EventName, "OmaDmClientExeStart",
+                        StringComparison.CurrentCultureIgnoreCase) ||
+                    string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace",
+                        StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
                     LabelSyncInProgress.Visibility = Visibility.Visible;
@@ -196,15 +207,16 @@ namespace SyncMLViewer
                     var startIndex = eventDataText.IndexOf("<SyncML", StringComparison.CurrentCultureIgnoreCase);
                     if (startIndex == -1) return;
 
-                    var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
+                    var valueSyncMl =
+                        TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
 
                     if (TextEditorStream.Text.Length == 0)
-                    { 
-                        TextEditorStream.AppendText(valueSyncMl + Environment.NewLine); 
+                    {
+                        TextEditorStream.AppendText(valueSyncMl + Environment.NewLine);
                     }
-                    else 
-                    { 
-                        TextEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine); 
+                    else
+                    {
+                        TextEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
                     }
 
                     TextEditorMessages.Text = valueSyncMl;
@@ -229,16 +241,20 @@ namespace SyncMLViewer
                         valueMsgId = matchMsgId.Groups[1].Value;
 
                     var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                    SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
+                    SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
+                        .Add(syncMlMessage);
                     SyncMlMlMessages.Add(syncMlMessage);
                 }
-                else if (string.Equals(userState.EventName, "OmaDmSessionStart", StringComparison.CurrentCultureIgnoreCase))
+                else if (string.Equals(userState.EventName, "OmaDmSessionStart",
+                    StringComparison.CurrentCultureIgnoreCase))
                 {
                     TextEditorStream.AppendText("<!--- OmaDmSessionStart --->" + Environment.NewLine);
                 }
-                else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
+                else if (string.Equals(userState.EventName, "OmaDmSessionComplete",
+                    StringComparison.CurrentCultureIgnoreCase))
                 {
-                    TextEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" + Environment.NewLine);
+                    TextEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" +
+                                                Environment.NewLine);
                     SyncMlProgress.NotInProgress = true;
                     LabelSyncInProgress.Visibility = Visibility.Hidden;
                 }
@@ -279,7 +295,7 @@ namespace SyncMLViewer
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
         {
-            if (((CheckBox)sender).IsChecked == true)
+            if (((CheckBox) sender).IsChecked == true)
             {
                 TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
                     .Replace("&quot;", "\"");
@@ -325,10 +341,7 @@ namespace SyncMLViewer
             fileDialog.CheckPathExists = true;
             fileDialog.RestoreDirectory = true;
             fileDialog.Title = "Save SyncML stream";
-            fileDialog.FileOk += (o, args) =>
-            {
-                File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
-            };
+            fileDialog.FileOk += (o, args) => { File.WriteAllText(((FileDialog) o).FileName, TextEditorStream.Text); };
             fileDialog.ShowDialog();
         }
 
@@ -428,7 +441,7 @@ namespace SyncMLViewer
                     if (!File.Exists(_updateTempFileName)) return;
 
                     // bigger than 10KB so it is not a dummy or broken binary
-                    if (new FileInfo(_updateTempFileName).Length > 1024*10)
+                    if (new FileInfo(_updateTempFileName).Length > 1024 * 10)
                         ButtonRestartUpdate.Visibility = Visibility.Visible;
                 }
             }
@@ -451,7 +464,8 @@ namespace SyncMLViewer
                     p.StartInfo.UseShellExecute = false;
                     p.StartInfo.FileName = "PowerShell.exe";
                     p.StartInfo.Arguments = "-ex bypass -command &{ Start-Sleep 2; Expand-Archive -Path \"" +
-                                            _updateTempFileName + "\" -DestinationPath \"" + Path.GetDirectoryName(path) +
+                                            _updateTempFileName + "\" -DestinationPath \"" +
+                                            Path.GetDirectoryName(path) +
                                             "\" -Force; Remove-Item -Path \"" + _updateTempFileName +
                                             "\" -Force; Start-Process \"" + path + "\"}";
                     p.StartInfo.CreateNoWindow = true;
@@ -478,6 +492,16 @@ namespace SyncMLViewer
             }
 
             Application.Current.Shutdown(0);
+        }
+
+        private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
+        }
+
+        private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
         }
     }
 }

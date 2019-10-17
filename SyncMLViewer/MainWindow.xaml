@@ -54,6 +54,18 @@
                         WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
+            <TabItem x:Name="TabItemDiagnostics" Header="MDM Diagnostics">
+                <Grid Background="White">
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorDiagnostics"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="False"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,10,0,-0.4"/>
+                </Grid>
+            </TabItem>
             <TabItem x:Name="TabItemAbout" Header="About">
                 <Grid Background="White">
                     <avalonedit:TextEditor
@@ -78,6 +90,10 @@
                 <MenuItem Header="_Sync" Click="ButtonSync_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
+                <Separator />
+                <MenuItem Header="Open Registry"/>
+                <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
+                <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
