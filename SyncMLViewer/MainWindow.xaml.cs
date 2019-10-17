@@ -122,11 +122,18 @@ namespace SyncMLViewer
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
             TextEditorAbout.Text = Properties.Resources.About;
 
-            TextEditorDiagnostics.Text += 
-                $"Hostname:          {_mdmDiagnostics.Hostname}\r\n"+
-                $"UPN:               {_mdmDiagnostics.Upn}\r\n" +
-                $"AAD Tenant ID:     {_mdmDiagnostics.AadTenantId}\r\n" +
-                $"OMA DM Account ID: {_mdmDiagnostics.OmaDmAccountId}";
+            TextEditorDiagnostics.Text +=
+                $"Hostname:           {MdmDiagnostics.Hostname}\r\n" +
+                $"OS Version:         {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
+                $"Version:            {MdmDiagnostics.Version}\r\n" +
+                $"Edition:            {MdmDiagnostics.Edition}\r\n" +
+                $"CompositionEdition: {MdmDiagnostics.CompositionEdition}\r\n" +
+                $"CurrentBuild:       {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
+                $"ReleaseID:          {MdmDiagnostics.ReleaseId}\r\n" +
+                $"BuildBranch:        {MdmDiagnostics.BuildBranch}\r\n" +
+                $"UPN:                {_mdmDiagnostics.Upn}\r\n" +
+                $"AAD Tenant ID:      {_mdmDiagnostics.AadTenantId}\r\n" +
+                $"OMA DM Account ID:  {_mdmDiagnostics.OmaDmAccountId}";
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
