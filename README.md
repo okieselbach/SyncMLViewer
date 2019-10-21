@@ -7,16 +7,23 @@ It makes it easy to get confirmation about queried or applied settings.
 
 ![SyncML Viewer application](https://raw.githubusercontent.com/okieselbach/SyncMLViewer/master/SyncMLViewer/SyncMLViewer.png)
 
-SyncML Viewer download as zip archive can be found under subfolder SyncMLViewer/dist
+SyncML Viewer download as zip archive can be found under subfolder **SyncMLViewer/dist**
 
 Happy tracing!
 
 The tool supports manual online updates. When a new version is available it will be indicated.
-Use Menu Item > Help > Check for SyncML Viewer Update to trigger a download.
+Use *Menu Item > Help > Check for SyncML Viewer Update* to trigger a download.
 
 I'm happy to take feedback.
 The easiest way is to create an issue here at the GitHub solution
 
+I have written an introduction blog article about the tool here:  
+https://oliverkieselbach.com/2019/10/11/windows-10-mdm-client-activity-monitoring-with-syncml-viewer
+\
+\
+\
+Credits:\
+\
 Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity  
 https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
 
