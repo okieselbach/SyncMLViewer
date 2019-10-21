@@ -430,7 +430,8 @@ namespace SyncMLViewer
                     var updateUrl = UpdateXmlUri;
                     if (Settings.Default.Properties["DeveloperPreview"] != null)
                     {
-                        updateUrl = Update2XmlUri;
+                        if (Settings.Default.DeveloperPreview)
+                            updateUrl = Update2XmlUri;
                     }
 
                     var data = await webClient.DownloadDataTaskAsync(new Uri(updateUrl));

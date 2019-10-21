@@ -22,5 +22,17 @@ namespace SyncMLViewer.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DeveloperPreview {
+            get {
+                return ((bool)(this["DeveloperPreview"]));
+            }
+            set {
+                this["DeveloperPreview"] = value;
+            }
+        }
     }
 }
