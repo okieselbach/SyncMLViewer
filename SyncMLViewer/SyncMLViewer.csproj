@@ -164,9 +164,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="dist\update.xml" />
+    <Resource Include="sync-icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="sync-icon.ico" />
+    <Resource Include="dist\update2.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

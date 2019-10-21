@@ -20,6 +20,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using SyncMLViewer.Properties;
 using Path = System.IO.Path;
 
 namespace SyncMLViewer
@@ -46,6 +47,8 @@ namespace SyncMLViewer
 
         private const string UpdateXmlUri =
             "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
+        private const string Update2XmlUri =
+            "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update2.xml";
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
@@ -424,8 +427,15 @@ namespace SyncMLViewer
                     systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
                     webClient.Proxy = systemWebProxy;
 
-                    var data = await webClient.DownloadDataTaskAsync(new Uri(UpdateXmlUri));
+                    var updateUrl = UpdateXmlUri;
+                    if (Settings.Default.Properties["DeveloperPreview"] != null)
+                    {
+                        updateUrl = Update2XmlUri;
+                    }
+
+                    var data = await webClient.DownloadDataTaskAsync(new Uri(updateUrl));
                     var xDocument = XDocument.Load(new MemoryStream(data));
+
                     var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
                     var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
 
@@ -453,7 +463,7 @@ namespace SyncMLViewer
 
                     if (!File.Exists(_updateTempFileName)) return;
 
-                    // bigger than 10KB so it is not a dummy or broken binary
+                    // simple sanity check, bigger than 10KB? we assume it is not a dummy or broken binary (e.g. 0 KB file)
                     if (new FileInfo(_updateTempFileName).Length > 1024 * 10)
                         ButtonRestartUpdate.Visibility = Visibility.Visible;
                 }
