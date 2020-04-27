@@ -1,4 +1,8 @@
-﻿using ICSharpCode.AvalonEdit.Folding;
+﻿// migrate to .NET 8 for nullable reference types or use .NET Core 3.0+
+// https://devblogs.microsoft.com/dotnet/embracing-nullable-reference-types/
+// #nullable enable
+
+using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
@@ -292,6 +296,8 @@ namespace SyncMLViewer
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
         {
+            SyncMlProgress.NotInProgress = false;
+
             // trigger MDM sync via scheduled task with PowerShell
             // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
 
@@ -300,9 +306,7 @@ namespace SyncMLViewer
                 ps.Runspace = _rs;
                 ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
                 ps.Invoke();
-            }
-
-            SyncMlProgress.NotInProgress = false;
+            } 
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
@@ -542,12 +546,13 @@ namespace SyncMLViewer
                         UseShellExecute = false,
                         FileName = "MdmDiagnosticsTool.exe",
                         Arguments = $"-out {path}",
-                        CreateNoWindow = true
+                        CreateNoWindow = false
                     }
                 };
 
                 p.Start();
                 p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
             });
             var exp = new Process
             {
@@ -583,6 +588,7 @@ namespace SyncMLViewer
 
                 p.Start();
                 p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
             });
             var exp = new Process
             {
@@ -618,6 +624,7 @@ namespace SyncMLViewer
 
                 p.Start();
                 p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
             });
             var exp = new Process
             {
@@ -653,6 +660,7 @@ namespace SyncMLViewer
 
                 p.Start();
                 p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
             });
             var exp = new Process
             {
@@ -688,6 +696,7 @@ namespace SyncMLViewer
 
                 p.Start();
                 p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
             });
             var exp = new Process
             {

@@ -43,13 +43,21 @@ namespace SyncMLViewer
                     .OpenSubKey($"SOFTWARE\\Microsoft\\Enrollments\\{OmaDmAccountId}"))
                 {
                     if (registryKey == null) return;
-                    AadTenantId = registryKey.GetValue("AADTenantID").ToString();
+                    // seems not be available all the time using TenantInfo now...
+                    //AadTenantId = registryKey.GetValue("AADTenantID").ToString();
                     Upn = registryKey.GetValue("UPN").ToString();
                 }
             }
             catch (Exception)
             {
                 // Ignored
+            }
+
+            using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                .OpenSubKey(@"SYSTEM\CurrentControlSet\Control\CloudDomainJoin\TenantInfo"))
+            {
+                if (registryKey == null) return;
+                AadTenantId = registryKey.GetSubKeyNames().FirstOrDefault();
             }
         }
     }

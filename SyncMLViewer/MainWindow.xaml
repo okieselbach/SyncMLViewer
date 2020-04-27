@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="oliverkieselbach.com - SyncML Viewer" Height="1000" Width="1080" Closed="Window_Closed" MinWidth="1080" MinHeight="1000" Icon="sync-icon.ico">
+        Title="oliverkieselbach.com - SyncML Viewer" Height="700" Width="1080" Closed="Window_Closed" MinWidth="1080" MinHeight="700" Icon="sync-icon.ico">
     <Grid>
         <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
@@ -35,10 +35,10 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <ListBox x:Name="ListBoxSessions" Margin="10,35,0,0" Height="305" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
-                    <ListBox x:Name="ListBoxMessages" Margin="10,392,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
+                    <ListBox x:Name="ListBoxSessions" Margin="10,35,0,0" Height="225" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
+                    <ListBox x:Name="ListBoxMessages" Margin="10,306,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                    <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,361,0,0" VerticalAlignment="Top"/>
+                    <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,275,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
@@ -91,7 +91,7 @@
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
                 <Separator />
                 <MenuItem Header="Run"/>
-                <MenuItem Header="-> _MdmDiagnosticsTool" Click="MenuItemMdmDiagnostics_OnClick"/>
+                <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
