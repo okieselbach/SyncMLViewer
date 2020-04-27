@@ -90,14 +90,14 @@
                 <Separator />
                 <MenuItem Header="_Clear Stream" Click="ButtonClear_Click"/>
                 <Separator />
-                <MenuItem Header="Run"/>
+                <MenuItem Header="Run" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
                 <Separator />
-                <MenuItem Header="Open Registry"/>
+                <MenuItem Header="Open Registry" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
             </MenuItem>

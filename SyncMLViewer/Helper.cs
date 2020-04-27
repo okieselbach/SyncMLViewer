@@ -10,7 +10,7 @@ namespace SyncMLViewer
             using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default)
                 .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", true))
             {
-                registryKey?.SetValue("Lastkey", path);
+                registryKey?.SetValue("LastKey", path);
             }
 
             var p = new Process

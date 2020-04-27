@@ -296,8 +296,6 @@ namespace SyncMLViewer
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
         {
-            SyncMlProgress.NotInProgress = false;
-
             // trigger MDM sync via scheduled task with PowerShell
             // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
 
@@ -306,7 +304,9 @@ namespace SyncMLViewer
                 ps.Runspace = _rs;
                 ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
                 ps.Invoke();
-            } 
+            }
+
+            SyncMlProgress.NotInProgress = false;
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
