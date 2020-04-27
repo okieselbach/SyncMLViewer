@@ -546,7 +546,7 @@ namespace SyncMLViewer
                         UseShellExecute = false,
                         FileName = "MdmDiagnosticsTool.exe",
                         Arguments = $"-out {path}",
-                        CreateNoWindow = false
+                        CreateNoWindow = true
                     }
                 };
 
