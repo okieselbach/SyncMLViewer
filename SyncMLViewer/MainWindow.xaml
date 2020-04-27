@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="oliverkieselbach.com - SyncML Viewer" Height="700" Width="1080" Closed="Window_Closed" MinWidth="1080" MinHeight="700" Icon="sync-icon.ico">
+        Title="oliverkieselbach.com - SyncML Viewer" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico">
     <Grid>
         <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
