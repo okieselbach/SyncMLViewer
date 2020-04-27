@@ -153,6 +153,7 @@
     <None Include="app.manifest" />
     <None Include="dist\SyncMLViewer-v100.zip" />
     <None Include="dist\SyncMLViewer-v101.zip" />
+    <None Include="dist\SyncMLViewer-v102.zip" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
