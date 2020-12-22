@@ -349,14 +349,17 @@ namespace SyncMLViewer
 
         private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
         {
-            FileDialog fileDialog = new SaveFileDialog();
-            fileDialog.Filter = "All files|*.*";
-            fileDialog.FilterIndex = 0;
-            fileDialog.DefaultExt = "txt";
-            fileDialog.AddExtension = true;
-            fileDialog.CheckPathExists = true;
-            fileDialog.RestoreDirectory = true;
-            fileDialog.Title = "Save SyncML stream";
+            FileDialog fileDialog = new SaveFileDialog
+            {
+                Filter = "All files|*.*",
+                FilterIndex = 0,
+                DefaultExt = "xml",
+                AddExtension = true,
+                CheckPathExists = true,
+                RestoreDirectory = true,
+                Title = "Save SyncML stream",
+                FileName = "SyncMLStream.xml"
+            };
             fileDialog.FileOk += (o, args) => { File.WriteAllText(((FileDialog) o).FileName, TextEditorStream.Text); };
             fileDialog.ShowDialog();
         }
