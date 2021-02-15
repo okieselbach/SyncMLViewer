@@ -13,6 +13,12 @@ namespace SyncMLViewer
                 registryKey?.SetValue("LastKey", path);
             }
 
+            var processes = Process.GetProcessesByName("regedit");
+            foreach (var proc in processes)
+            {
+                proc.Kill();
+            }
+
             var p = new Process
             {
                 StartInfo =
