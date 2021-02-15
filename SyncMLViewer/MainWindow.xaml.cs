@@ -539,7 +539,8 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool\\");
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
             await Task.Factory.StartNew(() =>
             {
                 var p = new Process
@@ -576,6 +577,7 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Visible;
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
             await Task.Factory.StartNew(() =>
             {
                 var p = new Process
@@ -612,6 +614,7 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Visible;
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
             await Task.Factory.StartNew(() =>
             {
                 var p = new Process
@@ -648,6 +651,7 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Visible;
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
             await Task.Factory.StartNew(() =>
             {
                 var p = new Process
@@ -684,6 +688,7 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Visible;
 
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
             await Task.Factory.StartNew(() =>
             {
                 var p = new Process
