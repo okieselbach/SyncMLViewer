@@ -132,6 +132,7 @@ namespace SyncMLViewer
             TextEditorDiagnostics.Text +=
                 $"Hostname:           {MdmDiagnostics.Hostname}\r\n" +
                 $"OS Version:         {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
+                $"Display Version:    {MdmDiagnostics.DisplayVersion}\r\n" +  
                 $"Version:            {MdmDiagnostics.Version}\r\n" +
                 $"Current Build:      {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
                 $"Release ID:         {MdmDiagnostics.ReleaseId}\r\n" +
@@ -196,7 +197,14 @@ namespace SyncMLViewer
                         !string.Equals(userState.EventName, "GenericLogEvent",
                             StringComparison.CurrentCultureIgnoreCase))
                     {
-                        TextEditorStream.AppendText(userState.EventName + " ");
+                        var message = userState.EventName + " ";
+                        TextEditorStream.AppendText(message);
+
+                        if (menuItemBackgroundLogging.IsChecked)
+                        {
+                            Trace.WriteLine(message);
+                            Trace.Flush();
+                        }
                     }
                 }
 
@@ -227,50 +235,96 @@ namespace SyncMLViewer
                     var valueSyncMl =
                         TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
 
+                    var message = string.Empty;
+
                     if (TextEditorStream.Text.Length == 0)
                     {
-                        TextEditorStream.AppendText(valueSyncMl + Environment.NewLine);
+                        if (menuItemTimestamps.IsChecked)
+                        {
+                            message = $"<!-- {DateTime.Now} -->" + Environment.NewLine + valueSyncMl + Environment.NewLine;
+                        }
+                        else
+                        {
+                            message = valueSyncMl + Environment.NewLine;
+                        }
                     }
                     else
                     {
-                        TextEditorStream.AppendText(Environment.NewLine + valueSyncMl + Environment.NewLine);
+                        if (menuItemTimestamps.IsChecked)
+                        {
+                            message = Environment.NewLine + $"<!-- {DateTime.Now} -->" + Environment.NewLine + valueSyncMl + Environment.NewLine;
+                        }
+                        else
+                        {
+                            message = Environment.NewLine + valueSyncMl + Environment.NewLine;
+                        }
                     }
 
-                    TextEditorMessages.Text = valueSyncMl;
-                    _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
-
-                    var valueSessionId = "0";
-                    var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
-                    if (matchSessionId.Success)
-                        valueSessionId = matchSessionId.Groups[1].Value;
-
-                    if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
+                    if (menuItemBackgroundLogging.IsChecked)
                     {
-                        var syncMlSession = new SyncMlSession(valueSessionId);
-                        SyncMlSessions.Add(syncMlSession);
-                        SyncMlMlMessages.Clear();
+                        Trace.WriteLine(message);
+                        Trace.Flush();
+                    }
+                    else
+                    {
+                        TextEditorStream.AppendText(message);
                     }
 
-                    var valueMsgId = "0";
-                    var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(valueSyncMl);
-                    if (matchMsgId.Success)
-                        valueMsgId = matchMsgId.Groups[1].Value;
+                    if (!menuItemBackgroundLogging.IsChecked)
+                    {
+                        TextEditorMessages.Text = valueSyncMl;
+                        _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
-                    var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                    SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
-                        .Add(syncMlMessage);
-                    SyncMlMlMessages.Add(syncMlMessage);
+                        var valueSessionId = "0";
+                        var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
+                        if (matchSessionId.Success)
+                            valueSessionId = matchSessionId.Groups[1].Value;
+
+                        if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
+                        {
+                            var syncMlSession = new SyncMlSession(valueSessionId);
+                            SyncMlSessions.Add(syncMlSession);
+                            SyncMlMlMessages.Clear();
+                        }
+
+                        var valueMsgId = "0";
+                        var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(valueSyncMl);
+                        if (matchMsgId.Success)
+                            valueMsgId = matchMsgId.Groups[1].Value;
+
+                        var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
+                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
+                            .Add(syncMlMessage);
+                        SyncMlMlMessages.Add(syncMlMessage);
+                    }
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionStart",
                     StringComparison.CurrentCultureIgnoreCase))
                 {
-                    TextEditorStream.AppendText("<!--- OmaDmSessionStart --->" + Environment.NewLine);
+                    var message = "<!-- OmaDmSessionStart -->" + Environment.NewLine;
+                    if (menuItemBackgroundLogging.IsChecked)
+                    {
+                        Trace.WriteLine(message);
+                        Trace.Flush();
+                    }
+                    else
+                    {
+                        TextEditorStream.AppendText(message);
+                    }
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionComplete",
                     StringComparison.CurrentCultureIgnoreCase))
                 {
-                    TextEditorStream.AppendText(Environment.NewLine + "<!--- OmaDmSessionComplete --->" +
-                                                Environment.NewLine);
+                    var message = Environment.NewLine + "<!-- OmaDmSessionComplete -->" + Environment.NewLine;
+                    if (menuItemBackgroundLogging.IsChecked)
+                    {
+                        Trace.WriteLine(message);
+                        Trace.Flush();
+                    }
+                    else
+                    {
+                        TextEditorStream.AppendText(message);
+                    }
                     SyncMlProgress.NotInProgress = true;
                     LabelStatus.Visibility = Visibility.Hidden;
                 }
@@ -299,10 +353,22 @@ namespace SyncMLViewer
             // trigger MDM sync via scheduled task with PowerShell
             // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
 
+            //using (var ps = PowerShell.Create())
+            //{
+            //    ps.Runspace = _rs;
+            //    ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
+            //    ps.Invoke();
+            //}
+
+            // Alternative approach via WindowsRuntime
+            var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
+                         "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
+                         "$session.StartAsync()";
+
             using (var ps = PowerShell.Create())
             {
                 ps.Runspace = _rs;
-                ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
+                ps.AddScript(script);
                 ps.Invoke();
             }
 
@@ -311,14 +377,14 @@ namespace SyncMLViewer
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
         {
-            if (((CheckBox) sender).IsChecked == true)
+            if (((CheckBox)sender).IsChecked == true)
             {
                 TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
                     .Replace("&quot;", "\"");
             }
             else
             {
-                TextEditorMessages.Text = ((SyncMlMessage) ListBoxMessages.SelectedItems[0]).Xml;
+                TextEditorMessages.Text = ((SyncMlMessage)ListBoxMessages.SelectedItems[0]).Xml;
             }
         }
 
@@ -329,10 +395,12 @@ namespace SyncMLViewer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            // Cleanup TraceSession and temp update files...
+            // Cleanup TraceSession, Listener and temp update files...
 
             TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
             _backgroundWorker.Dispose();
+
+            Trace.Listeners.Remove("listenerSyncMLStream");
 
             if (_updateStarted) return;
             try
@@ -358,9 +426,9 @@ namespace SyncMLViewer
                 CheckPathExists = true,
                 RestoreDirectory = true,
                 Title = "Save SyncML stream",
-                FileName = "SyncMLStream.xml"
+                FileName = $"SyncMLStream-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
             };
-            fileDialog.FileOk += (o, args) => { File.WriteAllText(((FileDialog) o).FileName, TextEditorStream.Text); };
+            fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
             fileDialog.ShowDialog();
         }
 
@@ -718,6 +786,27 @@ namespace SyncMLViewer
             exp.Dispose();
 
             LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private void menuItemBackgroundLogging_Checked(object sender, RoutedEventArgs e)
+        {
+            if (((MenuItem)sender).IsChecked)
+            {
+                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.log", "listenerSyncMLStream"));
+                TextEditorStream.Clear();
+                TextEditorStream.IsEnabled = false;
+                TextEditorStream.AppendText(Environment.NewLine + "\t'Background Logging Mode' enabled.");
+            }
+        }
+
+        private void menuItemBackgroundLogging_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (!((MenuItem)sender).IsChecked)
+            {
+                Trace.Listeners.Remove("listenerSyncMLStream");
+                TextEditorStream.Clear();
+                TextEditorStream.IsEnabled = true;
+            }
         }
     }
 }

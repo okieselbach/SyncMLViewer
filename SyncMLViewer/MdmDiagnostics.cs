@@ -22,6 +22,7 @@ namespace SyncMLViewer
         public static string CurrentBuild => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "CurrentBuild", string.Empty);
         public static string ReleaseId => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "ReleaseID", string.Empty);
         public static string BuildBranch => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "BuildBranch", string.Empty);
+        public static string DisplayVersion => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "DisplayVersion", string.Empty);
         public static string BuildRevision => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "UBR", string.Empty).ToString();
 
         public MdmDiagnostics()
