@@ -199,11 +199,14 @@ namespace SyncMLViewer
                     {
                         var message = userState.EventName + " ";
                         TextEditorStream.AppendText(message);
+                        if (menuItemAutoScroll.IsChecked)
+                        {
+                            TextEditorStream.ScrollToEnd();
+                        }
 
                         if (menuItemBackgroundLogging.IsChecked)
                         {
                             Trace.WriteLine(message);
-                            Trace.Flush();
                         }
                     }
                 }
@@ -215,6 +218,7 @@ namespace SyncMLViewer
                         StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
+                    LabelStatus.Content = "Sync is in progress";
                     LabelStatus.Visibility = Visibility.Visible;
 
                     string eventDataText = null;
@@ -263,11 +267,14 @@ namespace SyncMLViewer
                     if (menuItemBackgroundLogging.IsChecked)
                     {
                         Trace.WriteLine(message);
-                        Trace.Flush();
                     }
                     else
                     {
                         TextEditorStream.AppendText(message);
+                        if (menuItemAutoScroll.IsChecked)
+                        {
+                            TextEditorStream.ScrollToEnd();
+                        }
                     }
 
                     if (!menuItemBackgroundLogging.IsChecked)
@@ -305,11 +312,14 @@ namespace SyncMLViewer
                     if (menuItemBackgroundLogging.IsChecked)
                     {
                         Trace.WriteLine(message);
-                        Trace.Flush();
                     }
                     else
                     {
                         TextEditorStream.AppendText(message);
+                        if (menuItemAutoScroll.IsChecked)
+                        {
+                            TextEditorStream.ScrollToEnd();
+                        }
                     }
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionComplete",
@@ -319,11 +329,14 @@ namespace SyncMLViewer
                     if (menuItemBackgroundLogging.IsChecked)
                     {
                         Trace.WriteLine(message);
-                        Trace.Flush();
                     }
                     else
                     {
                         TextEditorStream.AppendText(message);
+                        if (menuItemAutoScroll.IsChecked)
+                        {
+                            TextEditorStream.ScrollToEnd();
+                        }
                     }
                     SyncMlProgress.NotInProgress = true;
                     LabelStatus.Visibility = Visibility.Hidden;
@@ -360,6 +373,8 @@ namespace SyncMLViewer
             //    ps.Invoke();
             //}
 
+            // found to be not that reliable, alternative approach is rock solid as it is the direct API call!
+
             // Alternative approach via WindowsRuntime
             var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
                          "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
@@ -373,6 +388,8 @@ namespace SyncMLViewer
             }
 
             SyncMlProgress.NotInProgress = false;
+            LabelStatus.Content = "Sync triggered";
+            LabelStatus.Visibility = Visibility.Visible;
         }
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
@@ -390,6 +407,10 @@ namespace SyncMLViewer
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
+            SyncMlSessions.Clear();
+            SyncMlMlMessages.Clear();
+
+            TextEditorMessages.Clear();
             TextEditorStream.Clear();
         }
 
@@ -400,6 +421,7 @@ namespace SyncMLViewer
             TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
             _backgroundWorker.Dispose();
 
+            Trace.Close();
             Trace.Listeners.Remove("listenerSyncMLStream");
 
             if (_updateStarted) return;
@@ -413,23 +435,6 @@ namespace SyncMLViewer
             {
                 // ignored
             }
-        }
-
-        private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
-        {
-            FileDialog fileDialog = new SaveFileDialog
-            {
-                Filter = "All files|*.*",
-                FilterIndex = 0,
-                DefaultExt = "xml",
-                AddExtension = true,
-                CheckPathExists = true,
-                RestoreDirectory = true,
-                Title = "Save SyncML stream",
-                FileName = $"SyncMLStream-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
-            };
-            fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
-            fileDialog.ShowDialog();
         }
 
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -788,25 +793,123 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
 
-        private void menuItemBackgroundLogging_Checked(object sender, RoutedEventArgs e)
+        private void MenuItemBackgroundLogging_Checked(object sender, RoutedEventArgs e)
         {
             if (((MenuItem)sender).IsChecked)
             {
-                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.log", "listenerSyncMLStream"));
+                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", "listenerSyncMLStream"));
+                Trace.AutoFlush = true;
+
                 TextEditorStream.Clear();
+                TextEditorMessages.Clear();
+
+                SyncMlSessions.Clear();
+                SyncMlMlMessages.Clear();
+
                 TextEditorStream.IsEnabled = false;
                 TextEditorStream.AppendText(Environment.NewLine + "\t'Background Logging Mode' enabled.");
             }
         }
 
-        private void menuItemBackgroundLogging_Unchecked(object sender, RoutedEventArgs e)
+        private void MenuItemBackgroundLogging_Unchecked(object sender, RoutedEventArgs e)
         {
             if (!((MenuItem)sender).IsChecked)
             {
+                Trace.Close();
                 Trace.Listeners.Remove("listenerSyncMLStream");
+
                 TextEditorStream.Clear();
                 TextEditorStream.IsEnabled = true;
             }
+        }
+
+        private void MenuItemOpen_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                Filter = "Xml files|*.xml|All files|*.*",
+                FilterIndex = 0,
+                RestoreDirectory = true,
+                Title = "Open SyncML stream",
+            };
+
+            if (openFileDialog.ShowDialog() ==  true)
+            {
+                TextEditorStream.Clear();
+                TextEditorMessages.Clear();
+
+                SyncMlSessions.Clear();
+                SyncMlMlMessages.Clear();
+
+                var fileStream = openFileDialog.OpenFile();
+                using (StreamReader reader = new StreamReader(fileStream))
+                {
+                    TextEditorStream.Text = reader.ReadToEnd();
+                }
+
+                if (TextEditorStream.Text.Length > 0)
+                {
+                    var syncMlMessages = Regex.Matches(TextEditorStream.Text, @"<SyncML[\s\S]*?</SyncML>", RegexOptions.IgnoreCase);
+                    foreach (Match message in syncMlMessages)
+                    {
+                        var valueSyncMl = TryFormatXml(message.Value);
+
+                        TextEditorMessages.Text = valueSyncMl;
+                        _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+
+                        var valueSessionId = "0";
+                        var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
+                        if (matchSessionId.Success)
+                            valueSessionId = matchSessionId.Groups[1].Value;
+
+                        if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
+                        {
+                            var syncMlSession = new SyncMlSession(valueSessionId);
+                            SyncMlSessions.Add(syncMlSession);
+                            SyncMlMlMessages.Clear();
+                        }
+
+                        var valueMsgId = "0";
+                        var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
+                        if (matchMsgId.Success)
+                            valueMsgId = matchMsgId.Groups[1].Value;
+
+                        var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
+                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
+                            .Add(syncMlMessage);
+                        SyncMlMlMessages.Add(syncMlMessage);
+                    }
+                }
+            }
+        }
+
+        private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog fileDialog = new SaveFileDialog
+            {
+                Filter = "Xml files|*.xml|All files|*.*",
+                FilterIndex = 0,
+                DefaultExt = "xml",
+                AddExtension = true,
+                CheckPathExists = true,
+                RestoreDirectory = true,
+                Title = "Save SyncML stream",
+                FileName = $"SyncMLStream-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
+            };
+
+            fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
+            fileDialog.ShowDialog();
+        }
+
+        private void MenuItemAlwaysOnTop_Checked(object sender, RoutedEventArgs e)
+        {
+            this.Topmost = true;
+        }
+
+        private void MenuItemAlwaysOnTop_Unchecked(object sender, RoutedEventArgs e)
+        {
+            this.Topmost = false;
         }
     }
 }

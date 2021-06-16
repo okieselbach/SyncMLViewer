@@ -19,8 +19,8 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream. Does not affect the Sessions tab data."/>
-                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as txt file."/>
+                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream."/>
+                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file."/>
                     <CheckBox x:Name="CheckBoxShowTraceEvents" Content="Show _TraceEvents" HorizontalAlignment="Left" Margin="10,0,0,10" Height="15" VerticalAlignment="Bottom" ToolTip="Show additional ETW Trace Events."/>
                 </Grid>
             </TabItem>
@@ -81,14 +81,17 @@
         </TabControl>
         <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
             <MenuItem Header="_File">
-                <MenuItem Header="_Save As" Click="ButtonSaveAs_Click"/>
+                <MenuItem Header="_Open..." Click="MenuItemOpen_Click"/>
+                <MenuItem Header="_Save As..." Click="ButtonSaveAs_Click"/>
                 <Separator />
                 <MenuItem Header="_Exit" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsChecked="True"/>
-                <!--<MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging" IsCheckable="True" IsChecked="False"/>-->
-                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncMl output displayed in the UI" Checked="menuItemBackgroundLogging_Checked" Unchecked="menuItemBackgroundLogging_Unchecked"/>
+                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on Top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
+                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _Scroll" IsCheckable="True" IsChecked="false" />
+                <Separator />
+                <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
+                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
             </MenuItem>
             <MenuItem Header="_Actions">
                 <MenuItem Header="_Sync" Click="ButtonSync_Click"/>
@@ -115,7 +118,7 @@
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="LabelStatus" Content="The sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
+        <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
         <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,10,9.6,0" Visibility="Visible" HorizontalAlignment="Right" Width="165" Height="26" VerticalAlignment="Top"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device."/>
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
