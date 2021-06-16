@@ -14,8 +14,8 @@ Happy tracing!
 The tool supports manual online updates. When a new version is available it will be indicated.
 Use *Menu Item > Help > Check for SyncML Viewer Update* to trigger a download.
 
-I'm happy to take feedback.
-The easiest way is to create an issue here at the GitHub solution
+I'm happy to take feedback. The easiest way is to create an issue here at the GitHub solution. 
+The tool is far away from good developer coding practice :-), but for the small helper sufficient enough. I followed no design pattern like MVVM and all logic is in the code behind.
 
 I have written an introduction blog article about the tool here:  
 https://oliverkieselbach.com/2019/10/11/windows-10-mdm-client-activity-monitoring-with-syncml-viewer
