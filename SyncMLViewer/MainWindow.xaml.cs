@@ -66,9 +66,8 @@ namespace SyncMLViewer
 
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
-        private SyncMlProgress SyncMlProgress { get; }
+        public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
-        public ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {
@@ -83,7 +82,6 @@ namespace SyncMLViewer
 
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
-            SyncMlMlMessages = new ObservableCollection<SyncMlMessage>();
 
             _rs = RunspaceFactory.CreateRunspace();
             _rs.Open();
@@ -103,7 +101,6 @@ namespace SyncMLViewer
             ListBoxSessions.ItemsSource = SyncMlSessions;
             ListBoxSessions.DisplayMemberPath = "Entry";
 
-            ListBoxMessages.ItemsSource = SyncMlMlMessages;
             ListBoxMessages.DisplayMemberPath = "Entry";
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
@@ -187,7 +184,7 @@ namespace SyncMLViewer
                     throw new ArgumentException("No TraceEvent received.");
 
                 // show all events
-                if (CheckBoxShowTraceEvents.IsChecked == true)
+                if (menuItemTraceEvents.IsChecked == true)
                 {
                     // filter a bit otherwise too much noise...
                     if (!string.Equals(userState.EventName, "FunctionEntry",
@@ -290,7 +287,6 @@ namespace SyncMLViewer
                         {
                             var syncMlSession = new SyncMlSession(valueSessionId);
                             SyncMlSessions.Add(syncMlSession);
-                            SyncMlMlMessages.Clear();
                         }
 
                         var valueMsgId = "0";
@@ -406,7 +402,6 @@ namespace SyncMLViewer
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
             SyncMlSessions.Clear();
-            SyncMlMlMessages.Clear();
 
             TextEditorMessages.Clear();
             TextEditorStream.Clear();
@@ -797,7 +792,7 @@ namespace SyncMLViewer
                 Trace.AutoFlush = true;
 
                 SyncMlSessions.Clear();
-                SyncMlMlMessages.Clear();
+                ListBoxMessages.ItemsSource = null;
 
                 TextEditorStream.Clear();
                 TextEditorMessages.Clear();
@@ -836,7 +831,6 @@ namespace SyncMLViewer
                 TextEditorMessages.Clear();
 
                 SyncMlSessions.Clear();
-                SyncMlMlMessages.Clear();
 
                 var fileStream = openFileDialog.OpenFile();
                 using (StreamReader reader = new StreamReader(fileStream))
@@ -863,7 +857,6 @@ namespace SyncMLViewer
                         {
                             var syncMlSession = new SyncMlSession(valueSessionId);
                             SyncMlSessions.Add(syncMlSession);
-                            SyncMlMlMessages.Clear();
                         }
 
                         var valueMsgId = "0";
@@ -874,7 +867,6 @@ namespace SyncMLViewer
                         var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                         SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
                             .Add(syncMlMessage);
-                        SyncMlMlMessages.Add(syncMlMessage);
                     }
                 }
             }
