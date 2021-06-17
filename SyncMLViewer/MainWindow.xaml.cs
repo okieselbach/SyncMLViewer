@@ -796,11 +796,11 @@ namespace SyncMLViewer
                 Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", "listenerSyncMLStream"));
                 Trace.AutoFlush = true;
 
-                TextEditorStream.Clear();
-                TextEditorMessages.Clear();
-
                 SyncMlSessions.Clear();
                 SyncMlMlMessages.Clear();
+
+                TextEditorStream.Clear();
+                TextEditorMessages.Clear();
 
                 TextEditorStream.IsEnabled = false;
                 TextEditorStream.AppendText(Environment.NewLine + "\t'Background Logging Mode' enabled.");
