@@ -67,8 +67,8 @@ namespace SyncMLViewer
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
         private SyncMlProgress SyncMlProgress { get; }
-        private ObservableCollection<SyncMlSession> SyncMlSessions { get; }
-        private ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
+        public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
+        public ObservableCollection<SyncMlMessage> SyncMlMlMessages { get; set; }
 
         public MainWindow()
         {
@@ -279,7 +279,6 @@ namespace SyncMLViewer
 
                     if (!menuItemBackgroundLogging.IsChecked)
                     {
-                        TextEditorMessages.Text = valueSyncMl;
                         _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
                         var valueSessionId = "0";
@@ -302,7 +301,6 @@ namespace SyncMLViewer
                         var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                         SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
                             .Add(syncMlMessage);
-                        SyncMlMlMessages.Add(syncMlMessage);
                     }
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionStart",
@@ -457,8 +455,6 @@ namespace SyncMLViewer
 
             if (ListBoxMessages.Items.Count > 0)
                 ListBoxMessages.SelectedIndex = 0;
-
-            SyncMlMlMessages = selectedItem.Messages;
         }
 
         private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)

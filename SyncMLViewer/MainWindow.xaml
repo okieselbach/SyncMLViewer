@@ -35,10 +35,10 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <ListBox x:Name="ListBoxSessions" Margin="10,35,0,0" Height="225" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
-                    <ListBox x:Name="ListBoxMessages" Margin="10,306,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
+                    <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
+                    <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                    <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,275,0,0" VerticalAlignment="Top"/>
+                    <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
