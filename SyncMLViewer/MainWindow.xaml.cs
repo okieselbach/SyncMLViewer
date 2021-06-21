@@ -63,7 +63,9 @@ namespace SyncMLViewer
         private string _updateTempFileName;
         private bool _updateStarted;
         private bool _updateCheckInitial;
-
+        private System.Windows.Forms.NotifyIcon _notifyIcon;
+        private bool _notifyIconBallonShownOnce;
+        private WindowState _storedWindowState = WindowState.Normal;
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
         public SyncMlProgress SyncMlProgress { get; set; }
@@ -79,6 +81,18 @@ namespace SyncMLViewer
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"{version.Major}.{version.Minor}.{version.Build}";
             this.Title += $" - {_version}";
+
+            // based on this: https://possemeeg.wordpress.com/2007/09/06/minimize-to-tray-icon-in-wpf/
+            _notifyIcon = new System.Windows.Forms.NotifyIcon
+            {
+                BalloonTipText = "The app has been minimised. Click the tray icon to show.",
+                BalloonTipTitle = "SyncML Viewer",
+                Text = "SyncML Viewer"
+            };
+            Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/;component/sync-icon.ico")).Stream;
+            _notifyIcon.Icon = new System.Drawing.Icon(iconStream);
+            _notifyIcon.Click += new EventHandler(NotifyIcon_Click);
+            _notifyIconBallonShownOnce = false;
 
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
@@ -137,6 +151,57 @@ namespace SyncMLViewer
                 $"Enrollment UPN:     {_mdmDiagnostics.Upn}\r\n" +
                 $"AAD TenantID:       {_mdmDiagnostics.AadTenantId}\r\n" +
                 $"OMA-DM AccountID:   {_mdmDiagnostics.OmaDmAccountId}";
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            _notifyIcon.Dispose();
+            _notifyIcon = null;
+        }
+
+        void NotifyIcon_Click(object sender, EventArgs e)
+        {
+            Show();
+            WindowState = _storedWindowState;
+        }
+
+        void CheckTrayIcon()
+        {
+            ShowTrayIcon(!IsVisible);
+        }
+
+        void ShowTrayIcon(bool show)
+        {
+            if (_notifyIcon != null)
+                _notifyIcon.Visible = show;
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (menuItemHideWhenMinimized.IsChecked)
+            {
+                if (WindowState == WindowState.Minimized)
+                {
+                    Hide();
+                    if (_notifyIcon != null && _notifyIconBallonShownOnce == false)
+                    {
+                        _notifyIcon.ShowBalloonTip(2000);
+                        _notifyIconBallonShownOnce = true;
+                    }
+                }
+                else
+                {
+                    _storedWindowState = WindowState;
+                }
+            }
+        }
+
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (menuItemHideWhenMinimized.IsChecked)
+            {
+                CheckTrayIcon();
+            }
         }
 
         private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
@@ -899,6 +964,7 @@ namespace SyncMLViewer
         {
             this.Topmost = false;
         }
+
     }
 }
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged">
     <Grid>
         <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
@@ -86,8 +86,9 @@
                 <MenuItem Header="_Exit" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on Top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
-                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _Scroll" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
+                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
