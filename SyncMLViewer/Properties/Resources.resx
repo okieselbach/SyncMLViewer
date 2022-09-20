@@ -148,6 +148,9 @@ https://gist.github.com/mattifestation/04e8299d8bc97ef825affe733310f7bd/
 More MDM ETW Provider details
 https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10
 
+Regardless of buffer size, ETW cannot collect events larger than 64KB. :-(
+https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_properties
+
 [MS-MDM]: Mobile Device Management Protocol
 https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-mdm/
 

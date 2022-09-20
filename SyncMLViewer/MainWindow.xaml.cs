@@ -26,6 +26,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using SyncMLViewer.Properties;
 using Path = System.IO.Path;
+using System.Xml;
 
 namespace SyncMLViewer
 {
@@ -78,6 +79,7 @@ namespace SyncMLViewer
             LabelStatus.Visibility = Visibility.Hidden;
             LabelStatusTop.Visibility = Visibility.Hidden;
             ButtonRestartUpdate.Visibility = Visibility.Hidden;
+            LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"{version.Major}.{version.Minor}.{version.Build}";
             this.Title += $" - {_version}";
@@ -228,6 +230,10 @@ namespace SyncMLViewer
                     {
                         traceEventSession.EnableProvider(OmaDmClient);
                         traceEventSession.EnableProvider(OmaDmClientProvider);
+
+                        // https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_properties
+                        // !!! Regardless of buffer size, ETW cannot collect events larger than 64KB.
+                        // This results in truncated policies... :-( unaware how to deal with this to get the full event data then...
 
                         new RegisteredTraceEventParser(traceEventSource).All += (data =>
                             (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
@@ -500,6 +506,26 @@ namespace SyncMLViewer
             if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
                 return;
             TextEditorMessages.Text = selectedItem.Xml;
+
+            bool wellFormatedXml = true;
+            try
+            {
+                XElement.Parse(selectedItem.Xml);
+            }
+            catch (Exception)
+            {
+                wellFormatedXml = false;
+            }
+            
+            if (selectedItem.Xml.Length > 60 * 1000 && !wellFormatedXml)
+            {
+                LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
+            }
+
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
             CheckBoxHtmlDecode.IsChecked = false;
