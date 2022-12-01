@@ -98,6 +98,7 @@
                 <MenuItem Header="_Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSync_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
+                <MenuItem Header="_Stop ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
                 <Separator />
                 <MenuItem Header="Run" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>

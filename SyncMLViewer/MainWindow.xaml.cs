@@ -27,6 +27,7 @@ using System.Xml.XPath;
 using SyncMLViewer.Properties;
 using Path = System.IO.Path;
 using System.Xml;
+using System.Net.Cache;
 
 namespace SyncMLViewer
 {
@@ -69,6 +70,7 @@ namespace SyncMLViewer
         private WindowState _storedWindowState = WindowState.Normal;
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
 
+        static public TraceEventSessionState TraceEventSessionState { get; set; }
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
 
@@ -96,6 +98,7 @@ namespace SyncMLViewer
             _notifyIcon.Click += new EventHandler(NotifyIcon_Click);
             _notifyIconBallonShownOnce = false;
 
+            TraceEventSessionState = new TraceEventSessionState();
             SyncMlProgress = new SyncMlProgress();
             SyncMlSessions = new ObservableCollection<SyncMlSession>();
 
@@ -233,11 +236,14 @@ namespace SyncMLViewer
 
                         // https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_properties
                         // !!! Regardless of buffer size, ETW cannot collect events larger than 64KB.
-                        // This results in truncated policies... :-( unaware how to deal with this to get the full event data then...
+
+                        // => This results in truncated policies... :-( unaware how to deal with this to get the full event data then...
 
                         new RegisteredTraceEventParser(traceEventSource).All += (data =>
                             (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
                         traceEventSource.Process();
+
+                        TraceEventSessionState.Started = true;
                     }
                 }
             }
@@ -588,6 +594,7 @@ namespace SyncMLViewer
                     var systemWebProxy = WebRequest.GetSystemWebProxy();
                     systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
                     webClient.Proxy = systemWebProxy;
+                    webClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
                     var updateUrl = UpdateXmlUri;
                     if (Settings.Default.Properties["DeveloperPreview"] != null)
@@ -991,6 +998,28 @@ namespace SyncMLViewer
             this.Topmost = false;
         }
 
+        private void MenuItemStopEtwSession_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (TraceEventSession.IsElevated() != true)
+                    throw new InvalidOperationException(
+                        "Collecting ETW trace events requires administrative privileges.");
+
+                if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
+                {
+                    Debug.WriteLine(
+                        $"The session name '{SessionName}' is running, stopping existing session now.");
+                    TraceEventSession.GetActiveSession(SessionName).Stop(true);
+
+                    TraceEventSessionState.Started = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception: {ex}");
+            }
+        }
     }
 }
 
