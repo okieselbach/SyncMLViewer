@@ -146,16 +146,17 @@ namespace SyncMLViewer
             TextEditorAbout.Text = Properties.Resources.About;
 
             TextEditorDiagnostics.Text +=
-                $"Hostname:           {MdmDiagnostics.Hostname}\r\n" +
-                $"OS Version:         {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
-                $"Display Version:    {MdmDiagnostics.DisplayVersion}\r\n" +  
-                $"Version:            {MdmDiagnostics.Version}\r\n" +
-                $"Current Build:      {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
-                $"Release ID:         {MdmDiagnostics.ReleaseId}\r\n" +
-                $"Build Branch:       {MdmDiagnostics.BuildBranch}\r\n" +
-                $"Enrollment UPN:     {_mdmDiagnostics.Upn}\r\n" +
-                $"AAD TenantID:       {_mdmDiagnostics.AadTenantId}\r\n" +
-                $"OMA-DM AccountID:   {_mdmDiagnostics.OmaDmAccountId}";
+                $"Hostname:                 {MdmDiagnostics.Hostname}\r\n" +
+                $"OS Version:               {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
+                $"Display Version:          {MdmDiagnostics.DisplayVersion}\r\n" +  
+                $"Version:                  {MdmDiagnostics.Version}\r\n" +
+                $"Current Build:            {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
+                //$"Release ID:               {MdmDiagnostics.ReleaseId}\r\n" +
+                $"Build Branch:             {MdmDiagnostics.BuildBranch}\r\n" +
+                $"Enrollment UPN:           {_mdmDiagnostics.Upn}\r\n" +
+                $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
+                $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
+                $"OMA-DM AccountID (MMPC):  {_mdmDiagnostics.OmaDmAccountIdMMPC}";
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -1018,6 +1019,24 @@ namespace SyncMLViewer
             catch (Exception ex)
             {
                 Debug.WriteLine($"Exception: {ex}");
+            }
+        }
+
+        private void menuItemShowAllChars_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuItemShowAllChars.IsChecked)
+            {
+                TextEditorMessages.Options.ShowSpaces = true;
+                TextEditorMessages.Options.ShowBoxForControlCharacters = true;
+                TextEditorStream.Options.ShowSpaces = true;
+                TextEditorStream.Options.ShowBoxForControlCharacters = true;
+            }
+            else
+            {
+                TextEditorMessages.Options.ShowSpaces = false;
+                TextEditorMessages.Options.ShowBoxForControlCharacters = false;
+                TextEditorStream.Options.ShowSpaces = false;
+                TextEditorStream.Options.ShowBoxForControlCharacters = false;
             }
         }
     }

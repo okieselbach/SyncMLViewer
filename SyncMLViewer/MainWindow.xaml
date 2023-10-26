@@ -89,6 +89,7 @@
                 <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
                 <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="menuItemShowAllChars_Click" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
