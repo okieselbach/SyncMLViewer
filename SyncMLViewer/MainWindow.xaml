@@ -7,7 +7,9 @@
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged">
     <Grid>
-        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
+        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83
+                " IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
+        <Button x:Name="Button2Sync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="Button2Sync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
@@ -25,7 +27,7 @@
             </TabItem>
             <TabItem Header="SyncML Sessions/Messages">
                 <Grid Background="White">
-                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="0,0,30,10" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
+                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
                         SyntaxHighlighting="XML"
@@ -38,6 +40,7 @@
                     <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="LabelBackToTop" Content="[^]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" FontWeight="Bold" HorizontalAlignment="Right" Width="27" Height="26" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
@@ -90,16 +93,20 @@
                 <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="menuItemShowAllChars_Click" />
+                <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" IsCheckable="True" IsChecked="false" Click="menuItemWordWrap_Click" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
                 <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
             </MenuItem>
             <MenuItem Header="_Actions">
-                <MenuItem Header="_Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSync_Click"/>
+                <MenuItem Header="MDM _Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSync_Click"/>
+                <MenuItem Header="MMP-C Sy_nc" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="Button2Sync_Click"/>
+                <Separator />
+                <MenuItem Header="Decode _BASE64 selected text" Click="MenuItemDecodeBase64_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
-                <MenuItem Header="_Stop ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
+                <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
                 <Separator />
                 <MenuItem Header="Run" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
@@ -111,6 +118,9 @@
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
+                <Separator />
+                <MenuItem Header="Open _IME logs folder" Click="MenuItemOpenImeLogs_Click"/>
+                <MenuItem Header="Open MDM Diagnostics _folder" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
@@ -121,11 +131,11 @@
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="118,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
+        <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="189,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
         <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,10,9.6,0" Visibility="Visible" HorizontalAlignment="Right" Width="165" Height="26" VerticalAlignment="Top"/>
-        <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device."/>
+        <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick"/>
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
-        <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (ETW can capture max 64KB)" Margin="268,0,438,13" Height="26" VerticalAlignment="Bottom" Visibility="Visible"/>
+        <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (ETW can capture max 64KB)" Margin="311,0,395,13" Height="26" VerticalAlignment="Bottom" Visibility="Visible"/>
     </Grid>
 </Window>

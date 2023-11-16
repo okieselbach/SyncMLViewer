@@ -28,6 +28,12 @@ using SyncMLViewer.Properties;
 using Path = System.IO.Path;
 using System.Xml;
 using System.Net.Cache;
+using Microsoft.Diagnostics.Tracing.Parsers.JScript;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Drawing;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SyncMLViewer
 {
@@ -135,7 +141,12 @@ namespace SyncMLViewer
             _updateCheckInitial = true;
 
             TextEditorStream.Options.HighlightCurrentLine = true;
+            TextEditorStream.Options.EnableRectangularSelection = true;
+            TextEditorStream.WordWrap = false;
+
             TextEditorMessages.Options.HighlightCurrentLine = true;
+            TextEditorMessages.Options.EnableRectangularSelection = true;
+            TextEditorMessages.WordWrap = false;
 
             TextEditorCodes.Options.EnableHyperlinks = true;
             TextEditorCodes.Options.RequireControlModifierForHyperlinkClick = false;
@@ -157,6 +168,11 @@ namespace SyncMLViewer
                 $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
                 $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
                 $"OMA-DM AccountID (MMPC):  {_mdmDiagnostics.OmaDmAccountIdMMPC}";
+
+            if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
+            {
+                Button2Sync.IsEnabled = false;
+            }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -446,17 +462,67 @@ namespace SyncMLViewer
             //}
 
             // found to be not that reliable, alternative approach is rock solid as it is the direct API call!
+            // UPDATE: with linkedEnrollment I had the issue it triggerd all the time the MMPC sync, so I switched back to the scheduled task approach
 
             // Alternative approach via WindowsRuntime
-            var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
-                         "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
-                         "$session.StartAsync()";
+            //var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
+            //             "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
+            //             "$session.StartAsync()";
 
-            using (var ps = PowerShell.Create())
+            //using (var ps = PowerShell.Create())
+            //{
+            //    ps.Runspace = _rs;
+            //    ps.AddScript(script);
+            //    ps.Invoke();
+            //}
+
+            try
             {
-                ps.Runspace = _rs;
-                ps.AddScript(script);
-                ps.Invoke();
+                var p = new Process
+                {
+                    StartInfo = {
+                                UseShellExecute = false,
+                                FileName = "SCHTASKS.exe",
+                                RedirectStandardError = true,
+                                RedirectStandardOutput = true,
+                                CreateNoWindow = true,
+                                WindowStyle = ProcessWindowStyle.Hidden,
+                                Arguments = $"/Run /I /TN \"Microsoft\\Windows\\EnterpriseMgmt\\{_mdmDiagnostics.OmaDmAccountIdMDM}\\Schedule #3 created by enrollment client\""
+                            }
+                };
+                p.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("MDM Sync", "MDM Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            SyncMlProgress.NotInProgress = false;
+            LabelStatus.Content = "Sync triggered";
+            LabelStatus.Visibility = Visibility.Visible;
+        }
+
+        private void Button2Sync_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo = {
+                                UseShellExecute = false,
+                                FileName = "SCHTASKS.exe",
+                                RedirectStandardError = true,
+                                RedirectStandardOutput = true,
+                                CreateNoWindow = true,
+                                WindowStyle = ProcessWindowStyle.Hidden,
+                                Arguments = $"/Run /I /TN \"Microsoft\\Windows\\EnterpriseMgmt\\{_mdmDiagnostics.OmaDmAccountIdMMPC}\\Schedule #3 created by enrollment client\""
+                            }
+                };
+                p.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("MMP-C Sync", "MMP-C Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             SyncMlProgress.NotInProgress = false;
@@ -1038,6 +1104,119 @@ namespace SyncMLViewer
                 TextEditorStream.Options.ShowSpaces = false;
                 TextEditorStream.Options.ShowBoxForControlCharacters = false;
             }
+        }
+
+        private void menuItemWordWrap_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuItemWordWrap.IsChecked)
+            {
+                TextEditorMessages.WordWrap = true;
+                TextEditorStream.WordWrap = true;
+            }
+            else
+            {
+                TextEditorMessages.WordWrap = false;
+                TextEditorStream.WordWrap = false;
+            }
+        }
+
+        private void MenuItemDecodeBase64_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (TextEditorStream.IsVisible)
+                {
+                    var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorStream.SelectedText));
+                    var prettyJson = string.Empty;
+
+                    try
+                    {
+                        prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+
+                    }
+                    catch (Exception)
+                    {
+                        // prevent Exceptions for non-JSON data
+                    }
+                    if (string.IsNullOrEmpty(prettyJson))
+                    {
+                        MessageBox.Show(text, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
+                        Clipboard.SetText(text);
+                    }
+                    else
+                    {
+                        MessageBox.Show(prettyJson, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
+                        Clipboard.SetText(prettyJson);
+                    }
+                }
+                else if (TextEditorMessages.IsVisible)
+                {
+                    var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorMessages.SelectedText));
+                    var prettyJson = string.Empty;
+
+                    try
+                    {
+                        prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+
+                    }
+                    catch (Exception)
+                    {
+                        // prevent Exceptions for non-JSON data
+                    }
+                    if (string.IsNullOrEmpty(prettyJson))
+                    {
+                        MessageBox.Show(text, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
+                        Clipboard.SetText(text);
+                    }
+                    else
+                    {
+                        MessageBox.Show(prettyJson, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
+                        Clipboard.SetText(prettyJson);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("No valid Base64 format", "Base64 Decode", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void LabelDeviceName_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Clipboard.SetText(LabelDeviceName.Content.ToString(), TextDataFormat.Text);
+        }
+
+        private void LabelBackToTop_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            TextEditorMessages.ScrollToHome();
+        }
+
+        private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
+        {
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = @"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+                }
+            };
+            exp.Start();
+            exp.Dispose();
+        }
+
+        private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = @"C:\Users\Public\Documents\MDMDiagnostics"
+                }
+            };
+            exp.Start();
+            exp.Dispose();
         }
     }
 }

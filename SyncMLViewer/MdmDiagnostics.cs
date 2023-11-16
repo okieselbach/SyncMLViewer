@@ -41,9 +41,6 @@ namespace SyncMLViewer
             using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
                 .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
             {
-                //if (registryKey == null) return;
-                //OmaDmAccountId = registryKey.GetSubKeyNames().FirstOrDefault();
-
                 var OmaDmAccountIds = registryKey.GetSubKeyNames(); // should return 1 value if MDM enrolled and 2 values if dual enrolled (linkedEnrollemnt)
                 foreach (var OmaDmAccountId in OmaDmAccountIds)
                 {
