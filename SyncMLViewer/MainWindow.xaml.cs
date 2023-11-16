@@ -167,7 +167,7 @@ namespace SyncMLViewer
                 $"Enrollment UPN:           {_mdmDiagnostics.Upn}\r\n" +
                 $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
                 $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
-                $"OMA-DM AccountID (MMPC):  {_mdmDiagnostics.OmaDmAccountIdMMPC}";
+                $"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}";
 
             if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
             {
@@ -1193,30 +1193,44 @@ namespace SyncMLViewer
 
         private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
         {
-            var exp = new Process
+            try
             {
-                StartInfo =
+                var exp = new Process
                 {
-                    FileName = "explorer.exe",
-                    Arguments = @"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+                    StartInfo =
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = @"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+                    }
+                };
+                exp.Start();
+                exp.Dispose();
+            }
+            catch (Exception)
+            {
+                // prevent exceptions if folder does not exist
+            }
         }
 
         private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
         {
-            var exp = new Process
+            try
             {
-                StartInfo =
+                var exp = new Process
                 {
-                    FileName = "explorer.exe",
-                    Arguments = @"C:\Users\Public\Documents\MDMDiagnostics"
+                    StartInfo =
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = @"C:\Users\Public\Documents\MDMDiagnostics"
+                    }
+                };
+                exp.Start();
+                exp.Dispose();
                 }
-            };
-            exp.Start();
-            exp.Dispose();
+            catch (Exception)
+            {
+                // prevent exceptions if folder does not exist
+            }
         }
     }
 }
