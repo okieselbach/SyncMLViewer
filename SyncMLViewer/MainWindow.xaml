@@ -41,6 +41,7 @@
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
                     <Label x:Name="LabelBackToTop" Content="[^]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" FontWeight="Bold" HorizontalAlignment="Right" Width="27" Height="26" VerticalAlignment="Bottom"/>
+                    <Label x:Name="LabelMessageStats" Content="Message length: 65536" HorizontalAlignment="Left" Margin="10,0,0,2" Height="26" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">

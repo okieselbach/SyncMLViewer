@@ -580,6 +580,8 @@ namespace SyncMLViewer
                 return;
             TextEditorMessages.Text = selectedItem.Xml;
 
+            LabelMessageStats.Content = $"Message length: {selectedItem.Xml.Length}";
+
             bool wellFormatedXml = true;
             try
             {
