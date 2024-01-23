@@ -88,6 +88,7 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Hidden;
             ButtonRestartUpdate.Visibility = Visibility.Hidden;
             LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
+            LabelMessageStats.Content = "Message length: 0";
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"{version.Major}.{version.Minor}.{version.Build}";
             this.Title += $" - {_version}";
@@ -159,15 +160,17 @@ namespace SyncMLViewer
             TextEditorDiagnostics.Text +=
                 $"Hostname:                 {MdmDiagnostics.Hostname}\r\n" +
                 $"OS Version:               {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
-                $"Display Version:          {MdmDiagnostics.DisplayVersion}\r\n" +  
+                $"Display Version:          {MdmDiagnostics.DisplayVersion}\r\n" +
                 $"Version:                  {MdmDiagnostics.Version}\r\n" +
                 $"Current Build:            {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
                 //$"Release ID:               {MdmDiagnostics.ReleaseId}\r\n" +
                 $"Build Branch:             {MdmDiagnostics.BuildBranch}\r\n" +
+                $"IME Version:              {MdmDiagnostics.IntuneAgentVersion}\r\n" +
                 $"Enrollment UPN:           {_mdmDiagnostics.Upn}\r\n" +
                 $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
                 $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
                 $"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}";
+                
 
             if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
             {
@@ -451,36 +454,29 @@ namespace SyncMLViewer
 
         private void ButtonSync_Click(object sender, RoutedEventArgs e)
         {
-            // trigger MDM sync via scheduled task with PowerShell
-            // https://oofhours.com/2019/09/28/forcing-an-mdm-sync-from-a-windows-10-client/
-
-            //using (var ps = PowerShell.Create())
-            //{
-            //    ps.Runspace = _rs;
-            //    ps.AddScript("Get-ScheduledTask | ? {$_.TaskName -eq 'PushLaunch'} | Start-ScheduledTask");
-            //    ps.Invoke();
-            //}
-
-            // found to be not that reliable, alternative approach is rock solid as it is the direct API call!
-            // UPDATE: with linkedEnrollment I had the issue it triggerd all the time the MMPC sync, so I switched back to the scheduled task approach
-
-            // Alternative approach via WindowsRuntime
-            //var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
-            //             "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
-            //             "$session.StartAsync()";
-
-            //using (var ps = PowerShell.Create())
-            //{
-            //    ps.Runspace = _rs;
-            //    ps.AddScript(script);
-            //    ps.Invoke();
-            //}
-
-            try
+            if (menuItemAlternateMDMTrigger.IsChecked)
             {
-                var p = new Process
+                // Alternative approach via WindowsRuntime
+                var script = "[Windows.Management.MdmSessionManager,Windows.Management,ContentType=WindowsRuntime]\n" +
+                             "$session = [Windows.Management.MdmSessionManager]::TryCreateSession()\n" +
+                             "$session.StartAsync()";
+
+                using (var ps = PowerShell.Create())
                 {
-                    StartInfo = {
+                    ps.Runspace = _rs;
+                    ps.AddScript(script);
+                    ps.Invoke();
+                }
+            }
+            else
+            {
+                // with linkedEnrollment I had the issue it triggerd all the time the MMPC sync,
+                // so I switched to the scheduled task approach and trigger the correct task
+                try
+                {
+                    var p = new Process
+                    {
+                        StartInfo = {
                                 UseShellExecute = false,
                                 FileName = "SCHTASKS.exe",
                                 RedirectStandardError = true,
@@ -489,12 +485,14 @@ namespace SyncMLViewer
                                 WindowStyle = ProcessWindowStyle.Hidden,
                                 Arguments = $"/Run /I /TN \"Microsoft\\Windows\\EnterpriseMgmt\\{_mdmDiagnostics.OmaDmAccountIdMDM}\\Schedule #3 created by enrollment client\""
                             }
-                };
-                p.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("MDM Sync", "MDM Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                    };
+                    p.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("MDM Sync", "MDM Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
 
             SyncMlProgress.NotInProgress = false;
@@ -523,6 +521,7 @@ namespace SyncMLViewer
             catch (Exception ex)
             {
                 MessageBox.Show("MMP-C Sync", "MMP-C Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
             SyncMlProgress.NotInProgress = false;

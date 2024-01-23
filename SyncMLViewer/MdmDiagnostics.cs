@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Microsoft.Win32;
+using PEFile;
+using FileVersionInfo = System.Diagnostics.FileVersionInfo;
 
 namespace SyncMLViewer
 {
@@ -29,6 +33,7 @@ namespace SyncMLViewer
         public static string BuildBranch => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "BuildBranch", string.Empty);
         public static string DisplayVersion => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "DisplayVersion", string.Empty);
         public static string BuildRevision => (string)Registry.GetValue(RegKeyWindowsCurrentVersion, "UBR", string.Empty).ToString();
+        public static string IntuneAgentVersion => GetIntuneFileVersionInfo()?.FileVersion;
 
         public MdmDiagnostics()
         {
@@ -42,10 +47,11 @@ namespace SyncMLViewer
                 .OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
             {
                 var OmaDmAccountIds = registryKey.GetSubKeyNames(); // should return 1 value if MDM enrolled and 2 values if dual enrolled (linkedEnrollemnt)
+                
                 foreach (var OmaDmAccountId in OmaDmAccountIds)
                 {
                     using (var registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
-                                               .OpenSubKey($"SOFTWARE\\Microsoft\\Provisioning\\OMADM\\Accounts\\{OmaDmAccountId}\\Protected"))
+                                                .OpenSubKey($"SOFTWARE\\Microsoft\\Provisioning\\OMADM\\Accounts\\{OmaDmAccountId}\\Protected"))
                     {
                         if (registryKey2 == null) return;
                         var OmaDmAccountNames = registryKey2.GetValueNames();
@@ -67,6 +73,17 @@ namespace SyncMLViewer
                         }
                     }
                 }
+
+                // Fallback: if only 1 keyname is available and we couldn't fetch the ServerId (different MDM provider for example) we use the key name as the MDM account
+                if (string.IsNullOrEmpty(OmaDmAccountIdMDM) && OmaDmAccountIds.Length == 1)
+                {
+                    using (var regKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default).OpenSubKey(@"SOFTWARE\Microsoft\Provisioning\OMADM\Accounts"))
+                    {
+                        if (regKey == null) return;
+                        OmaDmAccountIdMDM = registryKey.GetSubKeyNames().FirstOrDefault();
+                    }
+                }
+
             }
 
             try
@@ -112,6 +129,21 @@ namespace SyncMLViewer
             }
 
             return osName;
+        }
+
+        public static FileVersionInfo GetIntuneFileVersionInfo()
+        {
+            try
+            {
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) + @"\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe"));
+                return fileVersionInfo;
+            }
+            catch (Exception)
+            {
+                // prevent exceptions...
+            }
+
+            return null;
         }
     }
 }
