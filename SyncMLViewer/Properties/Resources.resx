@@ -127,6 +127,13 @@ It makes it easy to get confirmation about queried or applied settings. Happy tr
 The tool supports manual online updates. When a new version is available it will be indicated.
 Use Menu Item &gt; Help &gt; Check for SyncML Viewer Update to trigger a download.
 
+You can use command line switches to trigger action right from the start:
+
+/s   ...start MDM sync
+/m   ...start MMP-C sync
+/b   ...start in background logging mode
+/h   ...hide window immediately
+
 I'm happy to take feedback.
 The easiest way is to create an issue at my GitHub solution https://github.com/okieselbach/SyncMLViewer
 

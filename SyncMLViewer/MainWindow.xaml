@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
     <Grid>
-        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83
+        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83
                 " IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
-        <Button x:Name="Button2Sync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="Button2Sync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
+        <Button x:Name="Button2Sync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
@@ -95,20 +95,21 @@
                 <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="menuItemShowAllChars_Click" />
                 <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" IsCheckable="True" IsChecked="false" Click="menuItemWordWrap_Click" />
-                <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
                 <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
             </MenuItem>
             <MenuItem Header="_Actions">
-                <MenuItem Header="MDM _Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSync_Click"/>
-                <MenuItem Header="MMP-C Sy_nc" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="Button2Sync_Click"/>
+                <MenuItem Header="MDM _Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
+                <MenuItem Header="MMP-C Sy_nc" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
                 <Separator />
                 <MenuItem Header="Decode _BASE64 selected text" Click="MenuItemDecodeBase64_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
+                <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
                 <Separator />
                 <MenuItem Header="Run" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>

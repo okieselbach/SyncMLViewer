@@ -71,6 +71,10 @@ namespace SyncMLViewer
         private string _updateTempFileName;
         private bool _updateStarted;
         private bool _updateCheckInitial;
+        private bool _syncMDMSwitch;
+        private bool _syncMMPCSwitch;
+        private bool _backgroundLoggingSwitch;
+        private bool _hideWhenMinimizedSwitch;
         private System.Windows.Forms.NotifyIcon _notifyIcon;
         private bool _notifyIconBallonShownOnce;
         private WindowState _storedWindowState = WindowState.Normal;
@@ -83,6 +87,11 @@ namespace SyncMLViewer
         public MainWindow()
         {
             InitializeComponent();
+
+            _syncMDMSwitch = false;
+            _syncMMPCSwitch = false;
+            _backgroundLoggingSwitch = false;
+            _hideWhenMinimizedSwitch = false;
 
             LabelStatus.Visibility = Visibility.Hidden;
             LabelStatusTop.Visibility = Visibility.Hidden;
@@ -452,7 +461,7 @@ namespace SyncMLViewer
             }
         }
 
-        private void ButtonSync_Click(object sender, RoutedEventArgs e)
+        private void ButtonMDMSync_Click(object sender, RoutedEventArgs e)
         {
             if (menuItemAlternateMDMTrigger.IsChecked)
             {
@@ -500,7 +509,7 @@ namespace SyncMLViewer
             LabelStatus.Visibility = Visibility.Visible;
         }
 
-        private void Button2Sync_Click(object sender, RoutedEventArgs e)
+        private void ButtonMMPCSync_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1232,6 +1241,74 @@ namespace SyncMLViewer
             {
                 // prevent exceptions if folder does not exist
             }
+        }
+
+        private void ParseCommandlineArgs(string[] args)
+        {
+            if (args.Any())
+            {
+                foreach (var arg in args)
+                {
+                    if (arg.StartsWith("-") || arg.StartsWith("/"))
+                    {
+                        switch (arg.TrimStart(new[] { '-', '/' })[0].ToString().ToLower())
+                        {
+                            case "s":
+                                _syncMDMSwitch = true;
+                                break;
+                            case "m":
+                                _syncMMPCSwitch = true;
+                                break;
+                            case "b":
+                                _backgroundLoggingSwitch = true;
+                                break;
+                            case "h":
+                                _hideWhenMinimizedSwitch = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParseCommandlineArgs(Environment.GetCommandLineArgs());
+
+            if (_backgroundLoggingSwitch)
+            {
+                menuItemBackgroundLogging.IsChecked = true;
+            }
+
+            if (_hideWhenMinimizedSwitch)
+            {
+                // prevent ballon tip on startup for commandline start
+                _notifyIconBallonShownOnce = true;
+
+                menuItemHideWhenMinimized.IsChecked = true;
+                WindowState = WindowState.Minimized;
+                Hide();
+            }
+
+            // only one MDM sync can be triggert at a time, so we check for the commandline args and trigger the sync
+            // if both are set, the MDM sync is triggered
+            if (_syncMDMSwitch)
+            {
+                ButtonMDMSync_Click(null, null);
+            }
+            else if (_syncMMPCSwitch)
+            {
+                ButtonMMPCSync_Click(null, null);
+            }
+        }
+
+        private void MenuItemResetSyncTriggerStatus_Click(object sender, RoutedEventArgs e)
+        {
+            SyncMlProgress.NotInProgress = true;
+            LabelStatus.Content = "";
+            LabelStatus.Visibility = Visibility.Hidden;
         }
     }
 }
