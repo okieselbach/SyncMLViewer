@@ -175,7 +175,9 @@ namespace SyncMLViewer
                 //$"Release ID:               {MdmDiagnostics.ReleaseId}\r\n" +
                 $"Build Branch:             {MdmDiagnostics.BuildBranch}\r\n" +
                 $"IME Version:              {MdmDiagnostics.IntuneAgentVersion}\r\n" +
-                $"Enrollment UPN:           {_mdmDiagnostics.Upn}\r\n" +
+                $"Logon Username:           {MdmDiagnostics.LogonUsername}\r\n" +
+                $"Logon User SID:           {MdmDiagnostics.LogonUserSid}\r\n" +
+                $"Enrollment UPN:           {_mdmDiagnostics.EnrollmentUpn}\r\n" +
                 $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
                 $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
                 $"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}";
@@ -183,7 +185,13 @@ namespace SyncMLViewer
 
             if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
             {
-                Button2Sync.IsEnabled = false;
+                ButtonMMPCSync.IsEnabled = false;
+            }
+
+            var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\IntuneManagementExtension");
+            if (key == null)
+            {
+                menuItemIntuneManagementExtension.IsEnabled = false;
             }
         }
 
@@ -538,6 +546,13 @@ namespace SyncMLViewer
             LabelStatus.Visibility = Visibility.Visible;
         }
 
+        private void MenuItemResetSyncTriggerStatus_Click(object sender, RoutedEventArgs e)
+        {
+            SyncMlProgress.NotInProgress = true;
+            LabelStatus.Content = "";
+            LabelStatus.Visibility = Visibility.Hidden;
+        }
+
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
         {
             if (((CheckBox)sender).IsChecked == true)
@@ -772,6 +787,21 @@ namespace SyncMLViewer
         private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
+        }
+
+        private void MenuItemRebootRequiredUris_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
+        }
+
+        private void MenuItemEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
+        }
+
+        private void MenuItemIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
         }
 
         private async void MenuItemMdmDiagnostics_OnClick(object sender, RoutedEventArgs e)
@@ -1302,13 +1332,6 @@ namespace SyncMLViewer
             {
                 ButtonMMPCSync_Click(null, null);
             }
-        }
-
-        private void MenuItemResetSyncTriggerStatus_Click(object sender, RoutedEventArgs e)
-        {
-            SyncMlProgress.NotInProgress = true;
-            LabelStatus.Content = "";
-            LabelStatus.Visibility = Visibility.Hidden;
         }
     }
 }

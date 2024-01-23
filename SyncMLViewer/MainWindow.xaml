@@ -7,9 +7,8 @@
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
     <Grid>
-        <Button x:Name="ButtonSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83
-                " IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
-        <Button x:Name="Button2Sync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}"/>
+        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync"/>
+        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
@@ -119,8 +118,11 @@
                 <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
                 <Separator />
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True"/>
-                <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
+                <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
+                <MenuItem Header="-> RebootRequiredURIs" Click="MenuItemRebootRequiredUris_Click"/>
+                <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemEnterpriseDesktopAppManagement_Click"/>
+                <MenuItem x:Name="menuItemIntuneManagementExtension" Header="-> IntuneManagementExtension" Click="MenuItemIntuneManagementExtension_Click"/>
                 <Separator />
                 <MenuItem Header="Open _IME logs folder" Click="MenuItemOpenImeLogs_Click"/>
                 <MenuItem Header="Open MDM Diagnostics _folder" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>

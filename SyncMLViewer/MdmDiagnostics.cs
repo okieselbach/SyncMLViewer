@@ -19,8 +19,12 @@ namespace SyncMLViewer
         public string OmaDmAccountIdMDM { get; }
         public string OmaDmAccountIdMMPC { get; }
         public string AadTenantId { get; }
-        public string Upn { get; }
+        public string EnrollmentUpn { get; }
         public string ServerId { get; }
+
+        public static string LogonUsername = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+
+        public static string LogonUserSid = System.Security.Principal.WindowsIdentity.GetCurrent().User.Value;
 
         public static string Hostname => Environment.MachineName;
         public static string Bits => Environment.Is64BitOperatingSystem ? "64" : "32";
@@ -40,7 +44,7 @@ namespace SyncMLViewer
             OmaDmAccountIdMDM = "";
             OmaDmAccountIdMMPC = "";
             AadTenantId = "";
-            Upn = "";
+            EnrollmentUpn = "";
             ServerId = "";
 
             using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
@@ -94,7 +98,7 @@ namespace SyncMLViewer
                     if (registryKey == null) return;
                     // seems not be available all the time using TenantInfo now...
                     //AadTenantId = registryKey.GetValue("AADTenantID").ToString();
-                    Upn = registryKey.GetValue("UPN").ToString();
+                    EnrollmentUpn = registryKey.GetValue("UPN").ToString();
                 }
             }
             catch (Exception)
