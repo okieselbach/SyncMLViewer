@@ -34,6 +34,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using System.Drawing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Windows.Shapes;
 
 namespace SyncMLViewer
 {
@@ -779,19 +780,24 @@ namespace SyncMLViewer
             Application.Current.Shutdown(0);
         }
 
-        private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
-        }
-
         private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
         }
 
+        private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
+        }
+
         private void MenuItemRebootRequiredUris_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
+        }
+
+        private void MenuItemDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
         }
 
         private void MenuItemEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
@@ -1233,44 +1239,22 @@ namespace SyncMLViewer
 
         private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var exp = new Process
-                {
-                    StartInfo =
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = @"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
-                    }
-                };
-                exp.Start();
-                exp.Dispose();
-            }
-            catch (Exception)
-            {
-                // prevent exceptions if folder does not exist
-            }
+            Helper.OpenFolder(@"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs");
         }
 
         private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var exp = new Process
-                {
-                    StartInfo =
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = @"C:\Users\Public\Documents\MDMDiagnostics"
-                    }
-                };
-                exp.Start();
-                exp.Dispose();
-                }
-            catch (Exception)
-            {
-                // prevent exceptions if folder does not exist
-            }
+            Helper.OpenFolder(@"C:\Users\Public\Documents\MDMDiagnostics");
+        }
+
+        private void MenuItemOpenSystemProfileMDM_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.SystemDirectory, @"Config\SystemProfile\AppData\Local\mdm"));
+        }
+
+        private void MenuItemOpenDeclaredConfigurationHostOSFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(@"C:\ProgramData\microsoft\DC\HostOS");
         }
 
         private void ParseCommandlineArgs(string[] args)

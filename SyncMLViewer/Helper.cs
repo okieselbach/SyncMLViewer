@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Windows;
 using Microsoft.Win32;
 
 namespace SyncMLViewer
@@ -29,6 +32,34 @@ namespace SyncMLViewer
             };
             p.Start();
             p.Dispose();
+        }
+
+        public static void OpenFolder(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                try
+                {
+                    var exp = new Process
+                    {
+                        StartInfo = 
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = path
+                        }
+                    };
+                    exp.Start();
+                    exp.Dispose();
+                }
+                catch (Exception)
+                {
+                    // prevent exceptions if folder does not exist
+                }
+            }
+            else
+            {
+                MessageBox.Show("Folder does not exist.", "Open folder", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

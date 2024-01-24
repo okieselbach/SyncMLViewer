@@ -121,11 +121,14 @@
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
                 <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                 <MenuItem Header="-> RebootRequiredURIs" Click="MenuItemRebootRequiredUris_Click"/>
+                <MenuItem Header="-> DeclaredConfiguration" Click="MenuItemDeclaredConfiguration_Click"/>
                 <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemEnterpriseDesktopAppManagement_Click"/>
                 <MenuItem x:Name="menuItemIntuneManagementExtension" Header="-> IntuneManagementExtension" Click="MenuItemIntuneManagementExtension_Click"/>
                 <Separator />
                 <MenuItem Header="Open _IME logs folder" Click="MenuItemOpenImeLogs_Click"/>
                 <MenuItem Header="Open MDM Diagnostics _folder" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
+                <MenuItem Header="Open SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from here as MSI and log files are written there."/>
+                <MenuItem Header="Open DC\HostOS folder" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder for DeclaredConfiguration .xml files"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
