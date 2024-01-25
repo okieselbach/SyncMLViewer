@@ -127,8 +127,8 @@
                 <Separator />
                 <MenuItem Header="Open _IME logs folder" Click="MenuItemOpenImeLogs_Click"/>
                 <MenuItem Header="Open MDM Diagnostics _folder" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
-                <MenuItem Header="Open SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from here as MSI and log files are written there."/>
-                <MenuItem Header="Open DC\HostOS folder" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder for DeclaredConfiguration .xml files"/>
+                <MenuItem Header="Open SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from C:\Windows\System32\Config\SystemProfile\AppData\Local\mdm as MSI and log files are written there."/>
+                <MenuItem Header="Open DC\HostOS folder" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
