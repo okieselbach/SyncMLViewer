@@ -144,6 +144,8 @@ https://oliverkieselbach.com
 
 Inspired by Michael Niehaus (@mniehaus) - blog about monitoring realtime MDM activity
 https://oofhours.com/2019/07/25/want-to-watch-the-mdm-client-activity-in-real-time/
+and Michaels LocalMDM PowerShell Module, big kudos!
+https://www.powershellgallery.com/packages/LocalMDM/
 
 All possible due to Event Tracing for Windows (ETW)
 https://docs.microsoft.com/en-us/windows/win32/etw/event-tracing-portal
@@ -175,6 +177,15 @@ UI Controls inspired by ILspy (https://github.com/icsharpcode/ILSpy) and the con
 AvalonEdit
 http://avalonedit.net/
 released under MIT License (https://opensource.org/licenses/MIT)</value>
+  </data>
+  <data name="Executer" xml:space="preserve">
+    <value>SyncMLViewer.Executer.exe</value>
+  </data>
+  <data name="InputFile" xml:space="preserve">
+    <value>SyncMlViewer.SyncMLInput.txt</value>
+  </data>
+  <data name="OutputFile" xml:space="preserve">
+    <value>SyncMlViewer.SyncMLOutput.txt</value>
   </data>
   <data name="StatusCodes" xml:space="preserve">
     <value>Info taken from official OMA SyncML documentation here: 

@@ -34,13 +34,54 @@
                         FontSize="10pt" Margin="200,10,10,34"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
-                        IsReadOnly="True"/>
+                        IsReadOnly="True" Grid.ColumnSpan="6"/>
                     <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
                     <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
-                    <Label x:Name="LabelBackToTop" Content="[^]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" FontWeight="Bold" HorizontalAlignment="Right" Width="27" Height="26" VerticalAlignment="Bottom"/>
+                    <Label x:Name="LabelBackToTop" Content="[Top]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
                     <Label x:Name="LabelMessageStats" Content="Message length: 65536" HorizontalAlignment="Left" Margin="10,0,0,2" Height="26" VerticalAlignment="Bottom"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabItemSyncMLRequests" Header="SyncML Requests">
+                <Grid Background="White">
+                    <ComboBox x:Name="ComboBoxCmd" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="79" IsReadOnly="True" GotFocus="HideAutoCompleteStackPanel">
+                        <ComboBoxItem Content="GET" IsSelected="True"/>
+                        <ComboBoxItem Content="ADD"/>
+                        <ComboBoxItem Content="ATOMIC"/>
+                        <ComboBoxItem Content="DELETE"/>
+                        <ComboBoxItem Content="EXEC"/>
+                        <ComboBoxItem Content="REPLACE"/>
+                        <ComboBoxItem Content="RESULT"/>
+                    </ComboBox>
+                    <TextBox x:Name="TextBoxUri" Margin="94,16,115,0" TextWrapping="Wrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp"/>
+                    <Border BorderBrush="LightGray" BorderThickness="1" Margin="94,34,115,0" Background="White" Panel.ZIndex="100" Visibility="Collapsed" Height="156" VerticalAlignment="Top">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Name="resultStack"/>
+                        </ScrollViewer>
+                    </Border>
+                    <Button x:Name="ButtonRunQuery" Content="Run Query" Margin="0,14,10,0" VerticalAlignment="Top" Height="22" Click="ButtonRunQuery_Click" HorizontalAlignment="Right" Width="100" GotFocus="HideAutoCompleteStackPanel"/>
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorSyncMlRequests"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="459,81,10,28" GotFocus="HideAutoCompleteStackPanel"/>
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorSyncMlRequestsRequestViewer"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,81,0,28" HorizontalAlignment="Left" Width="444" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel"/>
+                    <Label Content="Current generated/edited SyncML request:" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                    <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
+                    <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Checked="CheckBoxUseSyncML_Checked" Unchecked="CheckBoxUseSyncML_Unchecked" Height="15" VerticalAlignment="Bottom"/>
+                    <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
@@ -95,9 +136,11 @@
                 <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="menuItemShowAllChars_Click" />
                 <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" IsCheckable="True" IsChecked="false" Click="menuItemWordWrap_Click" />
                 <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemCleanupAfterExit" Header="Cleanup working folder after exit" IsCheckable="True" IsChecked="true" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
+                <MenuItem x:Name="menuItemRequestsLogging" Header="_Enable Logging for SyncML Requests" IsCheckable="True" IsChecked="False" ToolTip="Enables additional log file in execution folder for all SyncML requests"/>
                 <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
             </MenuItem>
             <MenuItem Header="_Actions">
@@ -107,15 +150,23 @@
                 <MenuItem Header="Decode _BASE64 selected text" Click="MenuItemDecodeBase64_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
-                <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
-                <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
+                <MenuItem Header="Clear Request History Items" Click="MenuItemClearHistoryItems_Click"/>
+                <MenuItem Header="Advanced" StaysOpenOnClick="True">
+                    <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
+                    <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
+                    <Separator />
+                    <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
+                    <MenuItem Header="Clear EmbeddedMode Registry Flag"/>
+                    <MenuItem Header="Set EnrollmentType Registry Flag"/>
+                </MenuItem>
                 <Separator />
-                <MenuItem Header="Run" StaysOpenOnClick="True"/>
-                <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
-                <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
-                <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
-                <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
-                <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
+                <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
+                    <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True"/>
                 <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
@@ -140,7 +191,7 @@
             </MenuItem>
         </Menu>
         <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="189,0,0,13" Visibility="Visible" Height="26" VerticalAlignment="Bottom"/>
-        <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,10,9.6,0" Visibility="Visible" HorizontalAlignment="Right" Width="165" Height="26" VerticalAlignment="Top"/>
+        <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,3,10,0" Visibility="Visible" HorizontalAlignment="Right" Width="142" Height="26" VerticalAlignment="Top" FontSize="10"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick"/>
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>

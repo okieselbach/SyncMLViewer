@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -60,6 +61,54 @@ namespace SyncMLViewer
             {
                 MessageBox.Show("Folder does not exist.", "Open folder", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+        }
+
+        public static async Task RunMdmDiagnosticsTool(string scenario)
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
+            Directory.CreateDirectory(path);
+
+            string argument = string.Empty;
+            switch (scenario)
+            {
+                case "Autopilot":
+                case "DeviceEnrollment":
+                case "DeviceProvisioning":
+                case "TPM":
+                    argument = $"-area {scenario} -zip {Path.Combine(path, scenario + ".zip")}";
+                    break;
+                default:
+                    argument = $"-out {path}";
+                    return;
+            };
+
+            await Task.Factory.StartNew(() =>
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = "MdmDiagnosticsTool.exe",
+                        Arguments = argument,
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                p.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
         }
     }
 }

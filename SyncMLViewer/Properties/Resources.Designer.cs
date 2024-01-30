@@ -75,6 +75,33 @@ namespace SyncMLViewer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SyncMLViewer.Executer.exe.
+        /// </summary>
+        internal static string Executer {
+            get {
+                return ResourceManager.GetString("Executer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SyncMlViewer.SyncMLInput.txt.
+        /// </summary>
+        internal static string InputFile {
+            get {
+                return ResourceManager.GetString("InputFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SyncMlViewer.SyncMLOutput.txt.
+        /// </summary>
+        internal static string OutputFile {
+            get {
+                return ResourceManager.GetString("OutputFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Info taken from official OMA SyncML documentation here: 
         ///http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-RepPro-V1_2_2-20090724-A.pdf
         ///

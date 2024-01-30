@@ -7,7 +7,10 @@ using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
+using SyncMLViewer.Properties;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -16,25 +19,21 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net;
+using System.Net.Cache;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using SyncMLViewer.Properties;
 using Path = System.IO.Path;
-using System.Xml;
-using System.Net.Cache;
-using Microsoft.Diagnostics.Tracing.Parsers.JScript;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-using System.Drawing;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Windows.Shapes;
 
 namespace SyncMLViewer
 {
@@ -80,6 +79,8 @@ namespace SyncMLViewer
         private bool _notifyIconBallonShownOnce;
         private WindowState _storedWindowState = WindowState.Normal;
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
+        private int _CmdIdCounter;
+        private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
 
         static public TraceEventSessionState TraceEventSessionState { get; set; }
         public SyncMlProgress SyncMlProgress { get; set; }
@@ -93,6 +94,7 @@ namespace SyncMLViewer
             _syncMMPCSwitch = false;
             _backgroundLoggingSwitch = false;
             _hideWhenMinimizedSwitch = false;
+            _CmdIdCounter = 0;
 
             LabelStatus.Visibility = Visibility.Hidden;
             LabelStatusTop.Visibility = Visibility.Hidden;
@@ -143,9 +145,13 @@ namespace SyncMLViewer
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorCodes);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorDiagnostics);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequests);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequestsRequestViewer);
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
+            _foldingManager = FoldingManager.Install(TextEditorSyncMlRequests.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorSyncMlRequests.Document);
 
             LabelDeviceName.Content = Environment.MachineName;
             _updateStarted = false;
@@ -158,6 +164,14 @@ namespace SyncMLViewer
             TextEditorMessages.Options.HighlightCurrentLine = true;
             TextEditorMessages.Options.EnableRectangularSelection = true;
             TextEditorMessages.WordWrap = false;
+
+            TextEditorSyncMlRequests.Options.HighlightCurrentLine = true;
+            TextEditorSyncMlRequests.Options.EnableRectangularSelection = true;
+            TextEditorSyncMlRequests.WordWrap = false;
+
+            TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = false;
+            TextEditorSyncMlRequestsRequestViewer.Options.EnableRectangularSelection = true;
+            TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
 
             TextEditorCodes.Options.EnableHyperlinks = true;
             TextEditorCodes.Options.RequireControlModifierForHyperlinkClick = false;
@@ -189,15 +203,47 @@ namespace SyncMLViewer
                 ButtonMMPCSync.IsEnabled = false;
             }
 
-            var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\IntuneManagementExtension");
-            if (key == null)
+            try
             {
+                var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\IntuneManagementExtension");
+                if (key == null)
+                {
+                    menuItemIntuneManagementExtension.IsEnabled = false;
+                }
+            }
+            catch (Exception)
+            {
+                // exceptions ignored
                 menuItemIntuneManagementExtension.IsEnabled = false;
             }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (menuItemCleanupAfterExit.IsChecked)
+            {
+                try
+                {
+                    var assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    List<string> files = new List<string>
+                    {
+                        { Path.Combine(assemblyLocation, Properties.Resources.Executer) },
+                        { Path.Combine(assemblyLocation, Properties.Resources.OutputFile) },
+                        { Path.Combine(assemblyLocation, Properties.Resources.InputFile) }
+                    };
+
+                    foreach (var item in files)
+                    {
+                        if (File.Exists(item))
+                            File.Delete(item);
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
             _notifyIcon.Dispose();
             _notifyIcon = null;
         }
@@ -814,35 +860,7 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
-            Directory.CreateDirectory(path);
-            await Task.Factory.StartNew(() =>
-            {
-                var p = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        FileName = "MdmDiagnosticsTool.exe",
-                        Arguments = $"-out {path}",
-                        CreateNoWindow = true
-                    }
-                };
-
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
-            });
-            var exp = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = path
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+            await Helper.RunMdmDiagnosticsTool("");
 
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
@@ -851,35 +869,7 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
-            Directory.CreateDirectory(path);
-            await Task.Factory.StartNew(() =>
-            {
-                var p = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        FileName = "MdmDiagnosticsTool.exe",
-                        Arguments = $"-area Autopilot -zip {Path.Combine(path, "Autopilot.zip")}",
-                        CreateNoWindow = true
-                    }
-                };
-
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
-            });
-            var exp = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = path
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+            await Helper.RunMdmDiagnosticsTool("Autopilot");
 
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
@@ -888,35 +878,7 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
-            Directory.CreateDirectory(path);
-            await Task.Factory.StartNew(() =>
-            {
-                var p = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        FileName = "MdmDiagnosticsTool.exe",
-                        Arguments = $"-area DeviceEnrollment -zip {Path.Combine(path, "DeviceEnrollment.zip")}",
-                        CreateNoWindow = true
-                    }
-                };
-
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
-            });
-            var exp = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = path
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+            await Helper.RunMdmDiagnosticsTool("DeviceEnrollment");
 
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
@@ -925,35 +887,7 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
-            Directory.CreateDirectory(path);
-            await Task.Factory.StartNew(() =>
-            {
-                var p = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        FileName = "MdmDiagnosticsTool.exe",
-                        Arguments = $"-area DeviceProvisioning -zip {Path.Combine(path, "DeviceProvisioning.zip")}",
-                        CreateNoWindow = true
-                    }
-                };
-
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
-            });
-            var exp = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = path
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+            await Helper.RunMdmDiagnosticsTool("DeviceProvisioning");
 
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
@@ -962,35 +896,7 @@ namespace SyncMLViewer
         {
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");
-            Directory.CreateDirectory(path);
-            await Task.Factory.StartNew(() =>
-            {
-                var p = new Process
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = false,
-                        FileName = "MdmDiagnosticsTool.exe",
-                        Arguments = $"-area TPM -zip {Path.Combine(path, "TPM.zip")}",
-                        CreateNoWindow = true
-                    }
-                };
-
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
-            });
-            var exp = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = path
-                }
-            };
-            exp.Start();
-            exp.Dispose();
+            await Helper.RunMdmDiagnosticsTool("TPM");
 
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
@@ -1085,19 +991,39 @@ namespace SyncMLViewer
 
         private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog fileDialog = new SaveFileDialog
-            {
-                Filter = "Xml files|*.xml|All files|*.*",
-                FilterIndex = 0,
-                DefaultExt = "xml",
-                AddExtension = true,
-                CheckPathExists = true,
-                RestoreDirectory = true,
-                Title = "Save SyncML stream",
-                FileName = $"SyncMLStream-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
-            };
+            SaveFileDialog fileDialog;
 
-            fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
+            if (TextEditorSyncMlRequests.IsVisible == true)
+            {
+                fileDialog = new SaveFileDialog
+                {
+                    Filter = "Xml files|*.xml|All files|*.*",
+                    FilterIndex = 0,
+                    DefaultExt = "xml",
+                    AddExtension = true,
+                    CheckPathExists = true,
+                    RestoreDirectory = true,
+                    Title = "Save SyncML requests",
+                    FileName = $"SyncMLRequests-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
+                };
+                fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorSyncMlRequests.Text);
+            }
+            else // Save normal SyncML stream
+            {
+                fileDialog = new SaveFileDialog
+                {
+                    Filter = "Xml files|*.xml|All files|*.*",
+                    FilterIndex = 0,
+                    DefaultExt = "xml",
+                    AddExtension = true,
+                    CheckPathExists = true,
+                    RestoreDirectory = true,
+                    Title = "Save SyncML stream",
+                    FileName = $"SyncMLStream-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml"
+                };
+                fileDialog.FileOk += (o, args) => File.WriteAllText(((FileDialog)o).FileName, TextEditorStream.Text);
+            }
+
             fileDialog.ShowDialog();
         }
 
@@ -1142,6 +1068,10 @@ namespace SyncMLViewer
                 TextEditorMessages.Options.ShowBoxForControlCharacters = true;
                 TextEditorStream.Options.ShowSpaces = true;
                 TextEditorStream.Options.ShowBoxForControlCharacters = true;
+                TextEditorSyncMlRequests.Options.ShowSpaces = true;
+                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = true;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = true;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = true;
             }
             else
             {
@@ -1149,6 +1079,10 @@ namespace SyncMLViewer
                 TextEditorMessages.Options.ShowBoxForControlCharacters = false;
                 TextEditorStream.Options.ShowSpaces = false;
                 TextEditorStream.Options.ShowBoxForControlCharacters = false;
+                TextEditorSyncMlRequests.Options.ShowSpaces = false;
+                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = false;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = false;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = false;
             }
         }
 
@@ -1158,11 +1092,15 @@ namespace SyncMLViewer
             {
                 TextEditorMessages.WordWrap = true;
                 TextEditorStream.WordWrap = true;
+                TextEditorSyncMlRequests.WordWrap = true;
+                TextEditorSyncMlRequestsRequestViewer.WordWrap = true;
             }
             else
             {
                 TextEditorMessages.WordWrap = false;
                 TextEditorStream.WordWrap = false;
+                TextEditorSyncMlRequests.WordWrap = false;
+                TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
             }
         }
 
@@ -1317,6 +1255,308 @@ namespace SyncMLViewer
                 ButtonMMPCSync_Click(null, null);
             }
         }
+
+        private async void ButtonRunQuery_Click(object sender, RoutedEventArgs e)
+        {
+            _CmdIdCounter++;
+            string syncML = string.Empty;
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            ButtonRunQuery.IsEnabled = false;
+
+            if (CheckBoxUseSyncML.IsChecked == true)
+            {
+                syncML = TextEditorSyncMlRequestsRequestViewer.Text;
+                try
+                {
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.LoadXml(syncML);
+                    XmlNode cmdIdNode = xmlDoc.SelectSingleNode("//CmdID");
+                    if (cmdIdNode != null)
+                    {
+                        cmdIdNode.InnerText = _CmdIdCounter.ToString();
+                    }
+                    syncML = xmlDoc.InnerXml;
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+            else
+            {
+                syncML = "<SyncBody>\n" +
+                        "<CMD-ITEM>\n" +
+                            "<CmdID>CMDID-ITEM</CmdID>\n" +
+                            "<Item>\n" +
+                                "<Target>\n" +
+                                    "<LocURI>OMAURI-ITEM</LocURI>\n" +
+                                "</Target>\n" +
+                                "<Meta>\n" +
+                                    "<Format xmlns=\"syncml:metinf\">FORMAT-ITEM</Format>\n" +
+                                    "<Type xmlns=\"syncml:metinf\">TYPE-ITEM</Type>\n" +
+                                "</Meta>\n" +
+                                "<Data>DATA-ITEM</Data>\n" +
+                            "</Item>\n" +
+                            "</CMD-ITEM>\n" +
+                        "</SyncBody>";
+
+                syncML = syncML.Replace("CMD-ITEM", ComboBoxCmd.Text);
+                syncML = syncML.Replace("CMDID-ITEM", _CmdIdCounter.ToString());
+                syncML = syncML.Replace("OMAURI-ITEM", TextBoxUri.Text);
+                syncML = syncML.Replace("FORMAT-ITEM", "int");
+                syncML = syncML.Replace("TYPE-ITEM", "text/plain");
+                syncML = syncML.Replace("DATA-ITEM", "");
+            }
+
+            // try adding location URI to AutoCompleteModel
+            if (!string.IsNullOrEmpty(TextBoxUri.Text) && TextBoxUri.Text.StartsWith("./"))
+            {
+                _autoCompleteModel.AddData(TextBoxUri.Text);
+            }
+
+            // we are writing the SyncML request input file to the disk
+            string syncMlInputFile = Properties.Resources.InputFile;
+            var syncMlInputFilePath = Path.Combine(assemblyPath, syncMlInputFile);
+            try
+            {
+                File.WriteAllText(syncMlInputFilePath, TryFormatXml(syncML));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to write {syncMlInputFilePath} to disk, ex = {ex}");
+            }
+
+            TextEditorSyncMlRequestsRequestViewer.Text = TryFormatXml(syncML);
+
+            TextEditorSyncMlRequests.Text += $"-------------------- Request {_CmdIdCounter} --------------------\n\n";
+            TextEditorSyncMlRequests.Text += TryFormatXml(syncML);
+
+            if (menuItemAutoScroll.IsChecked)
+            {
+                TextEditorSyncMlRequests.ScrollToEnd();
+            }
+
+            // We are extracting the Executer binary from the resources and write it to disk
+            string binaryName = Properties.Resources.Executer;
+            var path = Path.Combine(assemblyPath, binaryName);
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            string resourceName = "SyncMLViewer." + Properties.Resources.Executer;
+            using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (resourceStream != null)
+                {
+                    byte[] buffer = new byte[resourceStream.Length];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+
+                    try
+                    {
+                        File.WriteAllBytes(path, buffer);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to write {binaryName} to disk, ex = {ex}");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Resource {resourceName} not found.");
+                }
+            }
+
+            var resultOutput = string.Empty;
+            var resultError = string.Empty;
+
+            using (var p = new Process
+            {
+                StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = path,
+                        Arguments = $"-SyncMLFile \"{syncMlInputFilePath}\"",
+                        CreateNoWindow = true,
+                        //RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                    }
+            })
+            {
+                //p.OutputDataReceived += (o, args) => { resultOutput += args.Data + Environment.NewLine; };
+                p.ErrorDataReceived += (o, args) => { resultError += args.Data + Environment.NewLine; };
+
+                p.Start();
+
+                //p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+
+                Task processExited = WaitForExitAsync(p);
+
+                await processExited;
+            }
+
+            // we are reading the Executer SyncML Request Output file from the disk
+            var syncMlOutputFilePath = Path.Combine(assemblyPath, Properties.Resources.OutputFile);
+            try
+            {
+                resultOutput += File.ReadAllText(syncMlOutputFilePath);
+            }
+            catch (Exception ex)
+            {
+                TextEditorSyncMlRequests.Text = "Failed to read " + syncMlOutputFilePath + " from disk, ex = " + ex;
+            }
+            
+            TextEditorSyncMlRequests.Text += $"\n\n-------------------- Response {_CmdIdCounter} -------------------\n\n";
+            TextEditorSyncMlRequests.Text += resultOutput;
+            TextEditorSyncMlRequests.Text += "\n" + resultError + "\n";
+
+            if (menuItemAutoScroll.IsChecked)
+            {
+                TextEditorSyncMlRequests.ScrollToEnd();
+            }
+
+            ButtonRunQuery.IsEnabled = true;
+        }
+
+        static Task WaitForExitAsync(Process process)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, e) => tcs.SetResult(null);
+
+            return tcs.Task;
+        }
+
+        private void CheckBoxUseSyncML_Checked(object sender, RoutedEventArgs e)
+        {
+            if (((CheckBox)sender).IsChecked == true)
+            {
+                ComboBoxCmd.IsEnabled = false;
+                TextBoxUri.IsEnabled = false;
+                TextEditorSyncMlRequestsRequestViewer.IsReadOnly = false;
+                TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = true;
+            }
+        }
+
+        private void CheckBoxUseSyncML_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (((CheckBox)sender).IsChecked == false)
+            {
+                ComboBoxCmd.IsEnabled = true;
+                TextBoxUri.IsEnabled = true;
+                TextEditorSyncMlRequestsRequestViewer.IsReadOnly = true;
+                TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = false;
+                //TextEditorSyncMlRequestsRequestViewer.Clear();
+            }
+        }
+
+        private void TextBoxUri_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            bool found = false;
+            var border = (resultStack.Parent as ScrollViewer).Parent as Border;
+
+            if (e.Key == Key.Enter)
+            {
+                ButtonRunQuery_Click(null, null);
+                resultStack.Children.Clear();
+                border.Visibility = System.Windows.Visibility.Collapsed;
+                return;
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                resultStack.Children.Clear();
+                border.Visibility = System.Windows.Visibility.Collapsed;
+                return;
+            }
+
+            var data = _autoCompleteModel.GetData();
+
+            string query = (sender as TextBox).Text;
+
+            if (query.Length == 0)
+            {
+                // Clear   
+                resultStack.Children.Clear();
+                border.Visibility = System.Windows.Visibility.Collapsed;
+            }
+            else
+            {
+                border.Visibility = System.Windows.Visibility.Visible;
+            }
+
+            // Clear the list   
+            resultStack.Children.Clear();
+
+            // Add the result   
+            foreach (var obj in data)
+            {
+                if (obj.ToLower().StartsWith(query.ToLower()))
+                {
+                    // The word starts with this... Autocomplete must work   
+                    addItem(obj);
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+            //    resultStack.Children.Add(new TextBlock() { Text = "No results found." });
+            //    //resultStack.Children.Clear();
+                border.Visibility = System.Windows.Visibility.Collapsed;
+            }
+        }
+
+        private void addItem(string text)
+        {
+            TextBlock block = new TextBlock();
+            block.Text = text; // add text
+
+            // A little style...   
+            block.Margin = new Thickness(2, 3, 2, 3);
+            block.Cursor = Cursors.Hand;
+
+            // Mouse events   
+            block.MouseLeftButtonUp += (sender, e) =>
+            {
+                TextBoxUri.Text = (sender as TextBlock).Text;
+                var border = (resultStack.Parent as ScrollViewer).Parent as Border;
+                border.Visibility = System.Windows.Visibility.Collapsed;
+            };
+
+            block.MouseEnter += (sender, e) =>
+            {
+                TextBlock b = sender as TextBlock;
+                b.Background = Brushes.PeachPuff;
+            };
+
+            block.MouseLeave += (sender, e) =>
+            {
+                TextBlock b = sender as TextBlock;
+                b.Background = Brushes.Transparent;
+            };
+
+            // Add to the panel   
+            resultStack.Children.Add(block);
+        }
+
+        private void MenuItemClearHistoryItems_Click(object sender, RoutedEventArgs e)
+        {
+            resultStack.Children.Clear();
+            _autoCompleteModel.ClearData();
+        }
+
+        private void HideAutoCompleteStackPanel(object sender, RoutedEventArgs e)
+        {
+            var border = (resultStack.Parent as ScrollViewer).Parent as Border;
+            border.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        private void LabelToBottom_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorSyncMlRequests.ScrollToEnd();
+        }
     }
 }
+
 
