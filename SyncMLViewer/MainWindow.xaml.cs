@@ -1306,6 +1306,11 @@ namespace SyncMLViewer
                 syncML = syncML.Replace("FORMAT-ITEM", ComboBoxFormat.Text);
                 syncML = syncML.Replace("TYPE-ITEM", ComboBoxDataType.Text);
                 syncML = syncML.Replace("DATA-ITEM", TextBoxData.Text);
+
+                if (string.IsNullOrEmpty(ComboBoxDataType.Text))
+                {
+                    syncML = syncML.Replace("<Type xmlns=\"syncml:metinf\"></Type>", "");
+                }
             }
 
             // try adding location URI to AutoCompleteModel

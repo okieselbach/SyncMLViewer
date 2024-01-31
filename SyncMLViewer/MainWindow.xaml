@@ -158,14 +158,16 @@
                 <MenuItem Header="Decode _BASE64 selected text" Click="MenuItemDecodeBase64_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
-                <MenuItem Header="Clear Request History Items" Click="MenuItemClearHistoryItems_Click"/>
+                <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
                 <MenuItem Header="Advanced" StaysOpenOnClick="True">
                     <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
                     <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
+                    <MenuItem Header="Set EmbeddedMode Registry Flag" IsEnabled="False"/>
                     <MenuItem Header="Clear EmbeddedMode Registry Flag" IsEnabled="False"/>
                     <MenuItem Header="Set EnrollmentType Registry Flag" IsEnabled="False"/>
+                    <MenuItem Header="clear EnrollmentType Registry Flag" IsEnabled="False"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
