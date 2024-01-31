@@ -128,7 +128,7 @@ namespace SyncMLViewer.Executer
             Debug.WriteLine($"[MDMLocalManagement] UnregisterDeviceWithLocalManagement(), rc = {rc}");
         }
 
-        public static string SendRequestProcedure(string data, string command = "GET")
+        public static string SendRequestProcedure(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain", bool cleanup = false)
         {
             string syncMLResult = string.Empty;
             object originalFlagsValue = 0;
@@ -182,10 +182,12 @@ namespace SyncMLViewer.Executer
 
                 RegisterLocalMDM();
 
-                syncMLResult = SendRequest(data, command);
+                syncMLResult = SendRequest(dataText, command, data, format, type);
 
-                //TODO: disable with parameter
-                UnregisterLocalMDM();
+                if (cleanup)
+                {
+                    UnregisterLocalMDM();
+                }
             }
             finally
             {
@@ -218,9 +220,10 @@ namespace SyncMLViewer.Executer
             return syncMLResult;
         }
 
+        //dataText is either OMA URI or SyncML XML
         public static string SendRequest(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain")
         {
-            string syncML = "<SyncBody>\n" +
+            string syncMLprepared = "<SyncBody>\n" +
                                 "<CMD-ITEM>\n" +
                                     "<CmdID>CMDID-ITEM</CmdID>\n" +
                                     "<Item>\n" +
@@ -238,22 +241,22 @@ namespace SyncMLViewer.Executer
 
             if (dataText.ToLower().StartsWith("<syncbody>"))
             {
-                syncML = dataText;
+                syncMLprepared = dataText;
             }
             else // dataText is OMA URI
             {
-                syncML = syncML.Replace("CMD-ITEM", command.ToString());
-                syncML = syncML.Replace("CMDID-ITEM", CmdIdCounter++.ToString());
-                syncML = syncML.Replace("OMAURI-ITEM", dataText.ToString());
-                syncML = syncML.Replace("FORMAT-ITEM", format);
-                syncML = syncML.Replace("TYPE-ITEM", type);
-                syncML = syncML.Replace("DATA-ITEM", data);
+                syncMLprepared = syncMLprepared.Replace("CMD-ITEM", command.ToString());
+                syncMLprepared = syncMLprepared.Replace("CMDID-ITEM", CmdIdCounter++.ToString());
+                syncMLprepared = syncMLprepared.Replace("OMAURI-ITEM", dataText.ToString());
+                syncMLprepared = syncMLprepared.Replace("FORMAT-ITEM", format);
+                syncMLprepared = syncMLprepared.Replace("TYPE-ITEM", type);
+                syncMLprepared = syncMLprepared.Replace("DATA-ITEM", data);
             }
 
             Debug.WriteLine("[MDMLocalManagement] Raw XML SyncML request:");
-            Debug.WriteLine(TryPrettyXml(syncML));
+            Debug.WriteLine(TryPrettyXml(syncMLprepared));
 
-            _ = Apply(syncML, out string syncMLResult);
+            _ = Apply(syncMLprepared, out string syncMLResult);
 
             Debug.WriteLine("[MDMLocalManagement] Raw XML SyncML result:");
             Debug.WriteLine(TryPrettyXml(syncMLResult));

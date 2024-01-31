@@ -1556,6 +1556,11 @@ namespace SyncMLViewer
         {
             TextEditorSyncMlRequests.ScrollToEnd();
         }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenUrl("http://aka.ms/CSPList");
+        }
     }
 }
 

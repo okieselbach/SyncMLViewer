@@ -63,6 +63,27 @@ namespace SyncMLViewer
             }
         }
 
+        public static void OpenUrl(string path)
+        {
+            try
+            {
+                var exp = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = true,
+                        FileName = path
+                    }
+                };
+                exp.Start();
+                exp.Dispose();
+            }
+            catch (Exception)
+            {
+                // prevent exceptions if folder does not exist
+            }
+        }
+
         public static async Task RunMdmDiagnosticsTool(string scenario)
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MdmDiagnosticsTool");

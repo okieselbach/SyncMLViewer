@@ -184,6 +184,7 @@
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
                 <MenuItem Header="_MDM Diagnostics" Click="MenuItemDiagnostics_Click"/>
+                <MenuItem Header="CSP Online Documentation" Click="MenuItem_Click"/>
                 <Separator />
                 <MenuItem Header="_Check for SyncML Viewer Update" Click="MenuItemCheckUpdate_OnClick"/>
                 <Separator />
