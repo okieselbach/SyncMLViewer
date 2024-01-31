@@ -128,7 +128,7 @@ namespace SyncMLViewer.Executer
             Debug.WriteLine($"[MDMLocalManagement] UnregisterDeviceWithLocalManagement(), rc = {rc}");
         }
 
-        public static string SendRequestProcedure(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain", bool cleanup = false)
+        public static string SendRequestProcedure(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain", bool keepLocalMDMEnrollment = true)
         {
             string syncMLResult = string.Empty;
             object originalFlagsValue = 0;
@@ -184,7 +184,7 @@ namespace SyncMLViewer.Executer
 
                 syncMLResult = SendRequest(dataText, command, data, format, type);
 
-                if (cleanup)
+                if (!keepLocalMDMEnrollment)
                 {
                     UnregisterLocalMDM();
                 }

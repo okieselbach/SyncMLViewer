@@ -25,7 +25,9 @@ namespace SyncMLViewer.Executer
         private static string argFormatValue = string.Empty;
         private static bool argType = false;
         private static string argTypeValue = string.Empty;
-        private static bool argCleanup = false;
+        private static bool argKeepLocalMDMEnrollment = false; 
+        private static bool argKeepLocalMDMEnrollmentValue = false;
+        private static bool argQuiet = false;
 
         [MTAThread]
         static void Main(string[] args)
@@ -43,6 +45,7 @@ namespace SyncMLViewer.Executer
             string commandDefault = "GET";
             string formatDefault = "int";
             string typeDefault = "text/plain";
+            bool keepLocalMDMEnrollmentDefault = false;
 
             if (args.Length == 1)
             {
@@ -67,6 +70,11 @@ namespace SyncMLViewer.Executer
             }
             else if (args.Length >= 2)
             {
+                if (argKeepLocalMDMEnrollment)
+                {
+                    Debug.WriteLine($"Received {nameof(argKeepLocalMDMEnrollment)}: {argKeepLocalMDMEnrollmentValue}");
+                    keepLocalMDMEnrollmentDefault = argKeepLocalMDMEnrollmentValue;
+                }
                 if (argSyncMlFile)
                 {
                     try
@@ -81,14 +89,14 @@ namespace SyncMLViewer.Executer
                     }
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(syncMl);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(syncMl, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault);
                 }
                 if (argSyncMl)
                 {
                     Debug.WriteLine($"Received {nameof(argSyncMl)}: {argSyncMlValue}");
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argSyncMlValue);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argSyncMlValue, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault);
                 }
                 if (argOmaUri)
                 {
@@ -116,7 +124,7 @@ namespace SyncMLViewer.Executer
                     }
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argOmaUriValue, commandDefault, dataDefault, formatDefault, typeDefault);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argOmaUriValue, commandDefault, dataDefault, formatDefault, typeDefault, keepLocalMDMEnrollmentDefault);
                 }
             }
 
@@ -137,12 +145,10 @@ namespace SyncMLViewer.Executer
                 }
             }
 
-            // write output to console
-            Console.WriteLine(MdmLocalManagement.TryPrettyXml(syncMLResult));
-
-            if (argCleanup)
+            if (!argQuiet)
             {
-                MdmLocalManagement.UnregisterLocalMDM();
+                // write output to console
+                Console.WriteLine(MdmLocalManagement.TryPrettyXml(syncMLResult));
             }
         }
 
@@ -185,8 +191,12 @@ namespace SyncMLViewer.Executer
                                 argType = true;
                                 argTypeValue = args[i + 1];
                                 break;
-                            case "cleanup":
-                                argCleanup = true;
+                            case "keeplocalmdmenrollment":
+                                argKeepLocalMDMEnrollment = true;
+                                argKeepLocalMDMEnrollmentValue = true;
+                                break;
+                            case "quiet":
+                                argQuiet = true;
                                 break;
                             case "?":
                             case "h":
@@ -195,16 +205,17 @@ namespace SyncMLViewer.Executer
                                 Console.WriteLine("");
                                 Console.WriteLine($"USAGE: {Assembly.GetExecutingAssembly().GetName().Name} [options...]");
                                 Console.WriteLine("");
-                                Console.WriteLine($"-SyncMLFile <filepath>  path to input file with SyncML data: e.g. <SyncBody><GET>...");
-                                Console.WriteLine($"                        parameter -syncMLFile <filepath> can not be combined with other parameters");
-                                Console.WriteLine($"-SyncML <syncml>        one liner SyncML data: e.g. <SyncBody><GET>... escape quotes \" accordingly!");
-                                Console.WriteLine($"                        parameter -syncML <syncml> can not be combined with other parameters");
-                                Console.WriteLine($"-OMAURI <omauri>        specify OMA-URI: e.g. ./DevDetail/Ext/Microsoft/DeviceName");
-                                Console.WriteLine($"-Command <command>      specify Command: GET, ADD, ATOMIC, DELETE, EXEC, REPLACE, RESULT");
-                                Console.WriteLine($"-Data <data>            specify Data: e.g. 123, ABC, base64");
-                                Console.WriteLine($"-Format <format>        specify Format: int, char, bool, b64, null, xml");
-                                Console.WriteLine($"-Type <type>            specify Type: e.g. text/plain, b64, registered MIME content-type");
-                                Console.WriteLine($"-Cleanup                specify Cleanup, calls Unregister API to revert most changes");
+                                Console.WriteLine($"-SyncMLFile <filepath>   path to input file with SyncML data: e.g. <SyncBody><GET>...");
+                                Console.WriteLine($"                         parameter -syncMLFile <filepath> can only be combined with -KeepLocalMDMEnrollment");
+                                Console.WriteLine($"-SyncML <syncml>         one liner SyncML data: e.g. <SyncBody><GET>... escape quotes \" accordingly!");
+                                Console.WriteLine($"                         parameter -syncML <syncml> can only be combined with -KeepLocalMDMEnrollment");
+                                Console.WriteLine($"-OMAURI <omauri>         specify OMA-URI: e.g. ./DevDetail/Ext/Microsoft/DeviceName");
+                                Console.WriteLine($"-Command <command>       specify Command: GET, ADD, ATOMIC, DELETE, EXEC, REPLACE, RESULT");
+                                Console.WriteLine($"-Data <data>             specify Data: e.g. 123, ABC, base64");
+                                Console.WriteLine($"-Format <format>         specify Format: int, char, bool, b64, null, xml");
+                                Console.WriteLine($"-Type <type>             specify Type: e.g. text/plain, b64, registered MIME content-type");
+                                Console.WriteLine($"-KeepLocalMDMEnrollment  specify KeepLocalMDMEnrollment, prevent call of Unregister API to revert most changes");
+                                Console.WriteLine($"-Quiet                   specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;
                             default:

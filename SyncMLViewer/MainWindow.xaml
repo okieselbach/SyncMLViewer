@@ -45,7 +45,7 @@
             </TabItem>
             <TabItem x:Name="TabItemSyncMLRequests" Header="SyncML Requests">
                 <Grid Background="White">
-                    <ComboBox x:Name="ComboBoxCmd" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="79" IsReadOnly="True" GotFocus="HideAutoCompleteStackPanel">
+                    <ComboBox x:Name="ComboBoxCmd" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="75" IsReadOnly="True" GotFocus="HideAutoCompleteStackPanel">
                         <ComboBoxItem Content="GET" IsSelected="True"/>
                         <ComboBoxItem Content="ADD"/>
                         <ComboBoxItem Content="ATOMIC"/>
@@ -54,8 +54,8 @@
                         <ComboBoxItem Content="REPLACE"/>
                         <ComboBoxItem Content="RESULT"/>
                     </ComboBox>
-                    <TextBox x:Name="TextBoxUri" Margin="94,16,115,0" TextWrapping="Wrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp"/>
-                    <Border BorderBrush="LightGray" BorderThickness="1" Margin="94,34,115,0" Background="White" Panel.ZIndex="100" Visibility="Collapsed" Height="156" VerticalAlignment="Top">
+                    <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="Wrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22"/>
+                    <Border BorderBrush="LightGray" BorderThickness="1" Margin="90,36,115,0" Background="White" Panel.ZIndex="100" Visibility="Collapsed" Height="154" VerticalAlignment="Top">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Name="resultStack"/>
                         </ScrollViewer>
@@ -82,6 +82,14 @@
                     <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
                     <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Checked="CheckBoxUseSyncML_Checked" Unchecked="CheckBoxUseSyncML_Unchecked" Height="15" VerticalAlignment="Bottom"/>
                     <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
+                    <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84">
+                        <ComboBoxItem Content="text/plain" IsSelected="True"/>
+                    </ComboBox>
+                    <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57">
+                        <ComboBoxItem Content="chr" />
+                        <ComboBoxItem Content="int" IsSelected="True"/>
+                    </ComboBox>
+                    <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
@@ -137,10 +145,10 @@
                 <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" IsCheckable="True" IsChecked="false" Click="menuItemWordWrap_Click" />
                 <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemCleanupAfterExit" Header="Cleanup working folder after exit" IsCheckable="True" IsChecked="true" />
+                <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" />
                 <Separator />
                 <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                 <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
-                <MenuItem x:Name="menuItemRequestsLogging" Header="_Enable Logging for SyncML Requests" IsCheckable="True" IsChecked="False" ToolTip="Enables additional log file in execution folder for all SyncML requests"/>
                 <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
             </MenuItem>
             <MenuItem Header="_Actions">

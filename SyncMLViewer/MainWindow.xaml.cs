@@ -1303,9 +1303,9 @@ namespace SyncMLViewer
                 syncML = syncML.Replace("CMD-ITEM", ComboBoxCmd.Text);
                 syncML = syncML.Replace("CMDID-ITEM", _CmdIdCounter.ToString());
                 syncML = syncML.Replace("OMAURI-ITEM", TextBoxUri.Text);
-                syncML = syncML.Replace("FORMAT-ITEM", "int");
-                syncML = syncML.Replace("TYPE-ITEM", "text/plain");
-                syncML = syncML.Replace("DATA-ITEM", "");
+                syncML = syncML.Replace("FORMAT-ITEM", ComboBoxFormat.Text);
+                syncML = syncML.Replace("TYPE-ITEM", ComboBoxDataType.Text);
+                syncML = syncML.Replace("DATA-ITEM", TextBoxData.Text);
             }
 
             // try adding location URI to AutoCompleteModel
@@ -1365,6 +1365,14 @@ namespace SyncMLViewer
                 }
             }
 
+            // build the arguments for the Executer binary
+            var arguments = $"-SyncMLFile \"{syncMlInputFilePath}\"";
+
+            if (menuItemKeepLocalMDMEnrollment.IsChecked)
+            {
+                arguments = $"-SyncMLFile \"{syncMlInputFilePath}\" -KeepLocalMDMEnrollment";
+            }
+
             var resultOutput = string.Empty;
             var resultError = string.Empty;
 
@@ -1374,7 +1382,7 @@ namespace SyncMLViewer
                     {
                         UseShellExecute = false,
                         FileName = path,
-                        Arguments = $"-SyncMLFile \"{syncMlInputFilePath}\"",
+                        Arguments = arguments,
                         CreateNoWindow = true,
                         //RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -1432,6 +1440,9 @@ namespace SyncMLViewer
             if (((CheckBox)sender).IsChecked == true)
             {
                 ComboBoxCmd.IsEnabled = false;
+                ComboBoxFormat.IsEnabled = false;
+                ComboBoxDataType.IsEnabled = false;
+                TextBoxData.IsEnabled = false;
                 TextBoxUri.IsEnabled = false;
                 TextEditorSyncMlRequestsRequestViewer.IsReadOnly = false;
                 TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = true;
@@ -1443,6 +1454,9 @@ namespace SyncMLViewer
             if (((CheckBox)sender).IsChecked == false)
             {
                 ComboBoxCmd.IsEnabled = true;
+                ComboBoxFormat.IsEnabled = true;
+                ComboBoxDataType.IsEnabled = true;
+                TextBoxData.IsEnabled = true;
                 TextBoxUri.IsEnabled = true;
                 TextEditorSyncMlRequestsRequestViewer.IsReadOnly = true;
                 TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = false;
