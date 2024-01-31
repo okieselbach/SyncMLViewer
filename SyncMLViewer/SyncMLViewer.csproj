@@ -288,12 +288,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AutoCompleteModel.cs" />
+    <Compile Include="DataEditor.xaml.cs">
+      <DependentUpon>DataEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helper.cs" />
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="SyncMlMessage.cs" />
     <Compile Include="SyncMlProgress.cs" />
     <Compile Include="SyncMlSession.cs" />
     <Compile Include="TraceEventSessionState.cs" />
+    <Page Include="DataEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

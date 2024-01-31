@@ -86,10 +86,15 @@
                         <ComboBoxItem Content="text/plain" IsSelected="True"/>
                     </ComboBox>
                     <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57">
-                        <ComboBoxItem Content="chr" />
-                        <ComboBoxItem Content="int" IsSelected="True"/>
+                        <ComboBoxItem Content="int" />
+                        <ComboBoxItem Content="chr" IsSelected="True"/>
+                        <ComboBoxItem Content="bool" />
+                        <ComboBoxItem Content="xml" />
+                        <ComboBoxItem Content="node" />
+                        <ComboBoxItem Content="null" />
                     </ComboBox>
-                    <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22"/>
+                    <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="Label_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">

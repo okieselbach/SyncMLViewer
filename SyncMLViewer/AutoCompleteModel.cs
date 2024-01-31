@@ -12,7 +12,6 @@ namespace SyncMLViewer
     {
         private List<string> _data = new List<string>();
 
-        // Constructor
         public AutoCompleteModel()
         {
             _data.Add("./DevDetail/OEM");

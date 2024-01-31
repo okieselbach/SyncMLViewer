@@ -171,6 +171,7 @@ namespace SyncMLViewer
 
             TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = false;
             TextEditorSyncMlRequestsRequestViewer.Options.EnableRectangularSelection = true;
+            TextEditorSyncMlRequestsRequestViewer.Options.EnableTextDragDrop = true;
             TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
 
             TextEditorCodes.Options.EnableHyperlinks = true;
@@ -1307,6 +1308,7 @@ namespace SyncMLViewer
                 syncML = syncML.Replace("TYPE-ITEM", ComboBoxDataType.Text);
                 syncML = syncML.Replace("DATA-ITEM", TextBoxData.Text);
 
+                // remove data type if empty
                 if (string.IsNullOrEmpty(ComboBoxDataType.Text))
                 {
                     syncML = syncML.Replace("<Type xmlns=\"syncml:metinf\"></Type>", "");
@@ -1449,6 +1451,8 @@ namespace SyncMLViewer
                 ComboBoxDataType.IsEnabled = false;
                 TextBoxData.IsEnabled = false;
                 TextBoxUri.IsEnabled = false;
+                LabelEditor.IsEnabled = false;
+                LabelEditor.Foreground = Brushes.Gray;
                 TextEditorSyncMlRequestsRequestViewer.IsReadOnly = false;
                 TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = true;
             }
@@ -1463,6 +1467,8 @@ namespace SyncMLViewer
                 ComboBoxDataType.IsEnabled = true;
                 TextBoxData.IsEnabled = true;
                 TextBoxUri.IsEnabled = true;
+                LabelEditor.IsEnabled = true;
+                LabelEditor.Foreground = new SolidColorBrush(Color.FromRgb(0, 42, 248));
                 TextEditorSyncMlRequestsRequestViewer.IsReadOnly = true;
                 TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = false;
                 //TextEditorSyncMlRequestsRequestViewer.Clear();
@@ -1579,6 +1585,18 @@ namespace SyncMLViewer
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenUrl("http://aka.ms/CSPList");
+        }
+
+        private void Label_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = TextBoxData.Text
+            };
+
+            dataEditor.ShowDialog();
+
+            TextBoxData.Text = dataEditor.DataFromSecondWindow;
         }
     }
 }
