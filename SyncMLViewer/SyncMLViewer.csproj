@@ -380,7 +380,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="TODO.txt" />
+    <None Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\SyncMLViewer.Executer\bin\x64\$(Configuration)\SyncMLViewer.Executer.exe">
