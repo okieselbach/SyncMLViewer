@@ -1144,6 +1144,10 @@ namespace SyncMLViewer
                 {
                     text = TextEditorMessages.SelectedText;
                 }
+                else if (TextEditorSyncMlRequests.IsVisible)
+                {
+                    text = TextEditorSyncMlRequests.SelectedText;
+                }
 
                 // try to be nice and remove some unwanted characters for higher success rate
                 text = text.Replace(".", "");
@@ -1715,6 +1719,10 @@ namespace SyncMLViewer
             else if (TextEditorMessages.IsVisible)
             {
                 text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            { 
+                text = TextEditorSyncMlRequests.SelectedText;
             }
 
             HttpUtility.HtmlDecode(text, myWriter);
