@@ -1,0 +1,62 @@
+﻿menu set enrollmenttype...
+
+[Thursday 1:07 PM] Rudy Ooms
+for now I just change the enrollmenttype from 6 to 14 (localmdm)
+[Thursday 1:08 PM] Rudy Ooms
+and of course making the sure localmdm enrollment stuff in the reigstry is not 14
+[Thursday 1:09 PM] Rudy Ooms
+i have 3 lines of powershell  ... 1 remove the enrollmenttype 14 from the localmdm enrollment. 2 changing the enrollment type of the mdm one to 14 (which was 6)  ... executing the csp with the localmdm.. and chaning back the mdm enrollment type to 6  
+[Thursday 1:10 PM] Rudy Ooms
+https://youtu.be/E608jzFFLng (hidden vi)
+[Thursday 1:11 PM] Rudy Ooms
+Noticed that it otherwise would target the localmdm enrollment... which we dont want (procmon  ) 
+ 
+There is a GUID for the localmdm enrollment... Provider_ID = Local_Management
+auf meiner Maschine z.B. Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\2AA36049-15B8-40DA-9356-25A9AFE6F434
+
+Show what we are going to do and warn and ask for confirmation, with experimental warning and advice it may render the device to an unusable state (broken state)
+
+
+Error codes in executer
+
+
+Set command ausprobieren (Rudy already verified)
+
+
+REPLACE Testen in VM
+
+<SyncML xmlns="SYNCML:SYNCML1.2">
+  <SyncBody>
+    <Replace>
+      <CmdID>1</CmdID>
+      <Item>
+        <Target>
+          <LocURI>
+            ./Vendor/MSFT/Personalization/LockScreenImageUrl
+          </LocURI>
+        </Target>
+        <Meta>
+          <Format xmlns="syncml:metinf">chr</Format>
+          <Type>text/plain</Type>
+        </Meta>
+        <Data>https://www.contoso.com/desktopimage.jpeg</Data>
+      </Item>
+    </Replace>
+    <Replace>
+      <CmdID>2</CmdID>
+      <Item>
+        <Target>
+          <LocURI>
+            ./Vendor/MSFT/Personalization/DesktopImageUrl
+          </LocURI>
+        </Target>
+        <Meta>
+          <Format xmlns="syncml:metinf">chr</Format>
+          <Type>text/plain</Type>
+        </Meta>
+        <Data>https://www.contoso.com/lockscreenimage.JPG</Data>
+      </Item>
+    </Replace>
+    <Final/>
+  </SyncBody>
+</SyncML>
