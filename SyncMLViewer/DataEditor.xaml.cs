@@ -24,11 +24,11 @@ namespace SyncMLViewer
     {
         public string DataFromMainWindow { get; set; }
 
+        public string DataFromSecondWindow { get; private set; }
+
         public bool JsonSyntax { get; set; }
 
         public bool HideButonClear { get; set; }
-
-        public string DataFromSecondWindow { get; private set; }
 
         public DataEditor()
         {
