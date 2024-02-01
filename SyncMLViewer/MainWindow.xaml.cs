@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration.Assemblies;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -1442,6 +1443,69 @@ namespace SyncMLViewer
             return tcs.Task;
         }
 
+        private async void RunExecuter(string arguments)
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            // We are extracting the Executer binary from the resources and write it to disk
+            string binaryName = Properties.Resources.Executer;
+            var path = Path.Combine(assemblyPath, binaryName);
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            string resourceName = "SyncMLViewer." + Properties.Resources.Executer;
+            using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (resourceStream != null)
+                {
+                    byte[] buffer = new byte[resourceStream.Length];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+
+                    try
+                    {
+                        File.WriteAllBytes(path, buffer);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to write {binaryName} to disk, ex = {ex}");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Resource {resourceName} not found.");
+                }
+            }
+
+            var resultOutput = string.Empty;
+            var resultError = string.Empty;
+
+            using (var p = new Process
+            {
+                StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = path,
+                        Arguments = arguments,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                    }
+            })
+            {
+                p.OutputDataReceived += (o, args) => { resultOutput += args.Data + Environment.NewLine; };
+                p.ErrorDataReceived += (o, args) => { resultError += args.Data + Environment.NewLine; };
+
+                p.Start();
+
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+
+                Task processExited = WaitForExitAsync(p);
+
+                await processExited;
+            }
+        }
+
         private void CheckBoxUseSyncML_Checked(object sender, RoutedEventArgs e)
         {
             if (((CheckBox)sender).IsChecked == true)
@@ -1597,6 +1661,16 @@ namespace SyncMLViewer
             dataEditor.ShowDialog();
 
             TextBoxData.Text = dataEditor.DataFromSecondWindow;
+        }
+
+        private void MenuItemSetEmbeddedMode_Click(object sender, RoutedEventArgs e)
+        {
+            RunExecuter("-SetEmbeddedMode true");
+        }
+
+        private void MenuItemClearEmbeddedMode_Click(object sender, RoutedEventArgs e)
+        {
+            RunExecuter("-SetEmbeddedMode false");
         }
     }
 }

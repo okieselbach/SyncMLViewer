@@ -133,51 +133,13 @@ namespace SyncMLViewer.Executer
             string syncMLResult = string.Empty;
             object originalFlagsValue = 0;
 
-            Debug.WriteLine(@"[MDMLocalManagement] Enabling temporarily EmbeddedMode via Registry");
-            string uuidString = GetSmBiosGuid();
-            Debug.WriteLine($"[MDMLocalManagement] GetSmBiosGuid() = {uuidString}");
-
             try
             {
-                // write hashed UUID value to registry embeddedmode\Parameters\flags value otherwise mdmlocalmanagement.dll functions are not working
-                // verified with IDA, embeddedmodesvcapi.dll!GetFlags() function
-                byte[] hash = GetSHA265(uuidString);
-                Debug.WriteLine($"[MDMLocalManagement] GetSHA265(uuidString) = {PrettifyArray(hash)}");
+                GetRegistryKeyEmbeddedModeFlag(out originalFlagsValue);
 
-                Debug.WriteLine(@"[MDMLocalManagement] Accessing Registry 'HKLM\SYSTEM\CurrentControlSet\Services\EmbeddedMode\Parameters\Flags'"); 
-                if (GetRegistryKeyEmbeddedModeFlag(out originalFlagsValue))
+                if (!SetEmbeddedMode())
                 {
-                    if (originalFlagsValue != null)
-                    {
-                        if (originalFlagsValue is byte[] valueByteArray)
-                        {
-                            Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags read '{ToHexString(valueByteArray)}'");
-                            Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags could be a leftover, crashed instance for example...");
-                        }
-                        else if (originalFlagsValue is int intValue)
-                        {
-                            Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags read '{intValue}'");
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine("[MDMLocalManagement] Registry Original EmbeddedMode Flags could not read");
-                        return syncMLResult;
-                    }
-
-                    if (SetRegistryKeyEmbeddedModeFlag(hash))
-                    {
-                        Debug.WriteLine($"[MDMLocalManagement] Registry EmbeddedMode Flags set successful to '{ToHexString(hash)}'");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("[MDMLocalManagement] Registry EmbeddedMode Flags could not be set");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("[MDMLocalManagement] Registry Original EmbeddedMode Flags could not read");
-                    return syncMLResult;
+                    return string.Empty;
                 }
 
                 RegisterLocalMDM();
@@ -208,12 +170,12 @@ namespace SyncMLViewer.Executer
                     else
                     {
                         Debug.WriteLine("[MDMLocalManagement] Registry EmbeddedMode Flags could not be restored");
+                        ClearEmbeddedMode();
                     }
                 }
                 else
                 {
-                    SetRegistryKeyEmbeddedModeFlag(0);
-                    Debug.WriteLine("[MDMLocalManagement] Registry EmbeddedMode Flags could not be restored, restoring to '0'");
+                    ClearEmbeddedMode();
                 }
             }
 
@@ -262,6 +224,63 @@ namespace SyncMLViewer.Executer
             Debug.WriteLine(TryPrettyXml(syncMLResult));
 
             return syncMLResult;
+        }
+
+        public static bool SetEmbeddedMode()
+        {
+            object originalFlagsValue;
+
+            string uuidString = GetSmBiosGuid();
+            Debug.WriteLine($"[MDMLocalManagement] GetSmBiosGuid() = {uuidString}");
+
+            // write hashed UUID value to registry embeddedmode\Parameters\flags value otherwise mdmlocalmanagement.dll functions are not working
+            // verified with IDA, embeddedmodesvcapi.dll!GetFlags() function
+            byte[] hash = GetSHA265(uuidString);
+            Debug.WriteLine($"[MDMLocalManagement] GetSHA265(uuidString) = {PrettifyArray(hash)}");
+
+            Debug.WriteLine(@"[MDMLocalManagement] Accessing Registry 'HKLM\SYSTEM\CurrentControlSet\Services\EmbeddedMode\Parameters\Flags'");
+            if (GetRegistryKeyEmbeddedModeFlag(out originalFlagsValue))
+            {
+                if (originalFlagsValue != null)
+                {
+                    if (originalFlagsValue is byte[] valueByteArray)
+                    {
+                        Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags read '{ToHexString(valueByteArray)}'");
+                        Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags could be a leftover, crashed instance for example...");
+                    }
+                    else if (originalFlagsValue is int intValue)
+                    {
+                        Debug.WriteLine($"[MDMLocalManagement] Registry Original EmbeddedMode Flags read '{intValue}'");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("[MDMLocalManagement] Registry Original EmbeddedMode Flags could not read");
+                    return false;
+                }
+
+                if (SetRegistryKeyEmbeddedModeFlag(hash))
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] Registry EmbeddedMode Flags set successful to '{ToHexString(hash)}'");
+                }
+                else
+                {
+                    Debug.WriteLine("[MDMLocalManagement] Registry EmbeddedMode Flags could not be set");
+                }
+            }
+            else
+            {
+                Debug.WriteLine("[MDMLocalManagement] Registry Original EmbeddedMode Flags could not read");
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool ClearEmbeddedMode()
+        {
+            Debug.WriteLine("[MDMLocalManagement] Registry EmbeddedMode Flags set to '0'");
+            return SetRegistryKeyEmbeddedModeFlag(0);
         }
 
         private static bool SetRegistryKeyEmbeddedModeFlag(object originalFlagsValue)

@@ -28,6 +28,8 @@ namespace SyncMLViewer.Executer
         private static bool argKeepLocalMDMEnrollment = false; 
         private static bool argKeepLocalMDMEnrollmentValue = false;
         private static bool argQuiet = false;
+        private static bool argSetEmbeddedMode = false;
+        private static bool argSetEmbeddedModeValue = false;
 
         [MTAThread]
         static void Main(string[] args)
@@ -70,6 +72,19 @@ namespace SyncMLViewer.Executer
             }
             else if (args.Length >= 2)
             {
+                if (argSetEmbeddedMode)
+                {
+                    Debug.WriteLine($"Received {nameof(argSetEmbeddedMode)}: {argSetEmbeddedModeValue}");
+                    if (argSetEmbeddedModeValue == true)
+                    {
+                        MdmLocalManagement.SetEmbeddedMode();
+                    }
+                    else
+                    {
+                        MdmLocalManagement.ClearEmbeddedMode();
+                    }
+                    return;
+                }
                 if (argKeepLocalMDMEnrollment)
                 {
                     Debug.WriteLine($"Received {nameof(argKeepLocalMDMEnrollment)}: {argKeepLocalMDMEnrollmentValue}");
@@ -195,27 +210,39 @@ namespace SyncMLViewer.Executer
                                 argKeepLocalMDMEnrollment = true;
                                 argKeepLocalMDMEnrollmentValue = true;
                                 break;
+                            case "setembeddedmode":
+                                argSetEmbeddedMode = true;
+                                try
+                                {
+                                    argSetEmbeddedModeValue = bool.Parse(args[i + 1]);
+                                }
+                                catch (Exception)
+                                {
+                                    Console.WriteLine($"ERROR: {arg} requires a boolean value (true|false)");
+                                }
+                                break;
                             case "quiet":
                                 argQuiet = true;
                                 break;
                             case "?":
                             case "h":
                                 Console.WriteLine($"2024 by Oliver Kieselbach (oliverkieselbach.com)");
-                                Console.WriteLine($"The tools uses the Local MDM management API to register, execute, and unregister.");
+                                Console.WriteLine($"The tools uses the Local MDM management API (mdmlocalmanagement.dll) to register, execute, and unregister.");
                                 Console.WriteLine("");
                                 Console.WriteLine($"USAGE: {Assembly.GetExecutingAssembly().GetName().Name} [options...]");
                                 Console.WriteLine("");
-                                Console.WriteLine($"-SyncMLFile <filepath>   path to input file with SyncML data: e.g. <SyncBody><GET>...");
-                                Console.WriteLine($"                         parameter -syncMLFile <filepath> can only be combined with -KeepLocalMDMEnrollment");
-                                Console.WriteLine($"-SyncML <syncml>         one liner SyncML data: e.g. <SyncBody><GET>... escape quotes \" accordingly!");
-                                Console.WriteLine($"                         parameter -syncML <syncml> can only be combined with -KeepLocalMDMEnrollment");
-                                Console.WriteLine($"-OMAURI <omauri>         specify OMA-URI: e.g. ./DevDetail/Ext/Microsoft/DeviceName");
-                                Console.WriteLine($"-Command <command>       specify Command: GET, ADD, ATOMIC, DELETE, EXEC, REPLACE, RESULT");
-                                Console.WriteLine($"-Data <data>             specify Data: e.g. 123, ABC, base64");
-                                Console.WriteLine($"-Format <format>         specify Format: int, char, bool, b64, null, xml");
-                                Console.WriteLine($"-Type <type>             specify Type: e.g. text/plain, b64, registered MIME content-type");
-                                Console.WriteLine($"-KeepLocalMDMEnrollment  specify KeepLocalMDMEnrollment, prevent call of Unregister API to revert most changes");
-                                Console.WriteLine($"-Quiet                   specify Quiet, surpress any ouput");
+                                Console.WriteLine($"-SyncMLFile <filepath>          path to input file with SyncML data: e.g. <SyncBody><GET>...");
+                                Console.WriteLine($"                                parameter -syncMLFile <filepath> can only be combined with -KeepLocalMDMEnrollment");
+                                Console.WriteLine($"-SyncML <syncml>                one liner SyncML data: e.g. <SyncBody><GET>... escape quotes \" accordingly!");
+                                Console.WriteLine($"                                parameter -syncML <syncml> can only be combined with -KeepLocalMDMEnrollment");
+                                Console.WriteLine($"-OMAURI <omauri>                specify OMA-URI: e.g. ./DevDetail/Ext/Microsoft/DeviceName");
+                                Console.WriteLine($"-Command <command>              specify Command: GET, ADD, ATOMIC, DELETE, EXEC, REPLACE, RESULT");
+                                Console.WriteLine($"-Data <data>                    specify Data: e.g. 123, ABC, base64");
+                                Console.WriteLine($"-Format <format>                specify Format: int, char, bool, b64, null, xml");
+                                Console.WriteLine($"-Type <type>                    specify Type: e.g. text/plain, b64, registered MIME content-type");
+                                Console.WriteLine($"-SetEmbeddedMode <true|false>   specify SetEmbeddedMode, must be used without other parameters");
+                                Console.WriteLine($"-KeepLocalMDMEnrollment         specify KeepLocalMDMEnrollment, prevent call of Unregister API to revert most changes");
+                                Console.WriteLine($"-Quiet                          specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;
                             default:

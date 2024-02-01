@@ -169,10 +169,10 @@
                     <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
-                    <MenuItem Header="Set EmbeddedMode Registry Flag" IsEnabled="False"/>
-                    <MenuItem Header="Clear EmbeddedMode Registry Flag" IsEnabled="False"/>
-                    <MenuItem Header="Set EnrollmentType Registry Flag" IsEnabled="False"/>
-                    <MenuItem Header="clear EnrollmentType Registry Flag" IsEnabled="False"/>
+                    <MenuItem Header="Set EmbeddedMode Registry Flag" Click="MenuItemSetEmbeddedMode_Click"/>
+                    <MenuItem Header="Clear EmbeddedMode Registry Flag" Click="MenuItemClearEmbeddedMode_Click"/>
+                    <!--<MenuItem Header="Set EnrollmentType Registry Flag" IsEnabled="False"/>
+                    <MenuItem Header="clear EnrollmentType Registry Flag" IsEnabled="False"/>-->
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
