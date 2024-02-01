@@ -673,7 +673,14 @@ namespace SyncMLViewer
                 LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
             }
 
-            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+            try
+            {
+                _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             CheckBoxHtmlDecode.IsChecked = false;
         }
