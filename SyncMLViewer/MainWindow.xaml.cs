@@ -2,7 +2,11 @@
 // https://devblogs.microsoft.com/dotnet/embracing-nullable-reference-types/
 // #nullable enable
 
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Folding;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Search;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
@@ -1131,11 +1135,13 @@ namespace SyncMLViewer
         {
             try
             {
+                var prettyJson = string.Empty;
+                var resultText = string.Empty;
+
                 if (TextEditorStream.IsVisible)
                 {
                     var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorStream.SelectedText));
-                    var prettyJson = string.Empty;
-
+                    
                     try
                     {
                         prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
@@ -1147,19 +1153,18 @@ namespace SyncMLViewer
                     }
                     if (string.IsNullOrEmpty(prettyJson))
                     {
-                        MessageBox.Show(text, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
                         Clipboard.SetText(text);
+                        resultText = text;
                     }
                     else
                     {
-                        MessageBox.Show(prettyJson, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
                         Clipboard.SetText(prettyJson);
+                        resultText = prettyJson;
                     }
                 }
                 else if (TextEditorMessages.IsVisible)
                 {
                     var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorMessages.SelectedText));
-                    var prettyJson = string.Empty;
 
                     try
                     {
@@ -1172,15 +1177,26 @@ namespace SyncMLViewer
                     }
                     if (string.IsNullOrEmpty(prettyJson))
                     {
-                        MessageBox.Show(text, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
                         Clipboard.SetText(text);
+                        resultText = text;
                     }
                     else
                     {
-                        MessageBox.Show(prettyJson, "Base64 Decode - text copied to clipboard", MessageBoxButton.OK);
                         Clipboard.SetText(prettyJson);
+                        resultText = prettyJson;
                     }
                 }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = resultText,
+                    JsonSyntax = true,
+                    HideButonClear = true,
+                    Title = "Data Editor - Base64 Decode - text copied to clipboard",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
             }
             catch (Exception)
             {

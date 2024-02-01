@@ -1,6 +1,9 @@
-﻿using System;
+﻿using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Highlighting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +23,10 @@ namespace SyncMLViewer
     public partial class DataEditor : Window
     {
         public string DataFromMainWindow { get; set; }
+
+        public bool JsonSyntax { get; set; }
+
+        public bool HideButonClear { get; set; }
 
         public string DataFromSecondWindow { get; private set; }
 
@@ -41,6 +48,22 @@ namespace SyncMLViewer
             TextEditorData.Options.HighlightCurrentLine = true;
             TextEditorData.Options.EnableRectangularSelection = true;
             TextEditorData.Options.EnableTextDragDrop = true;
+
+            if (JsonSyntax)
+            {
+                using (var stream = Assembly.GetAssembly(typeof(ICSharpCode.AvalonEdit.TextEditor)).GetManifestResourceStream("ICSharpCode.AvalonEdit.Highlighting.Resources.JavaScript-Mode.xshd"))
+                {
+                    using (var reader = new System.Xml.XmlTextReader(stream))
+                    {
+                        TextEditorData.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                    }
+                }
+            }
+
+            if (HideButonClear)
+            {
+                ButtonClear.Visibility = Visibility.Hidden;
+            }
         }
 
         private void Window_Closed(object sender, EventArgs e)
