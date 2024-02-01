@@ -85,9 +85,32 @@ namespace SyncMLViewer
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
 
+        public ICommand OpenCommand { get; }
+        public ICommand SaveCommand { get; }
+        public ICommand ExitCommand { get; }
+        public ICommand DecodeBase64Command { get; }
+        public ICommand DecodeHtmlCommand { get; }
+        public ICommand WordWrapCommand { get; }
+        public ICommand MdmSyncCommand { get; }
+        public ICommand MmpcSyncCommand { get; }
+        public ICommand RunRequestCommand { get; }
+
         public MainWindow()
         {
             InitializeComponent();
+
+            OpenCommand = new RelayCommand(() => { MenuItemOpen_Click(null, null); });
+            SaveCommand = new RelayCommand(() => { ButtonSaveAs_Click(null, null); });
+            ExitCommand = new RelayCommand(() => { MenuItemExit_OnClick(null, null); });
+            DecodeBase64Command = new RelayCommand(() => { MenuItemDecodeBase64_Click(null, null); });
+            DecodeHtmlCommand = new RelayCommand(() => { MenuItemDecodeHTML_Click(null, null); });
+            WordWrapCommand = new RelayCommand(() => {
+                menuItemWordWrap.IsChecked = !menuItemWordWrap.IsChecked;
+                MenuItemWordWrap_Click(null, null); 
+            });
+            MdmSyncCommand = new RelayCommand(() => { ButtonMDMSync_Click(null, null); });
+            MmpcSyncCommand = new RelayCommand(() => { ButtonMMPCSync_Click(null, null); });
+            RunRequestCommand = new RelayCommand(() => { ButtonRunRequest_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -131,6 +154,7 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
+            // set the DataContext (ViewModel) of the window to this class
             DataContext = this;
 
             this.Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
@@ -216,6 +240,22 @@ namespace SyncMLViewer
                 // exceptions ignored
                 menuItemIntuneManagementExtension.IsEnabled = false;
             }
+        }
+
+        public class RelayCommand : ICommand
+        {
+            private readonly Action _execute;
+
+            public RelayCommand(Action execute)
+            {
+                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            }
+
+            public event EventHandler CanExecuteChanged;
+
+            public bool CanExecute(object parameter) => true;
+
+            public void Execute(object parameter) => _execute();
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -1081,7 +1121,7 @@ namespace SyncMLViewer
             }
         }
 
-        private void menuItemShowAllChars_Click(object sender, RoutedEventArgs e)
+        private void MenuItemShowAllChars_Click(object sender, RoutedEventArgs e)
         {
             if (menuItemShowAllChars.IsChecked)
             {
@@ -1107,7 +1147,7 @@ namespace SyncMLViewer
             }
         }
 
-        private void menuItemWordWrap_Click(object sender, RoutedEventArgs e)
+        private void MenuItemWordWrap_Click(object sender, RoutedEventArgs e)
         {
             if (menuItemWordWrap.IsChecked)
             {
@@ -1288,12 +1328,12 @@ namespace SyncMLViewer
             }
         }
 
-        private async void ButtonRunQuery_Click(object sender, RoutedEventArgs e)
+        private async void ButtonRunRequest_Click(object sender, RoutedEventArgs e)
         {
             _CmdIdCounter++;
             string syncML = string.Empty;
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ButtonRunQuery.IsEnabled = false;
+            ButtonRunRequest.IsEnabled = false;
 
             if (CheckBoxUseSyncML.IsChecked == true)
             {
@@ -1460,7 +1500,7 @@ namespace SyncMLViewer
                 TextEditorSyncMlRequests.ScrollToEnd();
             }
 
-            ButtonRunQuery.IsEnabled = true;
+            ButtonRunRequest.IsEnabled = true;
         }
 
         static Task WaitForExitAsync(Process process)
@@ -1576,7 +1616,7 @@ namespace SyncMLViewer
 
             if (e.Key == Key.Enter)
             {
-                ButtonRunQuery_Click(null, null);
+                ButtonRunRequest_Click(null, null);
                 resultStack.Children.Clear();
                 border.Visibility = System.Windows.Visibility.Collapsed;
                 return;

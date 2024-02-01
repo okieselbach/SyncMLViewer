@@ -3,12 +3,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="SyncMLViewer.MainWindow"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" xmlns:syncmlviewer="clr-namespace:SyncMLViewer" d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow}" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
         Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding DecodeBase64Command}" />
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding DecodeHtmlCommand}" />
+        <KeyBinding Key="F4" Modifiers="Alt" Command="{Binding ExitCommand}" />
+        <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding WordWrapCommand}" />
+        <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding MdmSyncCommand}" />
+        <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding MmpcSyncCommand}" />
+        <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RunRequestCommand}" />
+    </Window.InputBindings>
     <Grid>
-        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync"/>
-        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync"/>
+        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
+        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
@@ -60,7 +71,7 @@
                             <StackPanel Name="resultStack"/>
                         </ScrollViewer>
                     </Border>
-                    <Button x:Name="ButtonRunQuery" Content="Run Query" Margin="0,14,10,0" VerticalAlignment="Top" Height="22" Click="ButtonRunQuery_Click" HorizontalAlignment="Right" Width="100" GotFocus="HideAutoCompleteStackPanel"/>
+                    <Button x:Name="ButtonRunRequest" Content="Run Request" Margin="0,14,10,0" VerticalAlignment="Top" Height="22" Click="ButtonRunRequest_Click" HorizontalAlignment="Right" Width="100" GotFocus="HideAutoCompleteStackPanel" ToolTip="Run Request (Ctrl+R)"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorSyncMlRequests"
                         SyntaxHighlighting="XML"
@@ -137,17 +148,17 @@
         </TabControl>
         <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open..." IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click"/>
-                <MenuItem Header="_Save As..." IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click"/>
+                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click"/>
+                <MenuItem Header="_Save As..." InputGestureText="Ctrl+S" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click"/>
                 <Separator />
-                <MenuItem Header="_Exit" Click="MenuItemExit_OnClick"/>
+                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Options">
                 <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
                 <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
-                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="menuItemShowAllChars_Click" />
-                <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" IsCheckable="True" IsChecked="false" Click="menuItemWordWrap_Click" />
+                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
+                <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" InputGestureText="Ctrl+W" IsCheckable="True" IsChecked="false" Click="MenuItemWordWrap_Click" />
                 <Separator />
                 <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
                 <Separator />
@@ -162,11 +173,12 @@
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Actions">
-                <MenuItem Header="MDM _Sync" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
-                <MenuItem Header="MMP-C Sy_nc" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
+                <MenuItem Header="MDM _Sync" InputGestureText="Ctrl+M" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
+                <MenuItem Header="MMP-C Sy_nc" InputGestureText="Ctrl+K" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
+                <MenuItem Header="_Run Request" InputGestureText="Ctrl+R" Click="ButtonRunRequest_Click"/>
                 <Separator />
-                <MenuItem Header="Decode _BASE64 selected text" Click="MenuItemDecodeBase64_Click"/>
-                <MenuItem Header="Decode _HTML selected text" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
+                <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
@@ -180,8 +192,8 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True">
-                    <MenuItem Header="-> P_rovisioning" Click="MenuItemRegistryProvisioning_Click"/>
-                    <MenuItem Header="-> _PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
+                    <MenuItem Header="-> Provisioning" Click="MenuItemRegistryProvisioning_Click"/>
+                    <MenuItem Header="-> PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                     <MenuItem Header="-> RebootRequiredURIs" Click="MenuItemRebootRequiredUris_Click"/>
                     <MenuItem Header="-> DeclaredConfiguration" Click="MenuItemDeclaredConfiguration_Click"/>
                     <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemEnterpriseDesktopAppManagement_Click"/>
