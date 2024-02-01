@@ -1,0 +1,23 @@
+﻿Modify the SyncMLViewer.csproj file manually and add EmbeddedResource with $(Configuration) variable in path:
+
+```xml
+ <ItemGroup>
+    <EmbeddedResource Include="..\SyncMLViewer.Executer\bin\x64\$(Configuration)\SyncMLViewer.Executer.exe">
+      <Link>SyncMLViewer.Executer.exe</Link>
+    </EmbeddedResource>
+ </ItemGroup>
+```
+
+Manual way:
+------------
+To embedd SyncMLViewer.Executer.exe into the SyncMLViewer.exe, you need to copy the 
+SyncMLViewer.Executer.exe (show all files in SyncMLViewer.Executer project) into the SyncMLViewer project root via "Paste as Link".
+
+Then on Properties of the SyncMLViewer.Executer.exe, set "Build Action" to "Embedded Resource" and "Copy to Output Directory" to "Do not copy".
+The Filename must be "SyncMLViewer.Executer.exe" (without path).
+
+Be sure that the Release Version of SyncMLViewer includes the Release Version of SyncMLViewer.Executer.exe. Can be seen easily in the 
+path ...x64\Release\SyncMLViewer.Executer.exe, not the Debug Version.
+
+For Debug build remove the Link to the Release Version of SyncMLViewer.Executer.exe and add the Debug Version of SyncMLViewer.Executer.exe 
+and change the properties accordingly to "Embedded Resource".

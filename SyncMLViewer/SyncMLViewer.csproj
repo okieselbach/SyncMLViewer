@@ -380,12 +380,15 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\SyncMLViewer.Executer\bin\x64\Debug\SyncMLViewer.Executer.exe">
+    <Resource Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\SyncMLViewer.Executer\bin\x64\$(Configuration)\SyncMLViewer.Executer.exe">
       <Link>SyncMLViewer.Executer.exe</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="TODO.txt" />
+    <Resource Include="Build-Instructions.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
