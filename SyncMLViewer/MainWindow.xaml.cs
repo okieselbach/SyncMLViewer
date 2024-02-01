@@ -2,11 +2,7 @@
 // https://devblogs.microsoft.com/dotnet/embracing-nullable-reference-types/
 // #nullable enable
 
-using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Folding;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Search;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
@@ -14,30 +10,31 @@ using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using SyncMLViewer.Properties;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Configuration.Assemblies;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Net;
 using System.Net.Cache;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Media3D;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using static System.Net.Mime.MediaTypeNames;
+using Application = System.Windows.Application;
 using Path = System.IO.Path;
 
 namespace SyncMLViewer
@@ -748,10 +745,10 @@ namespace SyncMLViewer
         {
             try
             {
-                using (var webClient = new WebClient())
+                using (var webClient = new System.Net.WebClient())
                 {
-                    var systemWebProxy = WebRequest.GetSystemWebProxy();
-                    systemWebProxy.Credentials = CredentialCache.DefaultCredentials;
+                    var systemWebProxy = System.Net.WebRequest.GetSystemWebProxy();
+                    systemWebProxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
                     webClient.Proxy = systemWebProxy;
                     webClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 
@@ -1135,56 +1132,51 @@ namespace SyncMLViewer
         {
             try
             {
+                var text = string.Empty;
                 var prettyJson = string.Empty;
                 var resultText = string.Empty;
 
                 if (TextEditorStream.IsVisible)
                 {
-                    var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorStream.SelectedText));
-                    
-                    try
-                    {
-                        prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
-
-                    }
-                    catch (Exception)
-                    {
-                        // prevent Exceptions for non-JSON data
-                    }
-                    if (string.IsNullOrEmpty(prettyJson))
-                    {
-                        Clipboard.SetText(text);
-                        resultText = text;
-                    }
-                    else
-                    {
-                        Clipboard.SetText(prettyJson);
-                        resultText = prettyJson;
-                    }
+                    text = TextEditorStream.SelectedText;                  
                 }
                 else if (TextEditorMessages.IsVisible)
                 {
-                    var text = Encoding.UTF8.GetString(Convert.FromBase64String(TextEditorMessages.SelectedText));
+                    text = TextEditorMessages.SelectedText;
+                }
 
-                    try
-                    {
-                        prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+                // try to be nice and remove some unwanted characters for higher success rate
+                text = text.Replace(".", "");
+                text = text.Replace("\n", "");
+                text = text.Replace("\r", "");
+                text = text.Replace("\t", "");
 
-                    }
-                    catch (Exception)
-                    {
-                        // prevent Exceptions for non-JSON data
-                    }
-                    if (string.IsNullOrEmpty(prettyJson))
-                    {
-                        Clipboard.SetText(text);
-                        resultText = text;
-                    }
-                    else
-                    {
-                        Clipboard.SetText(prettyJson);
-                        resultText = prettyJson;
-                    }
+                // base64 test should be divisible by 4 or append =
+                while (text.Length % 4 != 0)
+                {
+                    text += '=';
+                }
+
+                text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
+
+                try
+                {
+                    prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-JSON data
+                }
+                if (string.IsNullOrEmpty(prettyJson))
+                {
+                    Clipboard.SetText(text);
+                    resultText = text;
+                }
+                else
+                {
+                    Clipboard.SetText(prettyJson);
+                    resultText = prettyJson;
                 }
 
                 DataEditor dataEditor = new DataEditor
@@ -1620,7 +1612,7 @@ namespace SyncMLViewer
                 if (obj.ToLower().StartsWith(query.ToLower()))
                 {
                     // The word starts with this... Autocomplete must work   
-                    addItem(obj);
+                    AddTextBlockItem(obj);
                     found = true;
                 }
             }
@@ -1633,7 +1625,7 @@ namespace SyncMLViewer
             }
         }
 
-        private void addItem(string text)
+        private void AddTextBlockItem(string text)
         {
             TextBlock block = new TextBlock();
             block.Text = text; // add text
@@ -1708,6 +1700,37 @@ namespace SyncMLViewer
         private void MenuItemClearEmbeddedMode_Click(object sender, RoutedEventArgs e)
         {
             RunExecuter("-SetEmbeddedMode false");
+        }
+
+        private void MenuItemDecodeHTML_Click(object sender, RoutedEventArgs e)
+        {
+            StringWriter myWriter = new StringWriter();
+
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+
+            HttpUtility.HtmlDecode(text, myWriter);
+            var decodedText = myWriter.ToString();
+            Clipboard.SetText(decodedText);
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = decodedText,
+                JsonSyntax = true,
+                HideButonClear = true,
+                Title = "Data Editor - HTML Decode - text copied to clipboard",
+                TextEditorData = { ShowLineNumbers = false }
+            };
+
+            dataEditor.ShowDialog();
         }
     }
 }

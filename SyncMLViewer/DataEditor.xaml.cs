@@ -85,5 +85,14 @@ namespace SyncMLViewer
         {
             TextEditorData.Clear();
         }
+
+        private void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                DataFromSecondWindow = TextEditorData.Text;
+                Close();
+            }
+        }
     }
 }
