@@ -439,7 +439,14 @@ namespace SyncMLViewer
 
                     if (!menuItemBackgroundLogging.IsChecked)
                     {
-                        _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+                        try
+                        {
+                            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+                        }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
 
                         var valueSessionId = "0";
                         var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
