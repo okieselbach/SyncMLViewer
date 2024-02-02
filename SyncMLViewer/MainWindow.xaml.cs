@@ -250,7 +250,9 @@ namespace SyncMLViewer
                 _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             }
 
+#pragma warning disable CS0067
             public event EventHandler CanExecuteChanged;
+#pragma warning restore CS0067
 
             public bool CanExecute(object parameter) => true;
 
