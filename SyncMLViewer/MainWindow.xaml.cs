@@ -92,6 +92,7 @@ namespace SyncMLViewer
         public ICommand MdmSyncCommand { get; }
         public ICommand MmpcSyncCommand { get; }
         public ICommand RunRequestCommand { get; }
+        public ICommand ClearCommand { get; }
 
         public MainWindow()
         {
@@ -109,6 +110,7 @@ namespace SyncMLViewer
             MdmSyncCommand = new RelayCommand(() => { ButtonMDMSync_Click(null, null); });
             MmpcSyncCommand = new RelayCommand(() => { ButtonMMPCSync_Click(null, null); });
             RunRequestCommand = new RelayCommand(() => { ButtonRunRequest_Click(null, null); });
+            ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;

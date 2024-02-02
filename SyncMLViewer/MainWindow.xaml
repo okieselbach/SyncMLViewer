@@ -16,6 +16,7 @@
         <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding MdmSyncCommand}" />
         <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding MmpcSyncCommand}" />
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RunRequestCommand}" />
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
     </Window.InputBindings>
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
@@ -31,8 +32,8 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"/>
-                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream."/>
-                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file."/>
+                    <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream. (Ctrl+P)"/>
+                    <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file. (Ctrl+S)"/>
                 </Grid>
             </TabItem>
             <TabItem Header="SyncML Sessions/Messages">
@@ -181,7 +182,7 @@
                 <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
                 <Separator />
-                <MenuItem Header="_Clear Stream" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
+                <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
                 <Separator />
                 <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
