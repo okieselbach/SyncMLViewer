@@ -1170,6 +1170,7 @@ namespace SyncMLViewer
                 var text = string.Empty;
                 var prettyJson = string.Empty;
                 var resultText = string.Empty;
+                bool isJson = false;
 
                 if (TextEditorStream.IsVisible)
                 {
@@ -1196,11 +1197,19 @@ namespace SyncMLViewer
                     text += '=';
                 }
 
-                text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
+                try
+                {
+                    text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("No valid Base64 format", "Base64 Decode", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
 
                 try
                 {
                     prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+                    isJson = true;
 
                 }
                 catch (Exception)
@@ -1221,7 +1230,7 @@ namespace SyncMLViewer
                 DataEditor dataEditor = new DataEditor
                 {
                     DataFromMainWindow = resultText,
-                    JsonSyntax = true,
+                    JsonSyntax = isJson,
                     HideButonClear = true,
                     Title = "Data Editor - Base64 Decode - text copied to clipboard",
                     TextEditorData = { ShowLineNumbers = false }
@@ -1231,7 +1240,7 @@ namespace SyncMLViewer
             }
             catch (Exception)
             {
-                MessageBox.Show("No valid Base64 format", "Base64 Decode", MessageBoxButton.OK, MessageBoxImage.Information);
+                // ignored
             }
         }
 

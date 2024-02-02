@@ -17,6 +17,8 @@ using System.Windows.Shapes;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using static SyncMLViewer.MainWindow;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SyncMLViewer
 {
@@ -33,9 +35,74 @@ namespace SyncMLViewer
 
         public bool HideButonClear { get; set; }
 
+        public ICommand DecodeBase64Command { get; }
+
         public DataEditor()
         {
             InitializeComponent();
+
+            DecodeBase64Command = new RelayCommand(() => {
+
+                string text = TextEditorData.SelectedText;
+                string prettyJson = string.Empty;
+                string resultText = string.Empty;
+                bool isJson = false;
+
+                // try to be nice and remove some unwanted characters for higher success rate
+                text = text.Replace(".", "");
+                text = text.Replace("\n", "");
+                text = text.Replace("\r", "");
+                text = text.Replace("\t", "");
+
+                // base64 test should be divisible by 4 or append =
+                while (text.Length % 4 != 0)
+                {
+                    text += '=';
+                }
+
+                try
+                {
+                    text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                try
+                {
+                    prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+                    isJson = true;
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-JSON data
+                }
+                if (string.IsNullOrEmpty(prettyJson))
+                {
+                    Clipboard.SetText(text);
+                    resultText = text;
+                }
+                else
+                {
+                    Clipboard.SetText(prettyJson);
+                    resultText = prettyJson;
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = TextEditorData.SelectedText,
+                    JsonSyntax = isJson,
+                    HideButonClear = true,
+                    Title = "Data Editor - Base64 Decode - text copied to clipboard",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+            });
+
+            // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
+            DataContext = this;
         }
 
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
