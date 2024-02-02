@@ -234,6 +234,6 @@
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,22.6,11.4" HorizontalAlignment="Right" Width="190" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick"/>
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,224.6,12.4" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible"/>
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
-        <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (64KB max)" Margin="311,0,395,13" Height="26" VerticalAlignment="Bottom" Visibility="Visible"/>
+        <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (64KB max)" Margin="311,0,395,13" Height="26" VerticalAlignment="Bottom" Visibility="Visible" FontWeight="Bold"/>
     </Grid>
 </Window>

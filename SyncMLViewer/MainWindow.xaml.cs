@@ -339,13 +339,11 @@ namespace SyncMLViewer
             try
             {
                 if (TraceEventSession.IsElevated() != true)
-                    throw new InvalidOperationException(
-                        "Collecting ETW trace events requires administrative privileges.");
+                    throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
-                    Debug.WriteLine(
-                        $"The session name '{SessionName}' is already in use, stopping existing and restart a new one.");
+                    Debug.WriteLine($"The session name '{SessionName}' is already in use, stopping existing and restart a new one.");
                     TraceEventSession.GetActiveSession(SessionName).Stop(true);
                 }
 
@@ -356,16 +354,15 @@ namespace SyncMLViewer
                     traceEventSession.StopOnDispose = true;
                     using (var traceEventSource = new ETWTraceEventSource(SessionName, TraceEventSourceType.Session))
                     {
-                        traceEventSession.EnableProvider(OmaDmClient);
-                        traceEventSession.EnableProvider(OmaDmClientProvider);
-
                         // https://docs.microsoft.com/en-us/windows/win32/api/evntrace/ns-evntrace-event_trace_properties
                         // !!! Regardless of buffer size, ETW cannot collect events larger than 64KB.
 
                         // => This results in truncated policies... :-( unaware how to deal with this to get the full event data then...
 
-                        new RegisteredTraceEventParser(traceEventSource).All += (data =>
-                            (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
+                        traceEventSession.EnableProvider(OmaDmClient);
+                        traceEventSession.EnableProvider(OmaDmClientProvider);
+
+                        new RegisteredTraceEventParser(traceEventSource).All += (data => (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
                         traceEventSource.Process();
 
                         TraceEventSessionState.Started = true;
@@ -411,10 +408,8 @@ namespace SyncMLViewer
                 }
 
                 // we are interested in just a few events with relevant data
-                if (string.Equals(userState.EventName, "OmaDmClientExeStart",
-                        StringComparison.CurrentCultureIgnoreCase) ||
-                    string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace",
-                        StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(userState.EventName, "OmaDmClientExeStart", StringComparison.CurrentCultureIgnoreCase) ||
+                    string.Equals(userState.EventName, "OmaDmSyncmlVerboseTrace", StringComparison.CurrentCultureIgnoreCase))
                 {
                     SyncMlProgress.NotInProgress = false;
                     LabelStatus.Content = "Sync is in progress";
