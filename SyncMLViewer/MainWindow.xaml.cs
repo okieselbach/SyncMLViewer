@@ -93,6 +93,7 @@ namespace SyncMLViewer
         public ICommand MmpcSyncCommand { get; }
         public ICommand RunRequestCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand HelpCspCommand { get; }
 
         public MainWindow()
         {
@@ -111,6 +112,7 @@ namespace SyncMLViewer
             MmpcSyncCommand = new RelayCommand(() => { ButtonMMPCSync_Click(null, null); });
             RunRequestCommand = new RelayCommand(() => { ButtonRunRequest_Click(null, null); });
             ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
+            HelpCspCommand = new RelayCommand(() => { MenuItemOpenHelp_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -1712,7 +1714,7 @@ namespace SyncMLViewer
             TextEditorSyncMlRequests.ScrollToEnd();
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void MenuItemOpenHelp_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenUrl("http://aka.ms/CSPList");
         }

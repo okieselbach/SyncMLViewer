@@ -17,6 +17,7 @@
         <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding MmpcSyncCommand}" />
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RunRequestCommand}" />
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
+        <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
     </Window.InputBindings>
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
@@ -223,7 +224,8 @@
             <MenuItem Header="_Help">
                 <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
                 <MenuItem Header="_MDM Diagnostics" Click="MenuItemDiagnostics_Click"/>
-                <MenuItem Header="CSP Online Documentation" Click="MenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="CSP Online Documentation" InputGestureText="Ctrl+F1" Click="MenuItemOpenHelp_Click"/>
                 <Separator />
                 <MenuItem Header="_Check for SyncML Viewer Update" Click="MenuItemCheckUpdate_OnClick"/>
                 <Separator />
