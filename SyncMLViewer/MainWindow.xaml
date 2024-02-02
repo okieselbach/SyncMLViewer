@@ -18,6 +18,7 @@
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RunRequestCommand}" />
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
+        <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
     </Window.InputBindings>
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
@@ -108,8 +109,8 @@
                         <ComboBoxItem Content="null" />
                     </ComboBox>
                     <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="DATA"/>
-                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42"/>
-                    <Label x:Name="LabelFormat" Content="[Format Document]" Margin="340,0,0,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114"/>
+                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42" ToolTip="Open Data Editor"/>
+                    <Label x:Name="LabelFormat" Content="[Format Document]" Margin="340,0,0,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114" ToolTip="Try to format SycML xml (Ctrl+Alt+F)"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">

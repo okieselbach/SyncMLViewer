@@ -94,6 +94,7 @@ namespace SyncMLViewer
         public ICommand RunRequestCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand HelpCspCommand { get; }
+        public ICommand FormatCommand { get; }
 
         public MainWindow()
         {
@@ -113,6 +114,7 @@ namespace SyncMLViewer
             RunRequestCommand = new RelayCommand(() => { ButtonRunRequest_Click(null, null); });
             ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
             HelpCspCommand = new RelayCommand(() => { MenuItemOpenHelp_Click(null, null); });
+            FormatCommand = new RelayCommand(() => { LabelFormat_MouseUp(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
