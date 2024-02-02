@@ -386,12 +386,9 @@ namespace SyncMLViewer
                 if (menuItemTraceEvents.IsChecked == true)
                 {
                     // filter a bit otherwise too much noise...
-                    if (!string.Equals(userState.EventName, "FunctionEntry",
-                            StringComparison.CurrentCultureIgnoreCase) &&
-                        !string.Equals(userState.EventName, "FunctionExit",
-                            StringComparison.CurrentCultureIgnoreCase) &&
-                        !string.Equals(userState.EventName, "GenericLogEvent",
-                            StringComparison.CurrentCultureIgnoreCase))
+                    if (!string.Equals(userState.EventName, "FunctionEntry", StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "FunctionExit", StringComparison.CurrentCultureIgnoreCase) &&
+                        !string.Equals(userState.EventName, "GenericLogEvent", StringComparison.CurrentCultureIgnoreCase))
                     {
                         var message = userState.EventName + " ";
                         TextEditorStream.AppendText(message);
