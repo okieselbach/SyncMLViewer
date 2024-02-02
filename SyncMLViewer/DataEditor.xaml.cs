@@ -14,6 +14,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace SyncMLViewer
 {
@@ -93,6 +96,37 @@ namespace SyncMLViewer
                 DataFromSecondWindow = TextEditorData.Text;
                 Close();
             }
+        }
+
+        private void LabelFormat_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorData.Text = TryFormatXml(TextEditorData.Text).Trim();
+        }
+
+        private static string TryFormatXml(string text)
+        {
+            // try to format the text as XML or JSON
+
+            try
+            {
+                // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                return XElement.Parse(text.Trim()).ToString();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            try
+            {
+                return JToken.Parse(text.Trim()).ToString(Formatting.Indented);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            
+            return text;
         }
     }
 }

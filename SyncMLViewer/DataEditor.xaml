@@ -22,5 +22,6 @@
         <Button x:Name="ButtonClose" Content="_Close" Margin="0,0,10,10" Click="ButtonClose_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" />
         <Button x:Name="ButtonClear" Content="Clear Editor" Margin="0,0,112,10" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" />
         <CheckBox x:Name="CheckBoxWordWrap" Content="WordWrap" HorizontalAlignment="Left" Margin="10,0,0,16" Checked="CheckBoxWordWrap_Checked" Unchecked="CheckBoxWordWrap_Unchecked" Height="15" VerticalAlignment="Bottom" IsChecked="True"/>
+        <Label x:Name="LabelFormat" Content="[Format Document]" Margin="0,0,214,12" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" ToolTip="Try to format as xml/json" HorizontalAlignment="Right" Width="114"/>
     </Grid>
 </Window>
