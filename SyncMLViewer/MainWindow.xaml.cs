@@ -56,10 +56,8 @@ namespace SyncMLViewer
         // interestingly Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider is not needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
-        private const string UpdateXmlUri =
-            "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
-        private const string Update2XmlUri =
-            "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update2.xml";
+        private const string UpdateXmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
+        private const string Update2XmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update2.xml";
 
         private const string SessionName = "SyncMLViewer";
         private readonly BackgroundWorker _backgroundWorker;
@@ -154,7 +152,7 @@ namespace SyncMLViewer
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
             _backgroundWorker.RunWorkerAsync();
 
-            // set the DataContext (ViewModel) of the window to this class
+            // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
             DataContext = this;
 
             this.Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
@@ -221,12 +219,13 @@ namespace SyncMLViewer
                 $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
                 $"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}";
                 
-
+            // no MMP-C enrollment, disable button
             if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
             {
                 ButtonMMPCSync.IsEnabled = false;
             }
 
+            // don't allow to open IME folder if IME is not installed
             try
             {
                 var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\IntuneManagementExtension");
@@ -434,8 +433,7 @@ namespace SyncMLViewer
                     var startIndex = eventDataText.IndexOf("<SyncML", StringComparison.CurrentCultureIgnoreCase);
                     if (startIndex == -1) return;
 
-                    var valueSyncMl =
-                        TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
+                    var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
 
                     var message = string.Empty;
 
@@ -503,8 +501,7 @@ namespace SyncMLViewer
                             valueMsgId = matchMsgId.Groups[1].Value;
 
                         var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
-                            .Add(syncMlMessage);
+                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     }
                 }
                 else if (string.Equals(userState.EventName, "OmaDmSessionStart",
@@ -651,8 +648,7 @@ namespace SyncMLViewer
         {
             if (((CheckBox)sender).IsChecked == true)
             {
-                TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">")
-                    .Replace("&quot;", "\"");
+                TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
             }
             else
             {
@@ -694,7 +690,10 @@ namespace SyncMLViewer
         private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
+            {
                 return;
+            }
+
             TextEditorMessages.Text = selectedItem.Xml;
 
             LabelMessageStats.Content = $"Message length: {selectedItem.Xml.Length}";
@@ -733,7 +732,9 @@ namespace SyncMLViewer
         private void ListBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(ListBoxSessions.SelectedItem is SyncMlSession selectedItem))
+            {
                 return;
+            }
 
             ListBoxMessages.ItemsSource = selectedItem.Messages;
             ListBoxMessages.Items.Refresh();
@@ -808,16 +809,14 @@ namespace SyncMLViewer
 
                     if (_updateCheckInitial)
                     {
-                        LabelUpdateIndicator.Content =
-                            LabelUpdateIndicator.Content.ToString().Replace("[0.0.0]", version);
+                        LabelUpdateIndicator.Content = LabelUpdateIndicator.Content.ToString().Replace("[0.0.0]", version);
                         LabelUpdateIndicator.Visibility = Visibility.Visible;
                         _updateCheckInitial = false;
                         return;
                     }
 
                     LabelUpdateIndicator.Visibility = Visibility.Hidden;
-                    ButtonRestartUpdate.Content =
-                        ButtonRestartUpdate.Content.ToString().Replace("[0.0.0]", version);
+                    ButtonRestartUpdate.Content = ButtonRestartUpdate.Content.ToString().Replace("[0.0.0]", version);
 
                     _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
                     if (_updateTempFileName == null) return;
@@ -1029,7 +1028,9 @@ namespace SyncMLViewer
                         var valueSessionId = "0";
                         var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
                         if (matchSessionId.Success)
+                        {
                             valueSessionId = matchSessionId.Groups[1].Value;
+                        }
 
                         if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
                         {
@@ -1040,11 +1041,12 @@ namespace SyncMLViewer
                         var valueMsgId = "0";
                         var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
                         if (matchMsgId.Success)
+                        {
                             valueMsgId = matchMsgId.Groups[1].Value;
+                        }
 
                         var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages
-                            .Add(syncMlMessage);
+                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     }
                 }
             }
@@ -1103,13 +1105,11 @@ namespace SyncMLViewer
             try
             {
                 if (TraceEventSession.IsElevated() != true)
-                    throw new InvalidOperationException(
-                        "Collecting ETW trace events requires administrative privileges.");
+                    throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
-                    Debug.WriteLine(
-                        $"The session name '{SessionName}' is running, stopping existing session now.");
+                    Debug.WriteLine($"The session name '{SessionName}' is running, stopping existing session now.");
                     TraceEventSession.GetActiveSession(SessionName).Stop(true);
 
                     TraceEventSessionState.Started = false;
