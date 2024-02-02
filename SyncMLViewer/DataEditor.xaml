@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SyncMLViewer"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
-        Title="Data Editor" Height="435" Width="644" Loaded="Window_Loaded" Closed="Window_Closed" KeyUp="Window_KeyUp" WindowStartupLocation="CenterScreen">
+        Title="Data Editor" Height="450" Width="600" MinHeight="200" MinWidth="450" Loaded="Window_Loaded" Closed="Window_Closed" KeyUp="Window_KeyUp" WindowStartupLocation="CenterScreen">
     <Grid Background="White">
         <avalonedit:TextEditor
             x:Name="TextEditorData"
