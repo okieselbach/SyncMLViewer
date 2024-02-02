@@ -175,10 +175,8 @@ namespace SyncMLViewer
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequests);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequestsRequestViewer);
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
-            _foldingManager = FoldingManager.Install(TextEditorSyncMlRequests.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
-            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorSyncMlRequests.Document);
 
             LabelDeviceName.Content = Environment.MachineName;
             _updateStarted = false;
