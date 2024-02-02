@@ -1791,6 +1791,30 @@ namespace SyncMLViewer
         {
             TextEditorSyncMlRequestsRequestViewer.Text = TryFormatXml(TextEditorSyncMlRequestsRequestViewer.Text).Trim(' ');
         }
+
+        private void TabControlSyncMlViewer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl tabControl && tabControl.SelectedItem is TabItem selectedTab)
+            {
+                // Handle the selected TabItem
+                string tabName = selectedTab.Header.ToString();
+                if (string.Compare(tabName, "SyncML Sessions/Messages", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    if (ListBoxMessages.SelectedItem != null)
+                    {
+                        var selectedItem = (SyncMlMessage)ListBoxMessages.SelectedItem;
+                        if (selectedItem.Xml.Length > 60 * 1000)
+                        {
+                            LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
+                        }
+                    }
+                }
+                else
+                {
+                    LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
+                }
+            }
+        }
     }
 }
 

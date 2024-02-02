@@ -23,7 +23,7 @@
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
         <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,12" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)"/>
-        <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55">
+        <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,55" SelectionChanged="TabControlSyncMlViewer_SelectionChanged">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
                     <avalonedit:TextEditor
@@ -38,7 +38,7 @@
                     <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file. (Ctrl+S)"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="SyncML Sessions/Messages">
+            <TabItem x:Name="TabItemMessages" Header="SyncML Sessions/Messages" >
                 <Grid Background="White">
                     <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
