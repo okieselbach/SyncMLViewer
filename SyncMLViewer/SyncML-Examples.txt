@@ -1,0 +1,35 @@
+﻿REPLACE example
+
+<SyncBody>
+    <Replace>
+        <CmdID>1</CmdID>
+        <Item>
+        <Target>
+            <LocURI>
+            ./Vendor/MSFT/Personalization/LockScreenImageUrl
+            </LocURI>
+        </Target>
+        <Meta>
+            <Format xmlns="syncml:metinf">chr</Format>
+            <Type>text/plain</Type>
+        </Meta>
+        <Data>https://wallpapercave.com/wp/6tFtkNQ.jpg</Data>
+        </Item>
+    </Replace>
+    <Replace>
+        <CmdID>2</CmdID>
+        <Item>
+        <Target>
+            <LocURI>
+            ./Vendor/MSFT/Personalization/DesktopImageUrl
+            </LocURI>
+        </Target>
+        <Meta>
+            <Format xmlns="syncml:metinf">chr</Format>
+            <Type>text/plain</Type>
+        </Meta>
+        <Data>https://wallpapercave.com/wp/6tFtkNQ.jpg</Data>
+        </Item>
+    </Replace>
+    <Final/>
+</SyncBody>

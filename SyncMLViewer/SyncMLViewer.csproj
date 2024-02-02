@@ -391,6 +391,9 @@
   <ItemGroup>
     <Resource Include="Build-Instructions.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="SyncML-Examples.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
