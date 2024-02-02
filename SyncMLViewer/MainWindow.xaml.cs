@@ -1349,7 +1349,9 @@ namespace SyncMLViewer
                 }
                 catch (Exception)
                 {
-                    // ignored
+                    MessageBox.Show("Invalid SyncML, proper SyncML starts with <SyncBody>...", "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ButtonRunRequest.IsEnabled = true;
+                    return;
                 }
             }
             else
@@ -1719,7 +1721,7 @@ namespace SyncMLViewer
             Helper.OpenUrl("http://aka.ms/CSPList");
         }
 
-        private void Label_MouseUp(object sender, MouseButtonEventArgs e)
+        private void LabelEditor_MouseUp(object sender, MouseButtonEventArgs e)
         {
             DataEditor dataEditor = new DataEditor
             {
@@ -1774,6 +1776,11 @@ namespace SyncMLViewer
             };
 
             dataEditor.ShowDialog();
+        }
+
+        private void LabelFormat_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorSyncMlRequestsRequestViewer.Text = TryFormatXml(TextEditorSyncMlRequestsRequestViewer.Text).Trim(' ');
         }
     }
 }

@@ -25,7 +25,6 @@ Set command ausprobieren (Rudy already verified)
 
 REPLACE Testen in VM
 
-<SyncML xmlns="SYNCML:SYNCML1.2">
   <SyncBody>
     <Replace>
       <CmdID>1</CmdID>
@@ -59,4 +58,3 @@ REPLACE Testen in VM
     </Replace>
     <Final/>
   </SyncBody>
-</SyncML>

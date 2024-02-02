@@ -90,7 +90,7 @@
                         FontSize="10pt"
                         HorizontalScrollBarVisibility="Auto"
                         IsReadOnly="True"
-                        WordWrap="True" Margin="10,81,0,28" HorizontalAlignment="Left" Width="444" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel"/>
+                        WordWrap="True" Margin="10,81,0,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" HorizontalAlignment="Left" Width="444"/>
                     <Label Content="Current generated/edited SyncML request:" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
                     <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Checked="CheckBoxUseSyncML_Checked" Unchecked="CheckBoxUseSyncML_Unchecked" Height="15" VerticalAlignment="Bottom"/>
@@ -108,7 +108,8 @@
                         <ComboBoxItem Content="null" />
                     </ComboBox>
                     <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="DATA"/>
-                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="Label_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42"/>
+                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42"/>
+                    <Label x:Name="LabelFormat" Content="[Format Document]" Margin="340,0,0,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
