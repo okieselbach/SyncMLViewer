@@ -83,10 +83,16 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="PostBuildScript-Debug.ps1" />
+    <None Include="PostBuildScript-Release.ps1" />
     <None Include="StrongNameKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="sync-icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>powershell -ex bypass -file "$(ProjectDir)\PostBuildScript-$(ConfigurationName).ps1"
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

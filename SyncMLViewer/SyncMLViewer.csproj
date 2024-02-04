@@ -381,6 +381,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="SyncMLViewer.Executer.exe.hash" />
     <None Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>

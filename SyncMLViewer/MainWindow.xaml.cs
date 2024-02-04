@@ -20,6 +20,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Net.Cache;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -1452,6 +1453,46 @@ namespace SyncMLViewer
                 }
             }
 
+            string hash = string.Empty;
+            string resourceNameHash = "SyncMLViewer." + Properties.Resources.Executer + ".hash";
+            using (Stream resourceStream = assembly.GetManifestResourceStream(resourceNameHash))
+            {
+                if (resourceStream != null)
+                {
+                    byte[] buffer = new byte[resourceStream.Length];
+                    resourceStream.Read(buffer, 0, buffer.Length);
+
+                    try
+                    {
+                        hash = Encoding.UTF8.GetString(buffer);
+                        Debug.WriteLine($"{resourceName} expected hash: {hash}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to read {resourceNameHash} from resources, ex = {ex}");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"Resource {resourceNameHash} not found.");
+                }
+            }
+
+            string fileHashString = CalculateSha256FileHash(path);
+
+            // Compare the calculated hash with the provided hash from resources
+            bool hashesMatch = string.Equals(fileHashString, hash.Trim('\r', '\n', ' '), StringComparison.OrdinalIgnoreCase);
+            if (hashesMatch)
+            {
+                Debug.WriteLine($"{resourceName} file hash: {fileHashString} equals expected hash");
+            }
+            else
+            {
+                MessageBox.Show($"The {Properties.Resources.Executer} binary has been tampered with, can't start request.", "Executer binary tampered", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"{Properties.Resources.Executer} file hash: {fileHashString} does not not match expected hash: {hash}");
+                return;
+            }
+
             // build the arguments for the Executer binary
             var arguments = $"-SyncMLFile \"{syncMlInputFilePath}\"";
 
@@ -1520,6 +1561,16 @@ namespace SyncMLViewer
             process.Exited += (sender, e) => tcs.SetResult(null);
 
             return tcs.Task;
+        }
+
+        static string CalculateSha256FileHash(string filePath)
+        {
+            using (var hashAlgorithmProvider = SHA256.Create())
+            using (var stream = File.OpenRead(filePath))
+            {
+                byte[] hashBytes = hashAlgorithmProvider.ComputeHash(stream);
+                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+            }
         }
 
         private async void RunExecuter(string arguments)
