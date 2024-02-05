@@ -68,7 +68,7 @@
                         <ComboBoxItem Content="REPLACE"/>
                         <ComboBoxItem Content="RESULT"/>
                     </ComboBox>
-                    <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="Wrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22" ToolTip="OMA-URI"/>
+                    <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="NoWrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22" ToolTip="OMA-URI" VerticalScrollBarVisibility="Hidden"/>
                     <Border BorderBrush="LightGray" BorderThickness="1" Margin="90,36,115,0" Background="White" Panel.ZIndex="100" Visibility="Collapsed" Height="154" VerticalAlignment="Top">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Name="resultStack"/>
