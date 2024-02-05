@@ -872,6 +872,11 @@ namespace SyncMLViewer
             Application.Current.Shutdown(0);
         }
 
+        private void MenuItemRegistryEnrollments_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments");
+        }
+
         private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");

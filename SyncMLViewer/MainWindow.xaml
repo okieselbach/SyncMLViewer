@@ -197,6 +197,7 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True">
+                    <MenuItem Header="-> Enrollments" Click="MenuItemRegistryEnrollments_Click"/>
                     <MenuItem Header="-> Provisioning" Click="MenuItemRegistryProvisioning_Click"/>
                     <MenuItem Header="-> PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
                     <MenuItem Header="-> RebootRequiredURIs" Click="MenuItemRebootRequiredUris_Click"/>
