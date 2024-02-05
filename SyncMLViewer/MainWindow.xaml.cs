@@ -246,24 +246,6 @@ namespace SyncMLViewer
             }
         }
 
-        public class RelayCommand : ICommand
-        {
-            private readonly Action _execute;
-
-            public RelayCommand(Action execute)
-            {
-                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            }
-
-#pragma warning disable CS0067
-            public event EventHandler CanExecuteChanged;
-#pragma warning restore CS0067
-
-            public bool CanExecute(object parameter) => true;
-
-            public void Execute(object parameter) => _execute();
-        }
-
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (menuItemCleanupAfterExit.IsChecked)
@@ -294,21 +276,23 @@ namespace SyncMLViewer
             _notifyIcon = null;
         }
 
-        void NotifyIcon_Click(object sender, EventArgs e)
+        private void NotifyIcon_Click(object sender, EventArgs e)
         {
             Show();
             WindowState = _storedWindowState;
         }
 
-        void CheckTrayIcon()
+        private void CheckTrayIcon()
         {
             ShowTrayIcon(!IsVisible);
         }
 
-        void ShowTrayIcon(bool show)
+        private void ShowTrayIcon(bool show)
         {
             if (_notifyIcon != null)
+            {
                 _notifyIcon.Visible = show;
+            }
         }
 
         private void Window_StateChanged(object sender, EventArgs e)
@@ -339,12 +323,14 @@ namespace SyncMLViewer
             }
         }
 
-        private static void WorkerTraceEvents(object sender, DoWorkEventArgs e)
+        private void WorkerTraceEvents(object sender, DoWorkEventArgs e)
         {
             try
             {
                 if (TraceEventSession.IsElevated() != true)
+                {
                     throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                }
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
@@ -385,7 +371,9 @@ namespace SyncMLViewer
             try
             {
                 if (!(e.UserState is TraceEvent userState))
+                {
                     throw new ArgumentException("No TraceEvent received.");
+                }
 
                 // show all events
                 if (menuItemTraceEvents.IsChecked == true)
@@ -486,7 +474,9 @@ namespace SyncMLViewer
                         var valueSessionId = "0";
                         var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>").Match(valueSyncMl);
                         if (matchSessionId.Success)
+                        {
                             valueSessionId = matchSessionId.Groups[1].Value;
+                        }
 
                         if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
                         {
@@ -497,7 +487,9 @@ namespace SyncMLViewer
                         var valueMsgId = "0";
                         var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>").Match(valueSyncMl);
                         if (matchMsgId.Success)
+                        {
                             valueMsgId = matchMsgId.Groups[1].Value;
+                        }
 
                         var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
                         SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
@@ -546,7 +538,7 @@ namespace SyncMLViewer
             }
         }
 
-        private static string TryFormatXml(string text)
+        private string TryFormatXml(string text)
         {
             try
             {
@@ -739,7 +731,9 @@ namespace SyncMLViewer
             ListBoxMessages.Items.Refresh();
 
             if (ListBoxMessages.Items.Count > 0)
+            {
                 ListBoxMessages.SelectedIndex = 0;
+            }
         }
 
         private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
@@ -1553,7 +1547,7 @@ namespace SyncMLViewer
             ButtonRunRequest.IsEnabled = true;
         }
 
-        static Task WaitForExitAsync(Process process)
+        private Task WaitForExitAsync(Process process)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -1563,13 +1557,15 @@ namespace SyncMLViewer
             return tcs.Task;
         }
 
-        static string CalculateSha256FileHash(string filePath)
+        private string CalculateSha256FileHash(string filePath)
         {
             using (var hashAlgorithmProvider = SHA256.Create())
-            using (var stream = File.OpenRead(filePath))
             {
-                byte[] hashBytes = hashAlgorithmProvider.ComputeHash(stream);
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                using (var stream = File.OpenRead(filePath))
+                {
+                    byte[] hashBytes = hashAlgorithmProvider.ComputeHash(stream);
+                    return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                }
             }
         }
 
@@ -1728,12 +1724,12 @@ namespace SyncMLViewer
 
         private void AddTextBlockItem(string text)
         {
-            TextBlock block = new TextBlock();
-            block.Text = text; // add text
-
-            // A little style...   
-            block.Margin = new Thickness(2, 3, 2, 3);
-            block.Cursor = Cursors.Hand;
+            TextBlock block = new TextBlock
+            {
+                Text = text,
+                Margin = new Thickness(2, 3, 2, 3),
+                Cursor = Cursors.Hand
+            };
 
             // Mouse events   
             block.MouseLeftButtonUp += (sender, e) =>
