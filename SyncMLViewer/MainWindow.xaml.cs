@@ -133,12 +133,12 @@ namespace SyncMLViewer
             LabelMessageStats.Content = "Message length: 0";
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"{version.Major}.{version.Minor}.{version.Build}";
-            this.Title += $" - {_version}";
+            Title += $" - {_version}";
 
             // based on this: https://possemeeg.wordpress.com/2007/09/06/minimize-to-tray-icon-in-wpf/
             _notifyIcon = new System.Windows.Forms.NotifyIcon
             {
-                BalloonTipText = "The app has been minimised. Click the tray icon to show.",
+                BalloonTipText = "The app has been minimized. Click the tray icon to show.",
                 BalloonTipTitle = "SyncML Viewer",
                 Text = "SyncML Viewer"
             };
@@ -165,7 +165,7 @@ namespace SyncMLViewer
             // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
             DataContext = this;
 
-            this.Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
+            Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
 
             ListBoxSessions.ItemsSource = SyncMlSessions;
             ListBoxSessions.DisplayMemberPath = "Entry";
@@ -595,6 +595,10 @@ namespace SyncMLViewer
                             }
                     };
                     p.Start();
+
+                    // alternative way is to trigger the DeviceEnroller.exe from the scheduled task directly,
+                    // but when something changes I will miss maybe new args or other things..., staying with the task for the time being
+                    // Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\DeviceEnroller.exe"), $"/o \"{_mdmDiagnostics.OmaDmAccountIdMDM}\" /c /b");
                 }
                 catch (Exception ex)
                 {
@@ -625,6 +629,10 @@ namespace SyncMLViewer
                             }
                 };
                 p.Start();
+
+                // alternative way is to trigger the DeviceEnroller.exe from the scheduled task directly,
+                // but when something changes I will miss maybe new args or other things..., staying with the task for the time being
+                // Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\DeviceEnroller.exe"), $"/o \"{_mdmDiagnostics.OmaDmAccountIdMMPC}\" /c /b");
             }
             catch (Exception ex)
             {
@@ -1099,12 +1107,12 @@ namespace SyncMLViewer
 
         private void MenuItemAlwaysOnTop_Checked(object sender, RoutedEventArgs e)
         {
-            this.Topmost = true;
+            Topmost = true;
         }
 
         private void MenuItemAlwaysOnTop_Unchecked(object sender, RoutedEventArgs e)
         {
-            this.Topmost = false;
+            Topmost = false;
         }
 
         private void MenuItemStopEtwSession_Click(object sender, RoutedEventArgs e)
@@ -1112,7 +1120,9 @@ namespace SyncMLViewer
             try
             {
                 if (TraceEventSession.IsElevated() != true)
+                {
                     throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                }
 
                 if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                 {
@@ -1351,7 +1361,7 @@ namespace SyncMLViewer
         private async void ButtonRunRequest_Click(object sender, RoutedEventArgs e)
         {
             _CmdIdCounter++;
-            string syncML = string.Empty;
+            var syncML = string.Empty;
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             ButtonRunRequest.IsEnabled = false;
 
@@ -1415,7 +1425,7 @@ namespace SyncMLViewer
             }
 
             // we are writing the SyncML request input file to the disk
-            string syncMlInputFile = Properties.Resources.InputFile;
+            var syncMlInputFile = Properties.Resources.InputFile;
             var syncMlInputFilePath = Path.Combine(assemblyPath, syncMlInputFile);
             try
             {
@@ -1437,12 +1447,12 @@ namespace SyncMLViewer
             }
 
             // We are extracting the Executer binary from the resources and write it to disk
-            string binaryName = Properties.Resources.Executer;
+            var binaryName = Properties.Resources.Executer;
             var path = Path.Combine(assemblyPath, binaryName);
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetExecutingAssembly();
 
-            string resourceName = "SyncMLViewer." + Properties.Resources.Executer;
+            var resourceName = "SyncMLViewer." + Properties.Resources.Executer;
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (resourceStream != null)
@@ -1465,8 +1475,8 @@ namespace SyncMLViewer
                 }
             }
 
-            string hash = string.Empty;
-            string resourceNameHash = "SyncMLViewer." + Properties.Resources.Executer + ".hash";
+            var hash = string.Empty;
+            var resourceNameHash = "SyncMLViewer." + Properties.Resources.Executer + ".hash";
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceNameHash))
             {
                 if (resourceStream != null)
@@ -1490,7 +1500,7 @@ namespace SyncMLViewer
                 }
             }
 
-            string fileHashString = CalculateSha256FileHash(path);
+            var fileHashString = CalculateSha256FileHash(path);
 
             // Compare the calculated hash with the provided hash from resources
             bool hashesMatch = string.Equals(fileHashString, hash.Trim('\r', '\n', ' '), StringComparison.OrdinalIgnoreCase);
@@ -1592,12 +1602,12 @@ namespace SyncMLViewer
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             // We are extracting the Executer binary from the resources and write it to disk
-            string binaryName = Properties.Resources.Executer;
+            var binaryName = Properties.Resources.Executer;
             var path = Path.Combine(assemblyPath, binaryName);
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetExecutingAssembly();
 
-            string resourceName = "SyncMLViewer." + Properties.Resources.Executer;
+            var resourceName = "SyncMLViewer." + Properties.Resources.Executer;
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (resourceStream != null)
@@ -1692,30 +1702,30 @@ namespace SyncMLViewer
             {
                 ButtonRunRequest_Click(null, null);
                 resultStack.Children.Clear();
-                border.Visibility = System.Windows.Visibility.Collapsed;
+                border.Visibility = Visibility.Collapsed;
                 return;
             }
 
             if (e.Key == Key.Escape)
             {
                 resultStack.Children.Clear();
-                border.Visibility = System.Windows.Visibility.Collapsed;
+                border.Visibility = Visibility.Collapsed;
                 return;
             }
 
             var data = _autoCompleteModel.GetData();
 
-            string query = (sender as TextBox).Text;
+            var query = (sender as TextBox).Text;
 
             if (query.Length == 0)
             {
                 // Clear   
                 resultStack.Children.Clear();
-                border.Visibility = System.Windows.Visibility.Collapsed;
+                border.Visibility = Visibility.Collapsed;
             }
             else
             {
-                border.Visibility = System.Windows.Visibility.Visible;
+                border.Visibility = Visibility.Visible;
             }
 
             // Clear the list   
@@ -1754,7 +1764,7 @@ namespace SyncMLViewer
             {
                 TextBoxUri.Text = (sender as TextBlock).Text;
                 var border = (resultStack.Parent as ScrollViewer).Parent as Border;
-                border.Visibility = System.Windows.Visibility.Collapsed;
+                border.Visibility = Visibility.Collapsed;
             };
 
             block.MouseEnter += (sender, e) =>
@@ -1782,7 +1792,7 @@ namespace SyncMLViewer
         private void HideAutoCompleteStackPanel(object sender, RoutedEventArgs e)
         {
             var border = (resultStack.Parent as ScrollViewer).Parent as Border;
-            border.Visibility = System.Windows.Visibility.Collapsed;
+            border.Visibility = Visibility.Collapsed;
         }
 
         private void LabelToBottom_MouseUp(object sender, MouseButtonEventArgs e)
@@ -1956,10 +1966,7 @@ namespace SyncMLViewer
 
         private void LabelWifiKey_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-
-            var wifiProfile = ListBoxWifi.SelectedItem as WifiProfile;
-
-            if (wifiProfile == null)
+            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
             {
                 return;
             }
@@ -1977,9 +1984,7 @@ namespace SyncMLViewer
 
         private void LabelWifiInfo_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var wifiProfile = ListBoxWifi.SelectedItem as WifiProfile;
-
-            if (wifiProfile == null)
+            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
             {
                 return;
             }
