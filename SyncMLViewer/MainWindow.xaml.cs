@@ -695,7 +695,7 @@ namespace SyncMLViewer
 
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
         {
-            if (((CheckBox)sender).IsChecked == true)
+            if (CheckBoxHtmlDecode.IsChecked == true)
             {
                 TextEditorMessages.Text = TextEditorMessages.Text.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
             }
@@ -1699,9 +1699,9 @@ namespace SyncMLViewer
             }
         }
 
-        private void CheckBoxUseSyncML_Checked(object sender, RoutedEventArgs e)
+        private void CheckBoxUseSyncML_Click(object sender, RoutedEventArgs e)
         {
-            if (((CheckBox)sender).IsChecked == true)
+            if (CheckBoxUseSyncML.IsChecked == true)
             {
                 ComboBoxCmd.IsEnabled = false;
                 ComboBoxFormat.IsEnabled = false;
@@ -1713,11 +1713,7 @@ namespace SyncMLViewer
                 TextEditorSyncMlRequestsRequestViewer.IsReadOnly = false;
                 TextEditorSyncMlRequestsRequestViewer.Options.HighlightCurrentLine = true;
             }
-        }
-
-        private void CheckBoxUseSyncML_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (((CheckBox)sender).IsChecked == false)
+            else
             {
                 ComboBoxCmd.IsEnabled = true;
                 ComboBoxFormat.IsEnabled = true;

@@ -114,7 +114,7 @@
                         WordWrap="True" Margin="10,81,0,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" HorizontalAlignment="Left" Width="444"/>
                     <Label Content="Current generated/edited SyncML request:" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Checked="CheckBoxUseSyncML_Checked" Unchecked="CheckBoxUseSyncML_Unchecked" Height="15" VerticalAlignment="Bottom"/>
+                    <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Click="CheckBoxUseSyncML_Click" Height="15" VerticalAlignment="Bottom"/>
                     <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
                     <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84" ToolTip="DATA TYPE">
                         <ComboBoxItem Content="text/plain" IsSelected="True"/>
