@@ -19,6 +19,22 @@
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
         <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
+        <KeyBinding Key="T" Modifiers="Ctrl+Alt" Command="{Binding TopMostCommand}" />
+        <KeyBinding Key="S" Modifiers="Ctrl+Alt" Command="{Binding AutoScrollCommand}" />
+        <KeyBinding Key="C" Modifiers="Ctrl+Alt" Command="{Binding ShowCharsCommand}" />
+        <KeyBinding Key="B" Modifiers="Ctrl+Alt" Command="{Binding BackgroundLogCommand}" />
+        <KeyBinding Key="P" Modifiers="Ctrl+Alt" Command="{Binding RegPolicyManagerCommand}" />
+        <KeyBinding Key="E" Modifiers="Ctrl+Alt" Command="{Binding RegEnrollmentCommand}" />
+        <KeyBinding Key="O" Modifiers="Ctrl+Alt" Command="{Binding RegProvisioningCommand}" />
+        <KeyBinding Key="I" Modifiers="Ctrl+Alt" Command="{Binding RegImeCommand}" />
+        <KeyBinding Key="D" Modifiers="Ctrl+Alt" Command="{Binding RegDcCommand}" />
+        <KeyBinding Key="K" Modifiers="Ctrl+Alt" Command="{Binding RegRebootUrisCommand}" />
+        <KeyBinding Key="U" Modifiers="Ctrl+Alt" Command="{Binding CheckUpdateCommand}" />
+        <KeyBinding Key="H" Modifiers="Ctrl+Alt" Command="{Binding HideMinimizedCommand}" />
+        <KeyBinding Key="R" Modifiers="Ctrl+Alt" Command="{Binding ResetSyncCommand}" />
+        <KeyBinding Key="I" Modifiers="Ctrl+Shift" Command="{Binding OpenImeLogsCommand}" />
+        <KeyBinding Key="M" Modifiers="Ctrl+Shift" Command="{Binding OpenMdmLogsCommand}" />
+        <KeyBinding Key="D" Modifiers="Ctrl+Shift" Command="{Binding OpenDcFolderCommand}" />
     </Window.InputBindings>
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,12" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)"/>
@@ -205,13 +221,13 @@
                 <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" IsCheckable="True" IsChecked="false" Checked="MenuItemAlwaysOnTop_Checked" Unchecked="MenuItemAlwaysOnTop_Unchecked"/>
-                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" IsCheckable="True" IsChecked="false" />
-                <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" IsCheckable="True" IsChecked="false" />
-                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
+                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" InputGestureText="Ctrl+Alt+T" IsCheckable="True" IsChecked="false" Click="menuItemAlwaysOnTop_Click"/>
+                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" InputGestureText="Ctrl+Alt+S" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" InputGestureText="Ctrl+Alt+H" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" InputGestureText="Ctrl+Alt+C" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
                 <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" InputGestureText="Ctrl+W" IsCheckable="True" IsChecked="false" Click="MenuItemWordWrap_Click" />
                 <Separator />
-                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Checked="MenuItemBackgroundLogging_Checked" Unchecked="MenuItemBackgroundLogging_Unchecked"/>
+                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" InputGestureText="Ctrl+Alt+B" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Click="MenuItemBackgroundLogging_Click"/>
                 <Separator />
                 <MenuItem Header="Advanced" StaysOpenOnClick="True">
                     <MenuItem x:Name="menuItemCleanupAfterExit" Header="Cleanup working folder after exit" IsCheckable="True" IsChecked="true" />
@@ -243,24 +259,24 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Open Registry" StaysOpenOnClick="True">
-                    <MenuItem Header="-> Enrollments" Click="MenuItemRegistryEnrollments_Click"/>
-                    <MenuItem Header="-> Provisioning" Click="MenuItemRegistryProvisioning_Click"/>
-                    <MenuItem Header="-> PolicyManager" Click="MenuItemRegistryPolicyManager_OnClick"/>
-                    <MenuItem Header="-> RebootRequiredURIs" Click="MenuItemRebootRequiredUris_Click"/>
-                    <MenuItem Header="-> DeclaredConfiguration" Click="MenuItemDeclaredConfiguration_Click"/>
-                    <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemEnterpriseDesktopAppManagement_Click"/>
-                    <MenuItem Header="-> IntuneManagementExtension" Click="MenuItemIntuneManagementExtension_Click" x:Name="menuItemIntuneManagementExtension"/>
+                    <MenuItem Header="-> Enrollments" InputGestureText="Ctrl+Alt+E" Click="MenuItemRegistryEnrollments_Click"/>
+                    <MenuItem Header="-> Provisioning" InputGestureText="Ctrl+Alt+O" Click="MenuItemRegistryProvisioning_Click"/>
+                    <MenuItem Header="-> PolicyManager" InputGestureText="Ctrl+Alt+P" Click="MenuItemRegistryPolicyManager_OnClick"/>
+                    <MenuItem Header="-> RebootRequiredURIs" InputGestureText="Ctrl+Alt+K" Click="MenuItemRegistryRebootRequiredUris_Click"/>
+                    <MenuItem Header="-> DeclaredConfiguration" InputGestureText="Ctrl+Alt+D" Click="MenuItemRegistryDeclaredConfiguration_Click"/>
+                    <MenuItem Header="-> IntuneManagementExtension" InputGestureText="Ctrl+Alt+I" Click="MenuItemRegistryIntuneManagementExtension_Click" x:Name="menuItemIntuneManagementExtension"/>
+                    <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemRegistryEnterpriseDesktopAppManagement_Click"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Open Folder" StaysOpenOnClick="True">
-                    <MenuItem Header="-> _IME logs folder" Click="MenuItemOpenImeLogs_Click"/>
-                    <MenuItem Header="-> MDM Diagnostics _folder" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
+                    <MenuItem Header="-> _IME logs folder" InputGestureText="Ctrl+Shift+I" Click="MenuItemOpenImeLogs_Click"/>
+                    <MenuItem Header="-> MDM Diagnostics _folder" InputGestureText="Ctrl+Shift+M" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
+                    <MenuItem Header="-> DC\HostOS folder" InputGestureText="Ctrl+Shift+D" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
                     <MenuItem Header="-> SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from C:\Windows\System32\Config\SystemProfile\AppData\Local\mdm as MSI and log files are written there."/>
-                    <MenuItem Header="-> DC\HostOS folder" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="Advanced" StaysOpenOnClick="True">
-                    <MenuItem Header="Reset Sync tri_gger status" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
+                    <MenuItem Header="Reset Sync tri_gger status" InputGestureText="Ctrl+Alt+R" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
                     <MenuItem Header="St_op ETW session" IsEnabled="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemStopEtwSession_Click"/>
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
@@ -276,7 +292,7 @@
                 <Separator />
                 <MenuItem Header="CSP Online Documentation" InputGestureText="Ctrl+F1" Click="MenuItemOpenHelp_Click"/>
                 <Separator />
-                <MenuItem Header="_Check for SyncML Viewer Update" Click="MenuItemCheckUpdate_OnClick"/>
+                <MenuItem Header="_Check for SyncML Viewer Update" InputGestureText="Ctrl+Alt+U" Click="MenuItemCheckUpdate_OnClick"/>
                 <Separator />
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>

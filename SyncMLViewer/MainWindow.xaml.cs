@@ -99,6 +99,22 @@ namespace SyncMLViewer
         public ICommand ClearCommand { get; }
         public ICommand HelpCspCommand { get; }
         public ICommand FormatCommand { get; }
+        public ICommand TopMostCommand { get; }
+        public ICommand AutoScrollCommand { get; }
+        public ICommand ShowCharsCommand { get; }
+        public ICommand BackgroundLogCommand { get; }
+        public ICommand RegPolicyManagerCommand { get; }
+        public ICommand RegEnrollmentCommand { get; }
+        public ICommand RegProvisioningCommand { get; }
+        public ICommand RegImeCommand { get; }
+        public ICommand RegDcCommand { get; }
+        public ICommand RegRebootUrisCommand { get; }
+        public ICommand CheckUpdateCommand { get; }
+        public ICommand HideMinimizedCommand { get; }
+        public ICommand ResetSyncCommand { get; }
+        public ICommand OpenImeLogsCommand { get; }
+        public ICommand OpenMdmLogsCommand { get; }
+        public ICommand OpenDcFolderCommand { get; }
 
         public MainWindow()
         {
@@ -119,6 +135,31 @@ namespace SyncMLViewer
             ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
             HelpCspCommand = new RelayCommand(() => { MenuItemOpenHelp_Click(null, null); });
             FormatCommand = new RelayCommand(() => { LabelFormat_MouseUp(null, null); });
+            TopMostCommand = new RelayCommand(() => {
+                menuItemAlwaysOnTop.IsChecked = !menuItemAlwaysOnTop.IsChecked;
+                menuItemAlwaysOnTop_Click(null, null);
+            });
+            AutoScrollCommand = new RelayCommand(() => { menuItemAutoScroll.IsChecked = !menuItemAutoScroll.IsChecked; });
+            ShowCharsCommand = new RelayCommand(() => {
+                menuItemShowAllChars.IsChecked = !menuItemShowAllChars.IsChecked;
+                MenuItemShowAllChars_Click(null, null);
+            });
+            BackgroundLogCommand = new RelayCommand(() => {
+                menuItemBackgroundLogging.IsChecked = !menuItemBackgroundLogging.IsChecked;
+                MenuItemBackgroundLogging_Click(null, null);
+            });
+            RegPolicyManagerCommand = new RelayCommand(() => { MenuItemRegistryPolicyManager_OnClick(null, null); });
+            RegEnrollmentCommand = new RelayCommand(() => { MenuItemRegistryEnrollments_Click(null, null); });
+            RegProvisioningCommand = new RelayCommand(() => { MenuItemRegistryProvisioning_Click(null, null); });
+            RegImeCommand = new RelayCommand(() => { MenuItemRegistryIntuneManagementExtension_Click(null, null); });
+            RegDcCommand = new RelayCommand(() => { MenuItemRegistryDeclaredConfiguration_Click(null, null); });
+            RegRebootUrisCommand = new RelayCommand(() => { MenuItemRegistryRebootRequiredUris_Click(null, null); });
+            CheckUpdateCommand = new RelayCommand(() => { MenuItemCheckUpdate_OnClick(null, null); });
+            HideMinimizedCommand = new RelayCommand(() => { menuItemHideWhenMinimized.IsChecked = !menuItemHideWhenMinimized.IsChecked; });
+            ResetSyncCommand = new RelayCommand(() => { MenuItemResetSyncTriggerStatus_Click(null, null); });
+            OpenImeLogsCommand = new RelayCommand(() => { MenuItemOpenImeLogs_Click(null, null); });
+            OpenMdmLogsCommand = new RelayCommand(() => { MenuItemOpenMDMDiagnosticsFolder_Click(null, null); });
+            OpenDcFolderCommand = new RelayCommand(() => { MenuItemOpenDeclaredConfigurationHostOSFolder_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -904,22 +945,22 @@ namespace SyncMLViewer
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
         }
 
-        private void MenuItemRebootRequiredUris_Click(object sender, RoutedEventArgs e)
+        private void MenuItemRegistryRebootRequiredUris_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
         }
 
-        private void MenuItemDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
+        private void MenuItemRegistryDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
         }
 
-        private void MenuItemEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
+        private void MenuItemRegistryEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
         }
 
-        private void MenuItemIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
+        private void MenuItemRegistryIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
         }
@@ -969,9 +1010,9 @@ namespace SyncMLViewer
             LabelStatusTop.Visibility = Visibility.Hidden;
         }
 
-        private void MenuItemBackgroundLogging_Checked(object sender, RoutedEventArgs e)
+        private void MenuItemBackgroundLogging_Click(object sender, RoutedEventArgs e)
         {
-            if (((MenuItem)sender).IsChecked)
+            if (menuItemBackgroundLogging.IsChecked)
             {
                 Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", "listenerSyncMLStream"));
                 Trace.AutoFlush = true;
@@ -985,11 +1026,7 @@ namespace SyncMLViewer
                 TextEditorStream.IsEnabled = false;
                 TextEditorStream.AppendText(Environment.NewLine + "\t'Background Logging Mode' enabled.");
             }
-        }
-
-        private void MenuItemBackgroundLogging_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (!((MenuItem)sender).IsChecked)
+            else
             {
                 Trace.Close();
                 Trace.Listeners.Remove("listenerSyncMLStream");
@@ -1105,14 +1142,16 @@ namespace SyncMLViewer
             fileDialog.ShowDialog();
         }
 
-        private void MenuItemAlwaysOnTop_Checked(object sender, RoutedEventArgs e)
+        private void menuItemAlwaysOnTop_Click(object sender, RoutedEventArgs e)
         {
-            Topmost = true;
-        }
-
-        private void MenuItemAlwaysOnTop_Unchecked(object sender, RoutedEventArgs e)
-        {
-            Topmost = false;
+            if (menuItemAlwaysOnTop.IsChecked)
+            {
+                Topmost = true;
+            }
+            else
+            {
+                Topmost = false;
+            }
         }
 
         private void MenuItemStopEtwSession_Click(object sender, RoutedEventArgs e)

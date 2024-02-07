@@ -31,9 +31,16 @@ namespace SyncMLViewer.Executer
         private static bool argSetEmbeddedMode = false;
         private static bool argSetEmbeddedModeValue = false;
 
+        // Important, MTA is necessary otherwise the Local MDM API will not work!
         [MTAThread]
         static void Main(string[] args)
         {
+            if (Helper.IsElevated() == false)
+            { 
+                Console.WriteLine("Please run this tool with elevated permissions!");
+                return;
+            }
+
             // SyncMLViewer.Executer -Command GET -OmaUri "./DevDetail/Ext/DeviceHardwareData"
             // SyncMLViewer.Executer -SyncMLInputFile "C:\Code\GitHubRepos\SyncMLViewer\SyncMLViewer\bin\x64\Debug\SyncMlViewer.SyncMl.txt"
             // SyncMLViewer.Executer -SyncML "<SyncBody><GET><CmdID>1</CmdID><Item><Target><LocURI>./DevDetail/Ext/DeviceHardwareData</LocURI></Target><Meta><Format xmlns=`"syncml:metinf`">chr</Format><Type xmlns=`"syncml:metinf`">text/plain</Type></Meta><Data></Data></Item></GET></SyncBody>"
