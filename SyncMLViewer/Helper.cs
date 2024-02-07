@@ -1,9 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Xml;
 
 namespace SyncMLViewer
 {
@@ -130,6 +133,74 @@ namespace SyncMLViewer
             };
             exp.Start();
             exp.Dispose();
+        }
+
+        public static string RunCommand(string command, string arguments)
+        {
+            var output = string.Empty;
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = command,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+                Debug.WriteLine($"RunCommand: {command} {arguments} ExitCode: {p.ExitCode}");
+
+                p.Dispose();
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+
+            return output;
+        }
+
+        public static string RegexExtractStringValueAfterKeyAndColon(string input, string key)
+        {
+            string pattern = $@"{key}\s+:\s+(.+)";
+            Match match = Regex.Match(input, pattern, RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                return match.Groups[1].Value.Trim();
+            }
+
+            return null;
+        }
+
+        public static List<XmlDocument> ParseXmlFiles(string directoryPath)
+        {
+            List<XmlDocument> xmlDocuments = new List<XmlDocument>();
+
+            try
+            {
+                string[] xmlFiles = Directory.GetFiles(directoryPath, "*.xml");
+
+                foreach (string xmlFile in xmlFiles)
+                {
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.Load(xmlFile);
+                    xmlDocuments.Add(xmlDoc);
+                }
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+
+            return xmlDocuments;
         }
     }
 }

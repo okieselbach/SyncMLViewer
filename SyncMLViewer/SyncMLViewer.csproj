@@ -289,6 +289,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AutoCompleteModel.cs" />
+    <Compile Include="BindableBase.cs" />
     <Compile Include="DataEditor.xaml.cs">
       <DependentUpon>DataEditor.xaml</DependentUpon>
     </Compile>
@@ -299,6 +300,8 @@
     <Compile Include="SyncMlProgress.cs" />
     <Compile Include="SyncMlSession.cs" />
     <Compile Include="TraceEventSessionState.cs" />
+    <Compile Include="VpnProfile.cs" />
+    <Compile Include="WifiProfile.cs" />
     <Page Include="DataEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

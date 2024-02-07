@@ -80,6 +80,9 @@ namespace SyncMLViewer
         private int _CmdIdCounter;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
 
+        public List<WifiProfile> WifiProfileList { get; set; }
+        public List<VpnProfile> VpnProfileList { get; set; }
+
         static public TraceEventSessionState TraceEventSessionState { get; set; }
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
@@ -168,6 +171,12 @@ namespace SyncMLViewer
             ListBoxSessions.DisplayMemberPath = "Entry";
 
             ListBoxMessages.DisplayMemberPath = "Entry";
+
+            WifiProfileList = new List<WifiProfile>();
+            ListBoxWifi.ItemsSource = WifiProfileList;
+
+            VpnProfileList = new List<VpnProfile>();
+            ListBoxVpn.ItemsSource = VpnProfileList;
 
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
@@ -1153,6 +1162,8 @@ namespace SyncMLViewer
                 TextEditorStream.WordWrap = true;
                 TextEditorSyncMlRequests.WordWrap = true;
                 TextEditorSyncMlRequestsRequestViewer.WordWrap = true;
+                TextEditorWifiProfiles.WordWrap = true;
+                TextEditorVpnProfiles.WordWrap = true;
             }
             else
             {
@@ -1160,6 +1171,8 @@ namespace SyncMLViewer
                 TextEditorStream.WordWrap = false;
                 TextEditorSyncMlRequests.WordWrap = false;
                 TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
+                TextEditorWifiProfiles.WordWrap = false;
+                TextEditorVpnProfiles.WordWrap = false;
             }
         }
 
@@ -1849,7 +1862,7 @@ namespace SyncMLViewer
             if (e.Source is TabControl tabControl && tabControl.SelectedItem is TabItem selectedTab)
             {
                 // Handle the selected TabItem
-                string tabName = selectedTab.Header.ToString();
+                var tabName = selectedTab.Header.ToString();
                 if (string.Compare(tabName, "SyncML Sessions/Messages", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     if (ListBoxMessages.SelectedItem != null)
@@ -1866,6 +1879,130 @@ namespace SyncMLViewer
                     LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
                 }
             }
+        }
+
+        private void ListBoxWifi_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (ListBoxWifi.SelectedItem is WifiProfile wifiProfile)
+                {
+                    TextEditorWifiProfiles.Text = TryFormatXml(wifiProfile.Xml);
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
+        private void ListBoxVpn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (ListBoxVpn.SelectedItem is VpnProfile vpnProfile)
+                {
+                    TextEditorVpnProfiles.Text = TryFormatXml(vpnProfile.Xml);
+                }
+            }
+            catch (Exception)
+            {
+                 // ignored
+            }
+        }
+
+        private void ButtonRefreshWifi_Click(object sender, RoutedEventArgs e)
+        {
+            WifiProfileList.Clear();
+
+            var output = Helper.RunCommand("netsh", "wlan show interfaces");
+            var guid = Helper.RegexExtractStringValueAfterKeyAndColon(output, "GUID");
+
+            var directoryPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Wlansvc\Profiles\Interfaces\{" + guid + "}";
+            List<XmlDocument> xmlProfiles = Helper.ParseXmlFiles(directoryPath);
+
+            List<WifiProfile> wifiProfiles = new List<WifiProfile>();
+            foreach (var xmlProfile in xmlProfiles)
+            {
+                var name = xmlProfile.SelectSingleNode("/*[local-name()='WLANProfile']/*[local-name()='name']").InnerText;
+                wifiProfiles.Add(new WifiProfile(name, xmlProfile.OuterXml));
+            }
+
+            foreach (var wifiProfile in wifiProfiles)
+            {
+                WifiProfileList.Add(new WifiProfile(wifiProfile.Name, wifiProfile.Xml));
+            }
+
+            ListBoxWifi.Items.Refresh();
+        }
+
+        private void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
+        {
+            VpnProfileList.Clear();
+
+            using (var ps = PowerShell.Create())
+            {
+                ps.AddCommand("Get-VpnConnection");
+                foreach (var item in ps.Invoke())
+                {
+                    var name = item.Members["Name"].Value as string;
+                    var xml = item.Members["VpnConfigurationXml"].Value as string;
+                    VpnProfileList.Add(new VpnProfile(name, xml));
+                }
+            }
+
+            ListBoxVpn.Items.Refresh();
+        }
+
+        private void LabelWifiKey_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+
+            var wifiProfile = ListBoxWifi.SelectedItem as WifiProfile;
+
+            if (wifiProfile == null)
+            {
+                return;
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = wifiProfile.GetKeyContent() ?? "No key material found!",
+                HideButonClear = true,
+                Title = "Data Editor - WiFi Key",
+                TextEditorData = { ShowLineNumbers = false }
+            };
+
+            dataEditor.ShowDialog();
+        }
+
+        private void LabelWifiInfo_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var wifiProfile = ListBoxWifi.SelectedItem as WifiProfile;
+
+            if (wifiProfile == null)
+            {
+                return;
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = wifiProfile.GetInformation() ?? string.Empty,
+                HideButonClear = true,
+                Title = "Data Editor - WiFi Information",
+                TextEditorData = { ShowLineNumbers = false }
+            };
+
+            dataEditor.ShowDialog();
+        }
+
+        private void LabelBackToTopWifi_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorWifiProfiles.ScrollToHome();
+        }
+
+        private void LabelBackToTopVpn_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorVpnProfiles.ScrollToHome();
         }
     }
 }

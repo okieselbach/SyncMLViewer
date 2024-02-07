@@ -9,11 +9,9 @@ using System.Threading.Tasks;
 namespace SyncMLViewer
 {
 
-    public class TraceEventSessionState : INotifyPropertyChanged
+    public class TraceEventSessionState : BindableBase
     {
         private bool _started;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public TraceEventSessionState()
         {
@@ -26,13 +24,8 @@ namespace SyncMLViewer
             set
             {
                 _started = value;
-                OnPropertyChanged();
+                OnPropertyChanged("Started");
             }
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

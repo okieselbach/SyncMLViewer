@@ -40,6 +40,10 @@
             </TabItem>
             <TabItem x:Name="TabItemMessages" Header="SyncML Sessions/Messages" >
                 <Grid Background="White">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60*"/>
+                        <ColumnDefinition Width="11*"/>
+                    </Grid.ColumnDefinitions>
                     <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
@@ -48,12 +52,12 @@
                         FontSize="10pt" Margin="200,10,10,34"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
-                        IsReadOnly="True" Grid.ColumnSpan="6"/>
+                        IsReadOnly="True" Grid.ColumnSpan="2"/>
                     <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" />
                     <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" />
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
-                    <Label x:Name="LabelBackToTop" Content="[Top]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
+                    <Label x:Name="LabelBackToTop" Content="[Top]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom" Grid.Column="1"/>
                     <Label x:Name="LabelMessageStats" Content="Message length: 65536" HorizontalAlignment="Left" Margin="10,0,0,2" Height="26" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
@@ -135,6 +139,48 @@
                         ShowLineNumbers="False"
                         IsReadOnly="True"
                         WordWrap="True" Margin="10,10,0,-0.4"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabItemResourceAccessPolicies" Header="Resource Access Policies">
+                <Grid Background="White">
+                    <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">
+                        <TabItem x:Name="TabItemWifi" Header="Wifi Profiles">
+                            <Grid Background="White">
+                                <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
+                                <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="218" SelectionChanged="ListBoxWifi_SelectionChanged" />
+                                <avalonedit:TextEditor
+                                    x:Name="TextEditorWifiProfiles"
+                                    SyntaxHighlighting="XML"
+                                    FontFamily="Consolas"
+                                    FontSize="10pt"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    ShowLineNumbers="true"
+                                    IsReadOnly="True"
+                                    WordWrap="True" Margin="230,10,0,34"/>
+                                <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
+                                <Label x:Name="LabelWifiInfo" Content="[Information]" Margin="230,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="80" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiInfo_MouseLeftButtonUp"/>
+                                <Label x:Name="LabelWifiKey" Content="[Key]" Margin="310,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiKey_MouseLeftButtonUp"/>
+                                <Button x:Name="ButtonRefreshWifi" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshWifi_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh Wifi profiles list"/>
+                            </Grid>
+                        </TabItem>
+                        <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
+                            <Grid Background="White">
+                                <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
+                                <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="218" SelectionChanged="ListBoxVpn_SelectionChanged" />
+                                <avalonedit:TextEditor
+                                    x:Name="TextEditorVpnProfiles"
+                                    SyntaxHighlighting="XML"
+                                    FontFamily="Consolas"
+                                    FontSize="10pt"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    ShowLineNumbers="False"
+                                    IsReadOnly="True"
+                                    WordWrap="True" Margin="230,10,0,34"/>
+                                <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
+                                <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh VPN profiles list"/>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemAbout" Header="About">

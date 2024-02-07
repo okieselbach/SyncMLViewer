@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace SyncMLViewer
 {
-    public class SyncMlProgress : INotifyPropertyChanged
+    public class SyncMlProgress : BindableBase
     {
         private bool _notInProgress;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public SyncMlProgress()
         {
@@ -25,13 +23,8 @@ namespace SyncMLViewer
             set
             {
                 _notInProgress = value;
-                OnPropertyChanged();
+                OnPropertyChanged("NotInProgress");
             }
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
