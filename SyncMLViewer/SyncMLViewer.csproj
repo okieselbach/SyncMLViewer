@@ -296,6 +296,7 @@
     <Compile Include="Helper.cs" />
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="RelayCommand.cs" />
+    <Compile Include="StatusCodeLookupModel.cs" />
     <Compile Include="SyncMlMessage.cs" />
     <Compile Include="SyncMlProgress.cs" />
     <Compile Include="SyncMlSession.cs" />

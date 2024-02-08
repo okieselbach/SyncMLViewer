@@ -79,6 +79,7 @@ namespace SyncMLViewer
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
         private int _CmdIdCounter;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
+        private StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -98,6 +99,7 @@ namespace SyncMLViewer
         public ICommand RunRequestCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand HelpCspCommand { get; }
+        public ICommand StatusCodeCommand { get; }
         public ICommand FormatCommand { get; }
         public ICommand TopMostCommand { get; }
         public ICommand AutoScrollCommand { get; }
@@ -136,6 +138,7 @@ namespace SyncMLViewer
             RunRequestCommand = new RelayCommand(() => { ButtonRunRequest_Click(null, null); });
             ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
             HelpCspCommand = new RelayCommand(() => { MenuItemOpenHelp_Click(null, null); });
+            StatusCodeCommand = new RelayCommand(() => { MenuItemLookupStatusCode_Click(null, null); });
             FormatCommand = new RelayCommand(() => { LabelFormat_MouseUp(null, null); });
             TopMostCommand = new RelayCommand(() => {
                 menuItemAlwaysOnTop.IsChecked = !menuItemAlwaysOnTop.IsChecked;
@@ -2057,6 +2060,48 @@ namespace SyncMLViewer
         private void MenuItemOpenMdmEventLog_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenEventLog("Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin");
+        }
+
+        private void MenuItemFeedback_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenUrl("https://github.com/okieselbach/SyncMLViewer/issues");
+        }
+
+        private void MenuItemLookupStatusCode_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            {
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+
+            var statusCode = string.Empty;
+
+            // parse selected text and look for status code
+            var matchStatusCode = new Regex(@"[^0-9]*([0-9]+)[^0-9]*", RegexOptions.IgnoreCase).Match(text);
+            if (matchStatusCode.Success)
+            {
+                statusCode = matchStatusCode.Groups[1].Value;
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = _statusCodeLookupModel.GetDescription(statusCode),
+                HideButonClear = true,
+                Title = "Data Editor - Status Code Lookup",
+                TextEditorData = { ShowLineNumbers = false }
+            };
+
+            dataEditor.ShowDialog();
         }
     }
 }

@@ -18,6 +18,7 @@
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding RunRequestCommand}" />
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
+        <KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding StatusCodeCommand}" />
         <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
         <KeyBinding Key="T" Modifiers="Ctrl+Alt" Command="{Binding TopMostCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl+Alt" Command="{Binding AutoScrollCommand}" />
@@ -248,6 +249,7 @@
                 <Separator />
                 <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Lookup SyncML Status Code for selected text" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
@@ -298,6 +300,7 @@
                 <MenuItem Header="CSP Online Documentation" InputGestureText="Ctrl+F1" Click="MenuItemOpenHelp_Click"/>
                 <Separator />
                 <MenuItem Header="_Check for SyncML Viewer Update" InputGestureText="Ctrl+Alt+U" Click="MenuItemCheckUpdate_OnClick"/>
+                <MenuItem Header="Feedback" Click="MenuItemFeedback_Click"/>
                 <Separator />
                 <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
             </MenuItem>
