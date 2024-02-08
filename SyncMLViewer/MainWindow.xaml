@@ -119,10 +119,10 @@
                     <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
                     <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Click="CheckBoxUseSyncML_Click" Height="15" VerticalAlignment="Bottom"/>
                     <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
-                    <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84" ToolTip="DATA TYPE">
+                    <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84" ToolTip="DATA TYPE (free to type own)">
                         <ComboBoxItem Content="text/plain" IsSelected="True"/>
                     </ComboBox>
-                    <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57" ToolTip="DATA FORMAT">
+                    <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57" ToolTip="DATA FORMAT (free to type own)">
                         <ComboBoxItem Content="chr" IsSelected="True"/>
                         <ComboBoxItem Content="int" />
                         <ComboBoxItem Content="bool" />
