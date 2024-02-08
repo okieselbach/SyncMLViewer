@@ -174,7 +174,7 @@
                                     FontFamily="Consolas"
                                     FontSize="10pt"
                                     HorizontalScrollBarVisibility="Auto"
-                                    ShowLineNumbers="true"
+                                    ShowLineNumbers="True"
                                     IsReadOnly="True"
                                     WordWrap="True" Margin="230,10,0,34"/>
                                 <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
@@ -193,7 +193,7 @@
                                     FontFamily="Consolas"
                                     FontSize="10pt"
                                     HorizontalScrollBarVisibility="Auto"
-                                    ShowLineNumbers="False"
+                                    ShowLineNumbers="True"
                                     IsReadOnly="True"
                                     WordWrap="True" Margin="230,10,0,34"/>
                                 <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
