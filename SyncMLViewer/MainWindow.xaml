@@ -64,7 +64,7 @@
                         <ColumnDefinition Width="60*"/>
                         <ColumnDefinition Width="11*"/>
                     </Grid.ColumnDefinitions>
-                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _Decode" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="95" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
+                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _decode inline" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="132" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
                         SyntaxHighlighting="XML"
