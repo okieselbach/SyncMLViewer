@@ -1419,6 +1419,7 @@ namespace SyncMLViewer
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             ButtonRunRequest.IsEnabled = false;
 
+            // SyncML Editor
             if (CheckBoxUseSyncML.IsChecked == true)
             {
                 syncML = TextEditorSyncMlRequestsRequestViewer.Text;
@@ -1440,8 +1441,22 @@ namespace SyncMLViewer
                     return;
                 }
             }
-            else
+            else // Assisted via comboboxes and textboxes
             {
+                // no OMA URI or Data Format -> return
+                if (string.IsNullOrEmpty(TextBoxUri.Text) || string.IsNullOrEmpty(ComboBoxFormat.Text))
+                {
+                    MessageBox.Show("URI and Data Format are required", "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ButtonRunRequest.IsEnabled = true;
+                    return;
+                }
+
+                // replace whitespaces with %20:
+                // ./Device/Vendor/MSFT/DMClient/Provider/MS DM Server/FirstSyncStatus/SkipUserStatusPage
+                // ./Device/Vendor/MSFT/DMClient/Provider/MS%20DM%20Server/FirstSyncStatus/SkipUserStatusPage
+                var omaUri = TextBoxUri.Text.Replace(" ", "%20");
+                TextBoxUri.Text = omaUri;
+
                 syncML = "<SyncBody>\n" +
                         "<CMD-ITEM>\n" +
                             "<CmdID>CMDID-ITEM</CmdID>\n" +
@@ -1460,7 +1475,7 @@ namespace SyncMLViewer
 
                 syncML = syncML.Replace("CMD-ITEM", ComboBoxCmd.Text);
                 syncML = syncML.Replace("CMDID-ITEM", _CmdIdCounter.ToString());
-                syncML = syncML.Replace("OMAURI-ITEM", TextBoxUri.Text);
+                syncML = syncML.Replace("OMAURI-ITEM", omaUri);
                 syncML = syncML.Replace("FORMAT-ITEM", ComboBoxFormat.Text);
                 syncML = syncML.Replace("TYPE-ITEM", ComboBoxDataType.Text);
                 syncML = syncML.Replace("DATA-ITEM", TextBoxData.Text);
