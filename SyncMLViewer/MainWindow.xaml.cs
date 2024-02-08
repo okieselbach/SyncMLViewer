@@ -1910,8 +1910,6 @@ namespace SyncMLViewer
 
         private void MenuItemDecodeHTML_Click(object sender, RoutedEventArgs e)
         {
-            StringWriter myWriter = new StringWriter();
-
             var text = string.Empty;
 
             if (TextEditorStream.IsVisible)
@@ -1926,16 +1924,15 @@ namespace SyncMLViewer
             { 
                 text = TextEditorSyncMlRequests.SelectedText;
             }
-
-            HttpUtility.HtmlDecode(text, myWriter);
-            var decodedText = myWriter.ToString();
-            Clipboard.SetText(decodedText);
+            
+            var decodedText = HttpUtility.HtmlDecode(text);
+            //Clipboard.SetText(decodedText);
 
             DataEditor dataEditor = new DataEditor
             {
                 DataFromMainWindow = decodedText,
                 HideButonClear = true,
-                Title = "Data Editor - HTML Decode - text copied to clipboard",
+                Title = "Data Editor - HTML Decode",
                 TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
             };
 

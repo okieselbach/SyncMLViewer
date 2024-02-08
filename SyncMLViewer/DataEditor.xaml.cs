@@ -1,28 +1,18 @@
-﻿using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Search;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Xml;
 using System.Xml.Linq;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using static SyncMLViewer.MainWindow;
-using static System.Net.Mime.MediaTypeNames;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Search;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace SyncMLViewer
 {
@@ -41,6 +31,9 @@ namespace SyncMLViewer
 
         public ICommand DecodeBase64Command { get; }
         public ICommand DecodeCertCommand {  get; }
+        public ICommand WordWrapCommand { get; }
+        public ICommand FormatCommand { get; }
+        public ICommand DecodeHtmlCommand { get; }
 
         public DataEditor()
         {
@@ -138,6 +131,41 @@ namespace SyncMLViewer
                 };
 
                 dataEditor.ShowDialog();
+            });
+
+            DecodeHtmlCommand = new RelayCommand(() =>
+            {
+                var text = TextEditorData.SelectedText;
+
+                try
+                {
+                    text = HttpUtility.HtmlDecode(text);
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = text,
+                    HideButonClear = true,
+                    Title = "Data Editor - HTML Decode",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+            });
+
+            WordWrapCommand = new RelayCommand(() =>
+            {
+                CheckBoxWordWrap.IsChecked = !CheckBoxWordWrap.IsChecked;
+                TextEditorData.WordWrap = CheckBoxWordWrap.IsChecked.Value;
+            });
+
+            FormatCommand = new RelayCommand(() =>
+            {
+                LabelFormat_MouseUp(null, null);
             });
 
             // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
