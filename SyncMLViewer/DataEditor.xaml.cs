@@ -91,7 +91,7 @@ namespace SyncMLViewer
 
                 DataEditor dataEditor = new DataEditor
                 {
-                    DataFromMainWindow = TextEditorData.SelectedText,
+                    DataFromMainWindow = resultText,
                     JsonSyntax = isJson,
                     HideButonClear = true,
                     Title = "Data Editor - Base64 Decode - text copied to clipboard",
