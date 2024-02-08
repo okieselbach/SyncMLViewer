@@ -134,6 +134,7 @@
                     <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="DATA"/>
                     <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42" ToolTip="Open Data Editor"/>
                     <Label x:Name="LabelFormat" Content="[Format Document]" Margin="340,0,0,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114" ToolTip="Try to format SycML xml (Ctrl+Alt+F)"/>
+                    <Label x:Name="LabelProcessingTime" Content="1.035s" Margin="459,0,475,2" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">

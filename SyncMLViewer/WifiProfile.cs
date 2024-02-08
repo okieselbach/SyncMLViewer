@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows.Input;
 
 namespace SyncMLViewer
@@ -76,18 +77,36 @@ namespace SyncMLViewer
             }
             else
             {
-                var keyContent = "Key Content";
-                string pattern = $@"{keyContent}\s+:\s+(.+)";
-                Match match = Regex.Match(output, pattern, RegexOptions.IgnoreCase);
+                // I know this is not the best way to do this, but I don't want to spend more time on this by utilizing the native WiFi API
+                string[] keyContent = new[] { 
+                    "Key Content", 
+                    "Schlüsselinhalt", 
+                    "Contenido de la clave", 
+                    "Contenu de la clé", 
+                    "Contenuto della chiave", 
+                    "Conteúdo da chave", 
+                    "Sleutelinhoud", 
+                    "Nyckelinnehåll", 
+                    "Nøkkelinnhold", 
+                    "Avaimen sisältö",
+                    "Содержимое ключа",
+                    "密钥内容",
+                    "キーコンテンツ",
+                    "키 내용"
+                };
 
-                if (match.Success)
+                foreach (var key in keyContent)
                 {
-                    return match.Groups[1].Value.Trim();
+                    string pattern = $@"{key}\s+:\s+(.+)";
+                    Match match = Regex.Match(output, pattern, RegexOptions.IgnoreCase);
+
+                    if (match.Success)
+                    {
+                        return match.Groups[1].Value.Trim();
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 

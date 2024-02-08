@@ -239,6 +239,7 @@ namespace SyncMLViewer
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
 
+            LabelProcessingTime.Content = string.Empty;
             LabelDeviceName.Content = Environment.MachineName;
             _updateStarted = false;
             _updateCheckInitial = true;
@@ -1501,7 +1502,7 @@ namespace SyncMLViewer
 
             // We are extracting the Executer binary from the resources and write it to disk
             var binaryName = Properties.Resources.Executer;
-            var path = Path.Combine(assemblyPath, binaryName);
+            var pathExecuter = Path.Combine(assemblyPath, binaryName);
 
             var assembly = Assembly.GetExecutingAssembly();
 
@@ -1515,7 +1516,7 @@ namespace SyncMLViewer
 
                     try
                     {
-                        File.WriteAllBytes(path, buffer);
+                        File.WriteAllBytes(pathExecuter, buffer);
                     }
                     catch (Exception ex)
                     {
@@ -1553,7 +1554,7 @@ namespace SyncMLViewer
                 }
             }
 
-            var fileHashString = CalculateSha256FileHash(path);
+            var fileHashString = CalculateSha256FileHash(pathExecuter);
 
             // Compare the calculated hash with the provided hash from resources
             bool hashesMatch = string.Equals(fileHashString, hash.Trim('\r', '\n', ' '), StringComparison.OrdinalIgnoreCase);
@@ -1579,12 +1580,16 @@ namespace SyncMLViewer
             var resultOutput = string.Empty;
             var resultError = string.Empty;
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // Start Executer process
             using (var p = new Process
             {
                 StartInfo =
                     {
                         UseShellExecute = false,
-                        FileName = path,
+                        FileName = pathExecuter,
                         Arguments = arguments,
                         CreateNoWindow = true,
                         //RedirectStandardOutput = true,
@@ -1604,6 +1609,9 @@ namespace SyncMLViewer
 
                 await processExited;
             }
+
+            stopwatch.Stop();
+            LabelProcessingTime.Content = string.Format("{0:0.000}s", stopwatch.Elapsed.TotalSeconds);
 
             // we are reading the Executer SyncML Request Output file from the disk
             var syncMlOutputFilePath = Path.Combine(assemblyPath, Properties.Resources.OutputFile);
@@ -1974,7 +1982,7 @@ namespace SyncMLViewer
             WifiProfileList.Clear();
 
             var output = Helper.RunCommand("netsh", "wlan show interfaces");
-            var guid = Helper.RegexExtractStringValueAfterKeyAndColon(output, "GUID");
+            var guid = Helper.RegexExtractStringValueAfterKeyAndColon(output, "GUID"); // Hopefully this is in every language the same as netsh is localized
 
             var directoryPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Wlansvc\Profiles\Interfaces\{" + guid + "}";
             List<XmlDocument> xmlProfiles = Helper.ParseXmlFiles(directoryPath);
