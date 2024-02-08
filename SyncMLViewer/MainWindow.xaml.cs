@@ -2,7 +2,9 @@
 // https://devblogs.microsoft.com/dotnet/embracing-nullable-reference-types/
 // #nullable enable
 
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Folding;
+using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
@@ -14,6 +16,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -142,7 +145,7 @@ namespace SyncMLViewer
             FormatCommand = new RelayCommand(() => { LabelFormat_MouseUp(null, null); });
             TopMostCommand = new RelayCommand(() => {
                 menuItemAlwaysOnTop.IsChecked = !menuItemAlwaysOnTop.IsChecked;
-                menuItemAlwaysOnTop_Click(null, null);
+                MenuItemAlwaysOnTop_Click(null, null);
             });
             AutoScrollCommand = new RelayCommand(() => { menuItemAutoScroll.IsChecked = !menuItemAutoScroll.IsChecked; });
             ShowCharsCommand = new RelayCommand(() => {
@@ -767,6 +770,10 @@ namespace SyncMLViewer
             if (selectedItem.Xml.Length > 60 * 1000 && !wellFormatedXml)
             {
                 LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
+
+                Debug.WriteLine("Truncated XML detected, trying to format it...");
+                // parse the truncated xml again with more robust parsing logic
+                TextEditorMessages.Text = Helper.TryFormatTruncatedXml(selectedItem.Xml);
             }
             else
             {
@@ -1149,7 +1156,7 @@ namespace SyncMLViewer
             fileDialog.ShowDialog();
         }
 
-        private void menuItemAlwaysOnTop_Click(object sender, RoutedEventArgs e)
+        private void MenuItemAlwaysOnTop_Click(object sender, RoutedEventArgs e)
         {
             if (menuItemAlwaysOnTop.IsChecked)
             {
@@ -1895,10 +1902,9 @@ namespace SyncMLViewer
             DataEditor dataEditor = new DataEditor
             {
                 DataFromMainWindow = decodedText,
-                JsonSyntax = true,
                 HideButonClear = true,
                 Title = "Data Editor - HTML Decode - text copied to clipboard",
-                TextEditorData = { ShowLineNumbers = false }
+                TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
             };
 
             dataEditor.ShowDialog();
@@ -2093,11 +2099,40 @@ namespace SyncMLViewer
                 statusCode = matchStatusCode.Groups[1].Value;
             }
 
+            var lookupSource = "MDM Status Code";
+
+            // lookup MDM status code
+            var result = _statusCodeLookupModel.GetDescription(statusCode);
+
+            // alternative lookup error code Windows known error messages
+            if (string.Compare(result, "Unknown status code.", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                Debug.WriteLine("Fallback to Windows Error Messages DB and assuming hex error code");
+                if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                {
+                    text = text.Substring(2);
+                    if (uint.TryParse(text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint statusCodeUint))
+                    {
+                        lookupSource = "Win32 Error Code (hex)";
+                        result = Helper.GetErrorMessage(statusCodeUint);
+                    }
+                }
+                else
+                {
+                    if (uint.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out uint statusCodeUint))
+                    {
+                        lookupSource = "Win32 Error Code (int)";
+                        result = Helper.GetErrorMessage(statusCodeUint);
+                    }
+                }
+                
+            }
+
             DataEditor dataEditor = new DataEditor
             {
-                DataFromMainWindow = _statusCodeLookupModel.GetDescription(statusCode),
+                DataFromMainWindow = result,
                 HideButonClear = true,
-                Title = "Data Editor - Status Code Lookup",
+                Title = $"Data Editor - {lookupSource} lookup",
                 TextEditorData = { ShowLineNumbers = false }
             };
 

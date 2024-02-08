@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
@@ -249,6 +251,119 @@ namespace SyncMLViewer
             }
 
             return xmlDocuments;
+        }
+
+        public static string TryFormatTruncatedXml(string xml)
+        {
+            // sometimes data gets truncated, so we try to format it with a best effort logic
+            try
+            {
+                // Define patterns for opening, closing, and self-closing tags
+                string openTagPattern = @"<[^/][^>]*>";
+                string closeTagPattern = @"</[^>]+>";
+                string selfClosingTagPattern = @"<[^>]+/>";
+                string valuePattern = @"[^<]+";
+
+                string indent = "    ";
+
+                // Split XML string by opening, closing, and self-closing tags
+                string[] rawTokens = Regex.Split(xml, $@"({openTagPattern}|{closeTagPattern}|{selfClosingTagPattern})");
+                string[] tokens = rawTokens.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+
+                if (Regex.IsMatch(tokens[0], $@"^{closeTagPattern}"))
+                {
+                    tokens[0] = string.Empty;
+                }
+
+                int level = 0;
+                var formattedXml = new StringBuilder();
+
+                for (int index = 0; index < tokens.Length; index++)
+                {
+                    string token = tokens[index];
+
+                    // if a section start is found <!-- 2/1/2024 8:36:04 AM --> reset indent level to 0 
+                    string patternXmlCommentWithDateTime = @"<!--\s*\d{1,2}/\d{1,2}/\d{4}\s+\d{1,2}:\d{2}(:\d{2})?\s*([AP]M)?\s*-->";
+                    if (Regex.IsMatch(token, $@"^{patternXmlCommentWithDateTime}"))
+                    {
+                        level = 0;
+                    }
+
+                    if (Regex.IsMatch(token, $@"^{openTagPattern}"))
+                    {
+                        formattedXml.Append(token);
+
+                        if (index + 2 < tokens.Length)
+                        {
+                            if (Regex.IsMatch(token, $@"^{openTagPattern}") && Regex.IsMatch(tokens[index + 1], $@"^{valuePattern}") && Regex.IsMatch(tokens[index + 2], $@"^{closeTagPattern}"))
+                            {
+                                formattedXml.Append(tokens[index + 1]);
+                                formattedXml.Append(tokens[index + 2]);
+                                index = index + 2;
+                                level--;
+                            }
+                            level++;
+                            formattedXml.AppendLine();
+                            for (int i = 0; i < level; i++)
+                            {
+                                formattedXml.Append(indent);
+                            }
+                        }
+                    }
+                    else if (Regex.IsMatch(token, $@"^{closeTagPattern}"))
+                    {
+                        formattedXml.Append(token);
+
+                        level--;
+                        formattedXml.AppendLine();
+                        for (int i = 0; i < level; i++)
+                        {
+                            formattedXml.Append(indent);
+                        }
+                    }
+                    else
+                    {
+                        formattedXml.Append(token);
+                    }
+                }
+
+                return formattedXml.ToString();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error formatting XML: {ex.Message}");
+                return xml;
+            }
+        }
+
+        [DllImport("kernel32.dll")]
+        public static extern uint FormatMessage(uint dwFlags, IntPtr lpSource, uint dwMessageId, uint dwLanguageId, StringBuilder lpBuffer, uint nSize, IntPtr Arguments);
+
+        public static string GetErrorMessage(uint errorCode)
+        {
+            const uint FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
+            const uint FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
+            const uint LANG_USER_DEFAULT = 0x0400;
+
+            StringBuilder messageBuffer = new StringBuilder(256);
+
+            uint result = FormatMessage(
+                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                IntPtr.Zero,
+                (uint)errorCode,
+                LANG_USER_DEFAULT,
+                messageBuffer,
+                (uint)messageBuffer.Capacity,
+                IntPtr.Zero);
+
+            if (result != 0)
+            {
+                return messageBuffer.ToString();
+            }
+            else
+            {
+                return $"Error code {errorCode}";
+            }
         }
     }
 }

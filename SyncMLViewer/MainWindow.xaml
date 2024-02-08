@@ -224,7 +224,7 @@
                 <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Options">
-                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" InputGestureText="Ctrl+Alt+T" IsCheckable="True" IsChecked="false" Click="menuItemAlwaysOnTop_Click"/>
+                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" InputGestureText="Ctrl+Alt+T" IsCheckable="True" IsChecked="false" Click="MenuItemAlwaysOnTop_Click"/>
                 <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" InputGestureText="Ctrl+Alt+S" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" InputGestureText="Ctrl+Alt+H" IsCheckable="True" IsChecked="false" />
                 <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" InputGestureText="Ctrl+Alt+C" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
