@@ -193,6 +193,9 @@ http://openmobilealliance.org/release/Common/V1_2_2-20090724-A/OMA-TS-SyncML-Rep
 
 Use [Ctrl] + [F] to use search to find a particular status code.
 
+Since v1.30:
+Select a received text/code and use [Ctrl] + [E] to lookup MDM Status Code or Win32 Error Code
+
 
 
 --Informational (1xx)

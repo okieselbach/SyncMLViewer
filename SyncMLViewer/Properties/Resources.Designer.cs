@@ -107,6 +107,9 @@ namespace SyncMLViewer.Properties {
         ///
         ///Use [Ctrl] + [F] to use search to find a particular status code.
         ///
+        ///Since v1.30:
+        ///Select a received text/code and use [Ctrl] + [E] to lookup MDM Status Code or Win32 Error Code
+        ///
         ///
         ///
         ///--Informational (1xx)
@@ -119,13 +122,7 @@ namespace SyncMLViewer.Properties {
         ///--Successful (2xx)
         ///
         ///200
-        ///OK. The SyncML command completed successfully.
-        ///
-        ///201
-        ///Item added. The requested item was added.
-        ///
-        ///202
-        ///Accepted for  [rest of string was truncated]&quot;;.
+        ///OK. Th [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string StatusCodes {
             get {

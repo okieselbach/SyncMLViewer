@@ -137,30 +137,6 @@
                     <Label x:Name="LabelProcessingTime" Content="1.035s" Margin="459,0,475,2" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
-                <Grid Background="White">
-                    <avalonedit:TextEditor
-                        x:Name="TextEditorCodes"
-                        FontFamily="Consolas"
-                        FontSize="10pt"
-                        HorizontalScrollBarVisibility="Auto"
-                        ShowLineNumbers="False"
-                        IsReadOnly="True"
-                        WordWrap="True" Margin="10,10,0,-0.4"/>
-                </Grid>
-            </TabItem>
-            <TabItem x:Name="TabItemDiagnostics" Header="MDM Diagnostics">
-                <Grid Background="White">
-                    <avalonedit:TextEditor
-                        x:Name="TextEditorDiagnostics"
-                        FontFamily="Consolas"
-                        FontSize="10pt"
-                        HorizontalScrollBarVisibility="Auto"
-                        ShowLineNumbers="False"
-                        IsReadOnly="True"
-                        WordWrap="True" Margin="10,10,0,-0.4"/>
-                </Grid>
-            </TabItem>
             <TabItem x:Name="TabItemResourceAccessPolicies" Header="Resource Access Policies">
                 <Grid Background="White">
                     <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">
@@ -201,6 +177,30 @@
                             </Grid>
                         </TabItem>
                     </TabControl>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabItemDiagnostics" Header="MDM Diagnostics">
+                <Grid Background="White">
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorDiagnostics"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="False"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,10,0,-0.4"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
+                <Grid Background="White">
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorCodes"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="False"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemAbout" Header="About">
