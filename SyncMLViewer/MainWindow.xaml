@@ -32,6 +32,7 @@
         <KeyBinding Key="U" Modifiers="Ctrl+Alt" Command="{Binding CheckUpdateCommand}" />
         <KeyBinding Key="H" Modifiers="Ctrl+Alt" Command="{Binding HideMinimizedCommand}" />
         <KeyBinding Key="R" Modifiers="Ctrl+Alt" Command="{Binding ResetSyncCommand}" />
+        <KeyBinding Key="M" Modifiers="Ctrl+Alt" Command="{Binding MdmReportCommand}" />
         <KeyBinding Key="I" Modifiers="Ctrl+Shift" Command="{Binding OpenImeLogsCommand}" />
         <KeyBinding Key="M" Modifiers="Ctrl+Shift" Command="{Binding OpenMdmLogsCommand}" />
         <KeyBinding Key="D" Modifiers="Ctrl+Shift" Command="{Binding OpenDcFolderCommand}" />
@@ -250,6 +251,7 @@
                 <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
                 <Separator />
+                <MenuItem Header="Run MDM Advanced Diagnostic Report" InputGestureText="Ctrl+Alt+M" Click="MenuItemRunMdmAdvancedDiagnosticReport_Click" />
                 <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
                     <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
                     <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>

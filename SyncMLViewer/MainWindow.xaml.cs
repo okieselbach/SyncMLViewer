@@ -112,6 +112,7 @@ namespace SyncMLViewer
         public ICommand CheckUpdateCommand { get; }
         public ICommand HideMinimizedCommand { get; }
         public ICommand ResetSyncCommand { get; }
+        public ICommand MdmReportCommand { get; }
         public ICommand OpenImeLogsCommand { get; }
         public ICommand OpenMdmLogsCommand { get; }
         public ICommand OpenDcFolderCommand { get; }
@@ -157,6 +158,7 @@ namespace SyncMLViewer
             CheckUpdateCommand = new RelayCommand(() => { MenuItemCheckUpdate_OnClick(null, null); });
             HideMinimizedCommand = new RelayCommand(() => { menuItemHideWhenMinimized.IsChecked = !menuItemHideWhenMinimized.IsChecked; });
             ResetSyncCommand = new RelayCommand(() => { MenuItemResetSyncTriggerStatus_Click(null, null); });
+            MdmReportCommand = new RelayCommand(() => { MenuItemRunMdmAdvancedDiagnosticReport_Click(null, null); });
             OpenImeLogsCommand = new RelayCommand(() => { MenuItemOpenImeLogs_Click(null, null); });
             OpenMdmLogsCommand = new RelayCommand(() => { MenuItemOpenMDMDiagnosticsFolder_Click(null, null); });
             OpenDcFolderCommand = new RelayCommand(() => { MenuItemOpenDeclaredConfigurationHostOSFolder_Click(null, null); });
@@ -2043,6 +2045,11 @@ namespace SyncMLViewer
         private void LabelBackToTopVpn_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             TextEditorVpnProfiles.ScrollToHome();
+        }
+
+        private async void MenuItemRunMdmAdvancedDiagnosticReport_Click(object sender, RoutedEventArgs e)
+        {
+            await Helper.CreateAdvancedDiagnosticsReport();
         }
     }
 }

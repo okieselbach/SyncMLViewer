@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -62,7 +63,7 @@ namespace SyncMLViewer
             }
             else
             {
-                MessageBox.Show("Folder does not exist.", "Open folder", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Folder '{path}' does not exist.", "Open folder", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -85,6 +86,30 @@ namespace SyncMLViewer
             {
                 // prevent exceptions if folder does not exist
             }
+        }
+
+        [DllImport("MdmDiagnostics.dll")]
+        public static extern Int64 CreateMdmEnterpriseDiagnosticHTMLReport([MarshalAs(UnmanagedType.LPWStr)] string path);
+
+        public static async Task CreateAdvancedDiagnosticsReport()
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "MDMDiagnostics", "MDMDiagReport.html");
+
+            await Task.Factory.StartNew(() =>
+            {
+                Int64 result = CreateMdmEnterpriseDiagnosticHTMLReport(path);
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {result}");
+            });
+            var exp = new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = path
+                }
+            };
+            exp.Start();
+            exp.Dispose();
         }
 
         public static async Task RunMdmDiagnosticsTool(string scenario)
