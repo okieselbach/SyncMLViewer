@@ -112,6 +112,7 @@ namespace SyncMLViewer
         public ICommand CheckUpdateCommand { get; }
         public ICommand HideMinimizedCommand { get; }
         public ICommand ResetSyncCommand { get; }
+        public ICommand MdmEventLogCommand { get; }
         public ICommand MdmReportCommand { get; }
         public ICommand OpenImeLogsCommand { get; }
         public ICommand OpenMdmLogsCommand { get; }
@@ -158,6 +159,7 @@ namespace SyncMLViewer
             CheckUpdateCommand = new RelayCommand(() => { MenuItemCheckUpdate_OnClick(null, null); });
             HideMinimizedCommand = new RelayCommand(() => { menuItemHideWhenMinimized.IsChecked = !menuItemHideWhenMinimized.IsChecked; });
             ResetSyncCommand = new RelayCommand(() => { MenuItemResetSyncTriggerStatus_Click(null, null); });
+            MdmEventLogCommand = new RelayCommand(() => { MenuItemOpenMdmEventLog_Click(null, null); });
             MdmReportCommand = new RelayCommand(() => { MenuItemRunMdmAdvancedDiagnosticReport_Click(null, null); });
             OpenImeLogsCommand = new RelayCommand(() => { MenuItemOpenImeLogs_Click(null, null); });
             OpenMdmLogsCommand = new RelayCommand(() => { MenuItemOpenMDMDiagnosticsFolder_Click(null, null); });
@@ -2050,6 +2052,11 @@ namespace SyncMLViewer
         private async void MenuItemRunMdmAdvancedDiagnosticReport_Click(object sender, RoutedEventArgs e)
         {
             await Helper.CreateAdvancedDiagnosticsReport();
+        }
+
+        private void MenuItemOpenMdmEventLog_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenEventLog("Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin");
         }
     }
 }

@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows;
 using System.Xml;
 
@@ -38,6 +39,28 @@ namespace SyncMLViewer
             p.Start();
             p.Dispose();
         }
+
+        public static void OpenEventLog(string logName)
+        {
+            var path = Environment.ExpandEnvironmentVariables(@"%SystemRoot%\system32");
+            try
+            {
+                var exp = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = $"{path}\\mmc.exe",
+                        Arguments = $"\"{path}\\eventvwr.msc\" /c:\"{logName}\""
+                    }
+                };
+                exp.Start();
+                exp.Dispose();
+            }
+            catch (Exception)
+            {
+                // prevent exceptions if folder does not exist
+            }
+          }
 
         public static void OpenFolder(string path)
         {
