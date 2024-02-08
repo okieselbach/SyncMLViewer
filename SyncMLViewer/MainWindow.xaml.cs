@@ -1611,7 +1611,14 @@ namespace SyncMLViewer
             }
 
             stopwatch.Stop();
-            LabelProcessingTime.Content = string.Format("{0:0.000}s", stopwatch.Elapsed.TotalSeconds);
+            if (menuItemExecutionTime.IsChecked)
+            {
+                LabelProcessingTime.Content = string.Format("{0:0.000}s", stopwatch.Elapsed.TotalSeconds);
+            }
+            else
+            {
+                LabelProcessingTime.Content = string.Empty;
+            }
 
             // we are reading the Executer SyncML Request Output file from the disk
             var syncMlOutputFilePath = Path.Combine(assemblyPath, Properties.Resources.OutputFile);

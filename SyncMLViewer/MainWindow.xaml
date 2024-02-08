@@ -238,6 +238,7 @@
                     <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
                     <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                     <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
+                    <MenuItem x:Name="menuItemExecutionTime" Header="_Enable Request Execution Time" IsCheckable="True" IsChecked="False" />
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
                     <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" />
