@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -364,6 +365,50 @@ namespace SyncMLViewer
             {
                 return $"Error code {errorCode}";
             }
+        }
+
+        public static string DecodePEMCertificate(string pemEncodedCertificate)
+        {
+            // Remove PEM header and footer
+            string base64EncodedCertificate = pemEncodedCertificate
+                .Replace("-----BEGIN CERTIFICATE-----", "")
+                .Replace("-----END CERTIFICATE-----", "")
+                .Replace("\n", "")
+                .Replace("\r", "")
+                .Replace(" ", "");
+
+            X509Certificate2 certificate;
+            try
+            {
+                byte[] certBytes = Convert.FromBase64String(base64EncodedCertificate);
+                certificate = new X509Certificate2(certBytes);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Subject: " + certificate.Subject);
+            sb.AppendLine("Friendly Name: " + certificate.FriendlyName);
+            sb.AppendLine("Issuer: " + certificate.Issuer);
+            sb.AppendLine("Issuer Name: " + certificate.IssuerName.Name);
+            sb.AppendLine("Thumbprint: " + certificate.Thumbprint);
+            sb.AppendLine("Serial Number: " + certificate.SerialNumber);
+            sb.AppendLine("Not Before: " + certificate.NotBefore);
+            sb.AppendLine("Not After: " + certificate.NotAfter);
+            //sb.AppendLine("Public Key Algorithm: " + certificate.GetKeyAlgorithm());
+            sb.AppendLine("Signature Algorithm: " + certificate.SignatureAlgorithm.FriendlyName);
+            sb.AppendLine("Version: " + certificate.Version);
+            sb.AppendLine("Has Private Key: " + certificate.HasPrivateKey);
+            foreach (X509Extension extension in certificate.Extensions)
+            {
+                // Print extensions
+                sb.AppendLine("Extension: " + extension.Oid.FriendlyName + " - " + extension.Format(true));
+            }
+
+            return sb.ToString();
         }
     }
 }

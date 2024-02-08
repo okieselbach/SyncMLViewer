@@ -19,6 +19,10 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using static SyncMLViewer.MainWindow;
 using static System.Net.Mime.MediaTypeNames;
+using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Search;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace SyncMLViewer
 {
@@ -36,10 +40,45 @@ namespace SyncMLViewer
         public bool HideButonClear { get; set; }
 
         public ICommand DecodeBase64Command { get; }
+        public ICommand DecodeCertCommand {  get; }
 
         public DataEditor()
         {
             InitializeComponent();
+
+            SearchPanel.Install(TextEditorData);
+            TextEditorData.Options.HighlightCurrentLine = true;
+            TextEditorData.Options.EnableRectangularSelection = true;
+            TextEditorData.Options.EnableTextDragDrop = true;
+
+            DecodeCertCommand = new RelayCommand(() =>
+            {
+                var text = TextEditorData.SelectedText;
+
+                try
+                {
+                    // try to decode PEM certificate, maybe it's a certificate :-D
+                    var resultText = Helper.DecodePEMCertificate(text);
+                    if (!string.IsNullOrEmpty(resultText))
+                    {
+                        text = resultText;
+                    }
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = text,
+                    HideButonClear = true,
+                    Title = "Data Editor - Certificate Decode",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+            });
 
             DecodeBase64Command = new RelayCommand(() => {
 
@@ -71,7 +110,7 @@ namespace SyncMLViewer
 
                 try
                 {
-                    prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+                    prettyJson = JToken.Parse(text).ToString(Formatting.Indented);
                     isJson = true;
                 }
                 catch (Exception)
@@ -80,12 +119,12 @@ namespace SyncMLViewer
                 }
                 if (string.IsNullOrEmpty(prettyJson))
                 {
-                    Clipboard.SetText(text);
+                    //Clipboard.SetText(text);
                     resultText = text;
                 }
                 else
                 {
-                    Clipboard.SetText(prettyJson);
+                    //Clipboard.SetText(prettyJson);
                     resultText = prettyJson;
                 }
 
@@ -94,7 +133,7 @@ namespace SyncMLViewer
                     DataFromMainWindow = resultText,
                     JsonSyntax = isJson,
                     HideButonClear = true,
-                    Title = "Data Editor - Base64 Decode - text copied to clipboard",
+                    Title = "Data Editor - Base64 Decode",
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
@@ -115,13 +154,12 @@ namespace SyncMLViewer
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             TextEditorData.Text = DataFromMainWindow;
-            TextEditorData.Options.HighlightCurrentLine = true;
-            TextEditorData.Options.EnableRectangularSelection = true;
-            TextEditorData.Options.EnableTextDragDrop = true;
+
+            TextEditorData.TextArea.Focus();
 
             if (JsonSyntax)
             {
-                using (var stream = Assembly.GetAssembly(typeof(ICSharpCode.AvalonEdit.TextEditor)).GetManifestResourceStream("ICSharpCode.AvalonEdit.Highlighting.Resources.JavaScript-Mode.xshd"))
+                using (var stream = Assembly.GetAssembly(typeof(TextEditor)).GetManifestResourceStream("ICSharpCode.AvalonEdit.Highlighting.Resources.JavaScript-Mode.xshd"))
                 {
                     using (var reader = new System.Xml.XmlTextReader(stream))
                     {
@@ -161,23 +199,27 @@ namespace SyncMLViewer
             if (e.Key == Key.Escape)
             {
                 DataFromSecondWindow = TextEditorData.Text;
+                // TODO: check if SearchPanel is open, if yes we do not handle close as the first esc is for closing the search panel
+                // but the problem ist the IsVisible property is not set to false... bug in AvalonEdit?
                 Close();
             }
         }
 
         private void LabelFormat_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            TextEditorData.Text = TryFormatXml(TextEditorData.Text).Trim();
+            TextEditorData.Text = TryFormat(TextEditorData.Text).Trim();
         }
 
-        private static string TryFormatXml(string text)
+        private string TryFormat(string text)
         {
             // try to format the text as XML or JSON
 
             try
             {
                 // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
-                return XElement.Parse(text.Trim()).ToString();
+                var result = XElement.Parse(text.Trim()).ToString();
+                TextEditorData.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
+                return result;
             }
             catch (Exception)
             {
@@ -186,7 +228,9 @@ namespace SyncMLViewer
 
             try
             {
-                return JToken.Parse(text.Trim()).ToString(Formatting.Indented);
+                var result = JToken.Parse(text.Trim()).ToString(Formatting.Indented);
+                TextEditorData.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("JSON");
+                return result;
             }
             catch (Exception)
             {

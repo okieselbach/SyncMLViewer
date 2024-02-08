@@ -95,6 +95,7 @@ namespace SyncMLViewer
         public ICommand SaveCommand { get; }
         public ICommand ExitCommand { get; }
         public ICommand DecodeBase64Command { get; }
+        public ICommand DecodeCertCommand { get; }
         public ICommand DecodeHtmlCommand { get; }
         public ICommand WordWrapCommand { get; }
         public ICommand MdmSyncCommand { get; }
@@ -131,6 +132,7 @@ namespace SyncMLViewer
             SaveCommand = new RelayCommand(() => { ButtonSaveAs_Click(null, null); });
             ExitCommand = new RelayCommand(() => { MenuItemExit_OnClick(null, null); });
             DecodeBase64Command = new RelayCommand(() => { MenuItemDecodeBase64_Click(null, null); });
+            DecodeCertCommand = new RelayCommand(() => { MenuItemDecodeCertificate_Click(null, null); });
             DecodeHtmlCommand = new RelayCommand(() => { MenuItemDecodeHTML_Click(null, null); });
             WordWrapCommand = new RelayCommand(() => {
                 menuItemWordWrap.IsChecked = !menuItemWordWrap.IsChecked;
@@ -1280,7 +1282,7 @@ namespace SyncMLViewer
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("No valid Base64 format", "Base64 Decode", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // prevent Exceptions for non-Base64 data
                 }
 
                 try
@@ -1295,12 +1297,12 @@ namespace SyncMLViewer
                 }
                 if (string.IsNullOrEmpty(prettyJson))
                 {
-                    Clipboard.SetText(text);
+                    //Clipboard.SetText(text);
                     resultText = text;
                 }
                 else
                 {
-                    Clipboard.SetText(prettyJson);
+                    //Clipboard.SetText(prettyJson);
                     resultText = prettyJson;
                 }
 
@@ -1309,7 +1311,7 @@ namespace SyncMLViewer
                     DataFromMainWindow = resultText,
                     JsonSyntax = isJson,
                     HideButonClear = true,
-                    Title = "Data Editor - Base64 Decode - text copied to clipboard",
+                    Title = "Data Editor - Base64 Decode",
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
@@ -1321,12 +1323,12 @@ namespace SyncMLViewer
             }
         }
 
-        private void LabelDeviceName_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void LabelDeviceName_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Clipboard.SetText(LabelDeviceName.Content.ToString(), TextDataFormat.Text);
         }
 
-        private void LabelBackToTop_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void LabelBackToTop_MouseUp(object sender, MouseButtonEventArgs e)
         {
             TextEditorMessages.ScrollToHome();
         }
@@ -2163,6 +2165,48 @@ namespace SyncMLViewer
                 DataFromMainWindow = result,
                 HideButonClear = true,
                 Title = $"Data Editor - {lookupSource} lookup",
+                TextEditorData = { ShowLineNumbers = false }
+            };
+
+            dataEditor.ShowDialog();
+        }
+
+        private void MenuItemDecodeCertificate_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            {
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+
+            try
+            {
+                // try to decode PEM certificate, maybe it's a certificate :-D
+                var resultText = Helper.DecodePEMCertificate(text);
+                if (!string.IsNullOrEmpty(resultText))
+                {
+                    text = resultText;
+                }
+            }
+            catch (Exception)
+            {
+                // prevent Exceptions for non-Base64 data
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = text,
+                HideButonClear = true,
+                Title = "Data Editor - Certificate Decode",
                 TextEditorData = { ShowLineNumbers = false }
             };
 

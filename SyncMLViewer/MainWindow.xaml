@@ -10,6 +10,7 @@
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
         <KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding DecodeBase64Command}" />
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding DecodeCertCommand}" />
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding DecodeHtmlCommand}" />
         <KeyBinding Key="F4" Modifiers="Alt" Command="{Binding ExitCommand}" />
         <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding WordWrapCommand}" />
@@ -251,6 +252,7 @@
                 <Separator />
                 <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Decode Certificate selected text" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
                 <MenuItem Header="Lookup SyncML Status Code for selected text" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
