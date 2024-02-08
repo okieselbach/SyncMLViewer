@@ -253,7 +253,7 @@
                 <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
                 <MenuItem Header="Decode Certificate selected text" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
-                <MenuItem Header="Lookup SyncML Status Code for selected text" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                <MenuItem Header="Lookup Status Code for selected text" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
