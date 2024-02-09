@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" xmlns:syncmlviewer="clr-namespace:SyncMLViewer" d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow}" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-arrows.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
