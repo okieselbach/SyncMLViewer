@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" xmlns:syncmlviewer="clr-namespace:SyncMLViewer" d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow}" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-icon.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
@@ -220,8 +220,16 @@
         </TabControl>
         <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click"/>
-                <MenuItem Header="_Save As..." InputGestureText="Ctrl+S" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click"/>
+                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/open-icon.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Save As..." InputGestureText="Ctrl+S" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/save-icon.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
             </MenuItem>
@@ -248,7 +256,11 @@
             <MenuItem Header="_Actions">
                 <MenuItem Header="MDM _Sync" InputGestureText="Ctrl+M" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
                 <MenuItem Header="MMP-C Sy_nc" InputGestureText="Ctrl+K" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
-                <MenuItem Header="_Run Request" InputGestureText="Ctrl+R" Click="ButtonRunRequest_Click"/>
+                <MenuItem Header="_Run Request" InputGestureText="Ctrl+R" Click="ButtonRunRequest_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/play-icon.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>

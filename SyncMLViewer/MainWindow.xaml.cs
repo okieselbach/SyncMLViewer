@@ -195,7 +195,7 @@ namespace SyncMLViewer
                 BalloonTipTitle = "SyncML Viewer",
                 Text = "SyncML Viewer"
             };
-            Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/;component/sync-icon.ico")).Stream;
+            Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/;component/Icons/sync-icon.ico")).Stream;
             _notifyIcon.Icon = new System.Drawing.Icon(iconStream);
             _notifyIcon.Click += new EventHandler(NotifyIcon_Click);
             _notifyIconBallonShownOnce = false;
