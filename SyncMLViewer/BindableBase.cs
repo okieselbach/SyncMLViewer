@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SyncMLViewer
 {
-    public class BindableBase
+    public class BindableBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

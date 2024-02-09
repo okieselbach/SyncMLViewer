@@ -216,7 +216,7 @@ namespace SyncMLViewer
             _backgroundWorker.RunWorkerAsync();
 
             // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
-            DataContext = this;
+            this.DataContext = this;
 
             Loaded += delegate { MenuItemCheckUpdate_OnClick(null, new RoutedEventArgs()); };
 
