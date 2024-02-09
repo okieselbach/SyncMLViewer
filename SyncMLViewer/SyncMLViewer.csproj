@@ -403,11 +403,8 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\open-icon.ico" />
-    <None Include="Icons\open-icon.png" />
     <Resource Include="Icons\play-icon.ico" />
     <Resource Include="Icons\save-icon.ico" />
-    <None Include="Icons\play-icon.png" />
-    <None Include="Icons\save-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
