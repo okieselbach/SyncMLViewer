@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Icons\sync-icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\sync-arrows.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -91,7 +91,7 @@
     <None Include="StrongNameKey.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\sync-icon.ico" />
+    <Resource Include="Icons\sync-arrows.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

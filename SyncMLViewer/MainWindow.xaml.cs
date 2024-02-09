@@ -123,6 +123,7 @@ namespace SyncMLViewer
         public ICommand OpenImeLogsCommand { get; }
         public ICommand OpenMdmLogsCommand { get; }
         public ICommand OpenDcFolderCommand { get; }
+        public ICommand CaptureCommand { get; }
 
         public MainWindow()
         {
@@ -172,6 +173,10 @@ namespace SyncMLViewer
             OpenImeLogsCommand = new RelayCommand(() => { MenuItemOpenImeLogs_Click(null, null); });
             OpenMdmLogsCommand = new RelayCommand(() => { MenuItemOpenMDMDiagnosticsFolder_Click(null, null); });
             OpenDcFolderCommand = new RelayCommand(() => { MenuItemOpenDeclaredConfigurationHostOSFolder_Click(null, null); });
+            CaptureCommand = new RelayCommand(() => {
+                menuItemCaptureTraffic.IsChecked = !menuItemCaptureTraffic.IsChecked;
+                MenuItemCaptureTraffic_Click(null, null); 
+            });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -209,7 +214,8 @@ namespace SyncMLViewer
 
             _backgroundWorker = new BackgroundWorker
             {
-                WorkerReportsProgress = true
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
             };
             _backgroundWorker.DoWork += WorkerTraceEvents;
             _backgroundWorker.ProgressChanged += WorkerProgressChanged;
@@ -1171,26 +1177,47 @@ namespace SyncMLViewer
             }
         }
 
-        private void MenuItemStopEtwSession_Click(object sender, RoutedEventArgs e)
+        private void MenuItemCaptureTraffic_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (!menuItemCaptureTraffic.IsChecked)
             {
-                if (TraceEventSession.IsElevated() != true)
+                try
                 {
-                    throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                    if (TraceEventSession.IsElevated() != true)
+                    {
+                        throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                    }
+
+                    if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
+                    {
+                        Debug.WriteLine($"The ETW session '{SessionName}' is running, stopping existing session now.");
+                        TraceEventSession.GetActiveSession(SessionName).Stop(true);
+
+                        TraceEventSessionState.Started = false;
+                    }
+
+                    _backgroundWorker.CancelAsync();
+
+                    ImageCaptureTraffic.Visibility = Visibility.Hidden;
                 }
-
-                if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
+                catch (Exception ex)
                 {
-                    Debug.WriteLine($"The session name '{SessionName}' is running, stopping existing session now.");
-                    TraceEventSession.GetActiveSession(SessionName).Stop(true);
-
-                    TraceEventSessionState.Started = false;
+                    Debug.WriteLine($"Exception: {ex}");
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine($"Exception: {ex}");
+                if (!_backgroundWorker.IsBusy)
+                {
+                    _backgroundWorker.RunWorkerAsync();
+                    Debug.WriteLine($"The ETW session '{SessionName}' is now running.");
+
+                    ImageCaptureTraffic.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    Debug.WriteLine("The ETW session is still running.");
+                }
             }
         }
 

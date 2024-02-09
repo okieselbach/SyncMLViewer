@@ -57,7 +57,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Icons\sync-icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\sync-arrows.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -366,13 +366,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="dist\update.xml" />
-    <Resource Include="Icons\sync-icon.ico" />
+    <Resource Include="Icons\sync-arrows.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="dist\update2.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="SyncMLViewer.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
@@ -402,9 +399,12 @@
     <None Include="SyncML-Examples.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\open-icon.ico" />
-    <Resource Include="Icons\play-icon.ico" />
-    <Resource Include="Icons\save-icon.ico" />
+    <Resource Include="Icons\open.ico" />
+    <Resource Include="Icons\play.ico" />
+    <Resource Include="Icons\save.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\data-traffic.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
