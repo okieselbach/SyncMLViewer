@@ -136,6 +136,31 @@ namespace SyncMLViewer
             }
         }
 
+        public static void OpenInNotepad(string text)
+        {
+            try
+            {
+                var tempFilePath = Path.GetTempFileName();
+                File.WriteAllText(tempFilePath, text);
+
+                var exp = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = true,
+                        FileName = "Notepad.exe",
+                        Arguments = tempFilePath
+            }
+                };
+                exp.Start();
+                exp.Dispose();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error opening Notepad.", "Open in Notepad", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         [DllImport("MdmDiagnostics.dll")]
         public static extern Int64 CreateMdmEnterpriseDiagnosticHTMLReport([MarshalAs(UnmanagedType.LPWStr)] string path);
 

@@ -14,7 +14,9 @@ namespace SyncMLViewer
 
         public DateTime DateTime { get; set; }
 
-        public string Entry => $"{SessionId} - {DateTime}";
+        public string Comment { get; set; }
+
+        public string Entry => $"{SessionId} - {DateTime}{(!string.IsNullOrWhiteSpace(Comment) ? $"*" : "")}";
 
         public override string ToString()
         {

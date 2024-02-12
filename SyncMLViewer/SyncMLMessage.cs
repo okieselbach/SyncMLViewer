@@ -9,10 +9,16 @@ namespace SyncMLViewer
     public class SyncMlMessage
     {
         public string SessionId { get; set; }
+
         public string MsgId { get; set; }
+
         public string Xml { get; set; }
+
         public DateTime DateTime { get; set; }
-        public string Entry => $"{MsgId} - {DateTime}";
+
+        public string Comment { get; set; }
+
+        public string Entry => $"{MsgId} - {DateTime}{(!string.IsNullOrWhiteSpace(Comment) ? $"*" : "")}";
 
         public override string ToString()
         {

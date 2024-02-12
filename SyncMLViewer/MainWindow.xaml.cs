@@ -36,6 +36,7 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using static System.Net.Mime.MediaTypeNames;
 using Application = System.Windows.Application;
 using Path = System.IO.Path;
 
@@ -127,6 +128,7 @@ namespace SyncMLViewer
         public ICommand OpenDcFolderCommand { get; }
         public ICommand CaptureCommand { get; }
         public ICommand SearchWithGoogleCommand { get; }
+        public ICommand OpenInNotepadCommand { get; }
 
         public MainWindow()
         {
@@ -181,6 +183,7 @@ namespace SyncMLViewer
                 MenuItemCaptureTraffic_Click(null, null); 
             });
             SearchWithGoogleCommand = new RelayCommand(() => { MenuItemSearchWithGoogle_Click(null, null); });
+            OpenInNotepadCommand = new RelayCommand(() => { MenuItemViewMessageInNotepad_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -2292,6 +2295,82 @@ namespace SyncMLViewer
             if (!string.IsNullOrEmpty(text))
             {
                 Helper.SearchWithGoogle(text);
+            }
+        }
+
+        private void ListBoxMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxMessages.SelectedItem != null)
+            {
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment,
+                    HideButonClear = false,
+                    Title = "Data Editor - Add comment",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+
+                ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
+
+                ListBoxMessages.Items.Refresh();
+            }
+        }
+
+        private void ListBoxSessions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxSessions.SelectedItem != null)
+            {
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = ((SyncMlSession)ListBoxSessions.SelectedItem).Comment,
+                    HideButonClear = false,
+                    Title = "Data Editor - Add comment",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+
+                ((SyncMlSession)ListBoxSessions.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
+
+                ListBoxSessions.Items.Refresh();
+            }
+        }
+
+        private void ListBoxSessions_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ListBoxSessions_MouseDoubleClick(sender, null);
+            }
+        }
+
+        private void ListBoxMessages_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ListBoxMessages_MouseDoubleClick(sender, null);
+            }
+        }
+
+        private void TextEditorMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxMessages.SelectedItem != null)
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) &&
+                    Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
+                {
+                    Helper.OpenInNotepad(((SyncMlMessage)ListBoxMessages.SelectedItem).Xml);
+                }
+            }
+        }
+
+        private void MenuItemViewMessageInNotepad_Click(object sender, RoutedEventArgs e)
+        {
+            if (ListBoxMessages.SelectedItem != null)
+            {
+                Helper.OpenInNotepad(((SyncMlMessage)ListBoxMessages.SelectedItem).Xml);
             }
         }
     }
