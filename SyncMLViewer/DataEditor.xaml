@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SyncMLViewer"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
-        Title="Data Editor" Height="450" Width="600" MinHeight="200" MinWidth="450" Loaded="Window_Loaded" Closed="Window_Closed" KeyUp="Window_KeyUp" WindowStartupLocation="CenterScreen" ToolTip="Ctrl+B,N,H,E is supported">
+        Title="Data Editor" Height="450" Width="600" MinHeight="200" MinWidth="450" Loaded="Window_Loaded" Closed="Window_Closed" KeyUp="Window_KeyUp" WindowStartupLocation="CenterScreen">
     <Window.InputBindings>
         <KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding DecodeBase64Command}" />
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding DecodeCertCommand}" />
@@ -26,7 +26,7 @@
             WordWrap="True"
             BorderThickness="1"
             BorderBrush="Gray"/>
-        <Button x:Name="ButtonClose" Content="_Close" Margin="0,0,10,10" Click="ButtonClose_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" />
+        <Button x:Name="ButtonClose" Content="_Close" Margin="0,0,10,10" Click="ButtonClose_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" ToolTip="Hint: Ctrl+B,N,H,E is also supported in Data Editor"/>
         <Button x:Name="ButtonClear" Content="Clear Editor" Margin="0,0,112,10" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" />
         <CheckBox x:Name="CheckBoxWordWrap" Content="WordWrap" HorizontalAlignment="Left" Margin="10,0,0,16" Checked="CheckBoxWordWrap_Checked" Unchecked="CheckBoxWordWrap_Unchecked" Height="15" VerticalAlignment="Bottom" IsChecked="True" ToolTip="Toggle WordWrap (Ctrl+W)"/>
         <Label x:Name="LabelFormat" Content="[Format Document]" Margin="93,0,0,12" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" ToolTip="Try to format as xml/json (Ctrl+Alt+F)" HorizontalAlignment="Left" Width="114"/>
