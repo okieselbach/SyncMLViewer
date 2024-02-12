@@ -2123,7 +2123,11 @@ namespace SyncMLViewer
 
         private async void MenuItemRunMdmAdvancedDiagnosticReport_Click(object sender, RoutedEventArgs e)
         {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
             await Helper.CreateAdvancedDiagnosticsReport();
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
         }
 
         private void MenuItemOpenMdmEventLog_Click(object sender, RoutedEventArgs e)
@@ -2131,7 +2135,8 @@ namespace SyncMLViewer
             // show status label for 3s to indicate the user that the event log is being opened
             LabelStatusTop.Visibility = Visibility.Visible;
 
-            _timer.Interval = 3000;
+            _timer.Interval = 4 * 1000;
+            _timer.AutoReset = false;
             _timer.Elapsed += OpenMdmEventLogTimerElapsed;
             _timer.Start();
             
@@ -2146,7 +2151,6 @@ namespace SyncMLViewer
                 LabelStatusTop.Visibility = Visibility.Hidden;
             })); 
 
-            ((Timer)sender).AutoReset = false;
             _timer.Stop();
         }
 

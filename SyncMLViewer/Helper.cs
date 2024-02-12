@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.UI.WebControls;
 using System.Windows;
 using System.Xml;
 
@@ -49,7 +49,7 @@ namespace SyncMLViewer
             var path = Environment.ExpandEnvironmentVariables(@"%SystemRoot%\system32");
             try
             {
-                var exp = new Process
+                var p = new Process
                 {
                     StartInfo =
                     {
@@ -57,8 +57,8 @@ namespace SyncMLViewer
                         Arguments = $"\"{path}\\eventvwr.msc\" /c:\"{logName}\""
                     }
                 };
-                exp.Start();
-                exp.Dispose();
+                p.Start();
+                p.Dispose();
             }
             catch (Exception)
             {
@@ -72,7 +72,7 @@ namespace SyncMLViewer
             {
                 try
                 {
-                    var exp = new Process
+                    var p = new Process
                     {
                         StartInfo = 
                         {
@@ -80,8 +80,8 @@ namespace SyncMLViewer
                             Arguments = path
                         }
                     };
-                    exp.Start();
-                    exp.Dispose();
+                    p.Start();
+                    p.Dispose();
                 }
                 catch (Exception)
                 {
@@ -98,7 +98,7 @@ namespace SyncMLViewer
         {
             try
             {
-                var exp = new Process
+                var p = new Process
                 {
                     StartInfo =
                     {
@@ -106,8 +106,8 @@ namespace SyncMLViewer
                         FileName = path
                     }
                 };
-                exp.Start();
-                exp.Dispose();
+                p.Start();
+                p.Dispose();
             }
             catch (Exception)
             {
@@ -119,7 +119,7 @@ namespace SyncMLViewer
         {
             try
             {
-                var exp = new Process
+                var p = new Process
                 {
                     StartInfo =
                     {
@@ -127,8 +127,8 @@ namespace SyncMLViewer
                         FileName = "https://www.google.com/search?q=" + HttpUtility.UrlEncode(searchText)
             }
                 };
-                exp.Start();
-                exp.Dispose();
+                p.Start();
+                p.Dispose();
             }
             catch (Exception)
             {
@@ -143,17 +143,33 @@ namespace SyncMLViewer
                 var tempFilePath = Path.GetTempFileName();
                 File.WriteAllText(tempFilePath, text);
 
-                var exp = new Process
+                var p = new Process
                 {
                     StartInfo =
                     {
                         UseShellExecute = true,
                         FileName = "Notepad.exe",
                         Arguments = tempFilePath
-            }
+                    },
+                    EnableRaisingEvents = true
                 };
-                exp.Start();
-                exp.Dispose();
+
+                p.Exited += (sender, e) =>
+                {
+                    try
+                    {
+                        File.Delete(tempFilePath);
+                    }
+                    catch (Exception)
+                    {
+                        // ignore
+                    }
+                };
+
+                if (p.Start())
+                {
+                    p.WaitForExit();
+                }
             }
             catch (Exception)
             {
@@ -173,7 +189,7 @@ namespace SyncMLViewer
                 Int64 result = CreateMdmEnterpriseDiagnosticHTMLReport(path);
                 Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {result}");
             });
-            var exp = new Process
+            var p = new Process
             {
                 StartInfo =
                 {
@@ -181,8 +197,8 @@ namespace SyncMLViewer
                     Arguments = path
                 }
             };
-            exp.Start();
-            exp.Dispose();
+            p.Start();
+            p.Dispose();
         }
 
         public static async Task RunMdmDiagnosticsTool(string scenario)
@@ -206,7 +222,7 @@ namespace SyncMLViewer
 
             await Task.Factory.StartNew(() =>
             {
-                var p = new Process
+                var tool = new Process
                 {
                     StartInfo =
                     {
@@ -217,11 +233,11 @@ namespace SyncMLViewer
                     }
                 };
 
-                p.Start();
-                p.WaitForExit();
-                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {p.ExitCode}");
+                tool.Start();
+                tool.WaitForExit();
+                Debug.WriteLine($"MdmDiagnosticsTool ExitCode: {tool.ExitCode}");
             });
-            var exp = new Process
+            var p = new Process
             {
                 StartInfo =
                 {
@@ -229,8 +245,8 @@ namespace SyncMLViewer
                     Arguments = path
                 }
             };
-            exp.Start();
-            exp.Dispose();
+            p.Start();
+            p.Dispose();
         }
 
         public static string RunCommand(string command, string arguments)
