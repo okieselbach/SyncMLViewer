@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI.WebControls;
 using System.Windows;
 using System.Xml;
@@ -111,6 +112,27 @@ namespace SyncMLViewer
             catch (Exception)
             {
                 // prevent exceptions if folder does not exist
+            }
+        }
+
+        public static void SearchWithGoogle(string searchText)
+        {
+            try
+            {
+                var exp = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = true,
+                        FileName = "https://www.google.com/search?q=" + HttpUtility.UrlEncode(searchText)
+            }
+                };
+                exp.Start();
+                exp.Dispose();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error opening browser.", "Search with Google", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

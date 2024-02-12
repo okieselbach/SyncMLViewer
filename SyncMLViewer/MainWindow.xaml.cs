@@ -27,6 +27,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
@@ -68,6 +69,7 @@ namespace SyncMLViewer
         private readonly Runspace _rs;
         private readonly FoldingManager _foldingManager;
         private readonly XmlFoldingStrategy _foldingStrategy;
+        private readonly Timer _timer = new Timer();
         private readonly string _version;
         private string _updateTempFileName;
         private bool _updateStarted;
@@ -86,8 +88,8 @@ namespace SyncMLViewer
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
-
-        static public TraceEventSessionState TraceEventSessionState { get; set; }
+        
+        public static TraceEventSessionState TraceEventSessionState { get; set; }
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
 
@@ -124,6 +126,7 @@ namespace SyncMLViewer
         public ICommand OpenMdmLogsCommand { get; }
         public ICommand OpenDcFolderCommand { get; }
         public ICommand CaptureCommand { get; }
+        public ICommand SearchWithGoogleCommand { get; }
 
         public MainWindow()
         {
@@ -177,6 +180,7 @@ namespace SyncMLViewer
                 menuItemCaptureTraffic.IsChecked = !menuItemCaptureTraffic.IsChecked;
                 MenuItemCaptureTraffic_Click(null, null); 
             });
+            SearchWithGoogleCommand = new RelayCommand(() => { MenuItemSearchWithGoogle_Click(null, null); });
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -2121,7 +2125,26 @@ namespace SyncMLViewer
 
         private void MenuItemOpenMdmEventLog_Click(object sender, RoutedEventArgs e)
         {
+            // show status label for 3s to indicate the user that the event log is being opened
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            _timer.Interval = 3000;
+            _timer.Elapsed += OpenMdmEventLogTimerElapsed;
+            _timer.Start();
+            
             Helper.OpenEventLog("Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin");
+        }
+
+        private void OpenMdmEventLogTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            // thread safe call to UI thread, hide status label again
+            LabelStatusTop.Dispatcher.Invoke(new Action(() =>
+            {
+                LabelStatusTop.Visibility = Visibility.Hidden;
+            })); 
+
+            ((Timer)sender).AutoReset = false;
+            _timer.Stop();
         }
 
         private void MenuItemFeedback_Click(object sender, RoutedEventArgs e)
@@ -2235,6 +2258,41 @@ namespace SyncMLViewer
             };
 
             dataEditor.ShowDialog();
+        }
+
+        private void MenuItemSearchWithGoogle_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
+            {
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && string.IsNullOrEmpty(TextEditorSyncMlRequests.SelectedText))
+            {
+                text = TextEditorSyncMlRequestsRequestViewer.SelectedText;
+            }
+            else if (TextEditorWifiProfiles.IsVisible)
+            {
+                text = TextEditorWifiProfiles.SelectedText;
+            }
+            else if (TextEditorVpnProfiles.IsVisible)
+            {
+                text = TextEditorVpnProfiles.SelectedText;
+            }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                Helper.SearchWithGoogle(text);
+            }
         }
     }
 }

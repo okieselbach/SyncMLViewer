@@ -40,6 +40,7 @@
         <KeyBinding Key="M" Modifiers="Ctrl+Shift" Command="{Binding OpenMdmLogsCommand}" />
         <KeyBinding Key="D" Modifiers="Ctrl+Shift" Command="{Binding OpenDcFolderCommand}" />
         <KeyBinding Key="F12" Command="{Binding CaptureCommand}" />
+        <KeyBinding Key="F1" Command="{Binding SearchWithGoogleCommand}" />
     </Window.InputBindings>
     <Grid>
         <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,11" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)" Panel.ZIndex="10"/>
@@ -139,7 +140,7 @@
                     <Label x:Name="LabelProcessingTime" Content="1.035s" Margin="459,0,475,2" VerticalAlignment="Bottom"/>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabItemResourceAccessPolicies" Header="Resource Access Policies">
+            <TabItem x:Name="TabItemConnectivityProfiles" Header="Connectivity Profiles">
                 <Grid Background="White">
                     <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">
                         <TabItem x:Name="TabItemWifi" Header="Wifi Profiles">
@@ -265,10 +266,12 @@
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="Decode _BASE64 selected text" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
-                <MenuItem Header="Decode _HTML selected text" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
-                <MenuItem Header="Decode Certificate selected text" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
-                <MenuItem Header="Lookup Status Code for selected text" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
+                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
+                <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
                 <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
