@@ -185,21 +185,24 @@ namespace SyncMLViewer.Executer
         //dataText is either OMA URI or SyncML XML
         public static string SendRequest(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain")
         {
-            string syncMLprepared = "<SyncBody>\n" +
-                                "<CMD-ITEM>\n" +
-                                    "<CmdID>CMDID-ITEM</CmdID>\n" +
-                                    "<Item>\n" +
-                                        "<Target>\n" +
-                                            "<LocURI>OMAURI-ITEM</LocURI>\n" +
-                                        "</Target>\n" +
-                                        "<Meta>\n" +
-                                            "<Format xmlns=\"syncml:metinf\">FORMAT-ITEM</Format>\n" +
-                                            "<Type xmlns=\"syncml:metinf\">TYPE-ITEM</Type>\n" +
-                                        "</Meta>\n" +
-                                        "<Data>DATA-ITEM</Data>\n" +
-                                    "</Item>\n" +
-                                "</CMD-ITEM>\n" +
-                            "</SyncBody>";
+            StringBuilder syncMLBuilder = new StringBuilder();
+            syncMLBuilder.AppendLine("<SyncBody>");
+            syncMLBuilder.AppendLine("    <CMD-ITEM>");
+            syncMLBuilder.AppendLine("        <CmdID>CMDID-ITEM</CmdID>");
+            syncMLBuilder.AppendLine("        <Item>");
+            syncMLBuilder.AppendLine("            <Target>");
+            syncMLBuilder.AppendLine("                <LocURI>OMAURI-ITEM</LocURI>");
+            syncMLBuilder.AppendLine("            </Target>");
+            syncMLBuilder.AppendLine("            <Meta>");
+            syncMLBuilder.AppendLine("                <Format xmlns=\"syncml:metinf\">FORMAT-ITEM</Format>");
+            syncMLBuilder.AppendLine("                <Type xmlns=\"syncml:metinf\">TYPE-ITEM</Type>");
+            syncMLBuilder.AppendLine("            </Meta>");
+            syncMLBuilder.AppendLine("            <Data>DATA-ITEM</Data>");
+            syncMLBuilder.AppendLine("        </Item>");
+            syncMLBuilder.AppendLine("    </CMD-ITEM>");
+            syncMLBuilder.AppendLine("</SyncBody>");
+
+            string syncMLprepared = syncMLBuilder.ToString();
 
             if (dataText.ToLower().StartsWith("<syncbody>"))
             {

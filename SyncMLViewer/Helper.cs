@@ -453,22 +453,22 @@ namespace SyncMLViewer
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("Subject: " + certificate.Subject);
-            sb.AppendLine("Friendly Name: " + certificate.FriendlyName);
-            sb.AppendLine("Issuer: " + certificate.Issuer);
-            sb.AppendLine("Issuer Name: " + certificate.IssuerName.Name);
-            sb.AppendLine("Thumbprint: " + certificate.Thumbprint);
-            sb.AppendLine("Serial Number: " + certificate.SerialNumber);
-            sb.AppendLine("Not Before: " + certificate.NotBefore);
-            sb.AppendLine("Not After: " + certificate.NotAfter);
-            //sb.AppendLine("Public Key Algorithm: " + certificate.GetKeyAlgorithm());
-            sb.AppendLine("Signature Algorithm: " + certificate.SignatureAlgorithm.FriendlyName);
-            sb.AppendLine("Version: " + certificate.Version);
-            sb.AppendLine("Has Private Key: " + certificate.HasPrivateKey);
+            sb.AppendLine($"Subject: {certificate.Subject}");
+            sb.AppendLine($"Friendly Name: {certificate.FriendlyName}");
+            sb.AppendLine($"Issuer: {certificate.Issuer}");
+            sb.AppendLine($"Issuer Name: {certificate.IssuerName.Name}");
+            sb.AppendLine($"Thumbprint: {certificate.Thumbprint}");
+            sb.AppendLine($"Serial Number: {certificate.SerialNumber}");
+            sb.AppendLine($"Not Before: {certificate.NotBefore}");
+            sb.AppendLine($"Not After: {certificate.NotAfter}");
+            //sb.AppendLine($"Public Key Algorithm: {certificate.GetKeyAlgorithm()}");
+            sb.AppendLine($"Signature Algorithm: {certificate.SignatureAlgorithm.FriendlyName}");
+            sb.AppendLine($"Version: {certificate.Version}");
+            sb.AppendLine($"Has Private Key: {certificate.HasPrivateKey}");
+
             foreach (X509Extension extension in certificate.Extensions)
             {
-                // Print extensions
-                sb.AppendLine("Extension: " + extension.Oid.FriendlyName + " - " + extension.Format(true));
+                sb.AppendLine($"Extension: {extension.Oid.FriendlyName} - {extension.Format(true)}");
             }
 
             return sb.ToString();

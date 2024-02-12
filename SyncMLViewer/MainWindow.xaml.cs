@@ -284,22 +284,24 @@ namespace SyncMLViewer
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
             TextEditorAbout.Text = Properties.Resources.About;
 
-            TextEditorDiagnostics.Text +=
-                $"Hostname:                 {MdmDiagnostics.Hostname}\r\n" +
-                $"OS Version:               {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})\r\n" +
-                $"Display Version:          {MdmDiagnostics.DisplayVersion}\r\n" +
-                $"Version:                  {MdmDiagnostics.Version}\r\n" +
-                $"Current Build:            {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}\r\n" +
-                //$"Release ID:               {MdmDiagnostics.ReleaseId}\r\n" +
-                $"Build Branch:             {MdmDiagnostics.BuildBranch}\r\n" +
-                $"IME Version:              {MdmDiagnostics.IntuneAgentVersion}\r\n" +
-                $"Logon Username:           {MdmDiagnostics.LogonUsername}\r\n" +
-                $"Logon User SID:           {MdmDiagnostics.LogonUserSid}\r\n" +
-                $"Enrollment UPN:           {_mdmDiagnostics.EnrollmentUpn}\r\n" +
-                $"AAD TenantID:             {_mdmDiagnostics.AadTenantId}\r\n" +
-                $"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}\r\n" +
-                $"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}";
-                
+            StringBuilder diagnosticsBuilder = new StringBuilder();
+            diagnosticsBuilder.AppendLine($"Hostname:                 {MdmDiagnostics.Hostname}");
+            diagnosticsBuilder.AppendLine($"OS Version:               {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})");
+            diagnosticsBuilder.AppendLine($"Display Version:          {MdmDiagnostics.DisplayVersion}");
+            diagnosticsBuilder.AppendLine($"Version:                  {MdmDiagnostics.Version}");
+            diagnosticsBuilder.AppendLine($"Current Build:            {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}");
+            // diagnosticsBuilder.AppendLine($"Release ID:               {MdmDiagnostics.ReleaseId}");
+            diagnosticsBuilder.AppendLine($"Build Branch:             {MdmDiagnostics.BuildBranch}");
+            diagnosticsBuilder.AppendLine($"IME Version:              {MdmDiagnostics.IntuneAgentVersion}");
+            diagnosticsBuilder.AppendLine($"Logon Username:           {MdmDiagnostics.LogonUsername}");
+            diagnosticsBuilder.AppendLine($"Logon User SID:           {MdmDiagnostics.LogonUserSid}");
+            diagnosticsBuilder.AppendLine($"Enrollment UPN:           {_mdmDiagnostics.EnrollmentUpn}");
+            diagnosticsBuilder.AppendLine($"AAD TenantID:             {_mdmDiagnostics.AadTenantId}");
+            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}");
+            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}");
+
+            TextEditorDiagnostics.Text = diagnosticsBuilder.ToString();
+              
             // no MMP-C enrollment, disable button
             if (string.IsNullOrEmpty(_mdmDiagnostics.OmaDmAccountIdMMPC))
             {
@@ -504,22 +506,22 @@ namespace SyncMLViewer
                     {
                         if (menuItemTimestamps.IsChecked)
                         {
-                            message = $"<!-- {DateTime.Now} -->" + Environment.NewLine + valueSyncMl + Environment.NewLine;
+                            message = $"<!-- {DateTime.Now} -->{Environment.NewLine}{valueSyncMl}{Environment.NewLine}";
                         }
                         else
                         {
-                            message = valueSyncMl + Environment.NewLine;
+                            message = $"{valueSyncMl}{Environment.NewLine}";
                         }
                     }
                     else
                     {
                         if (menuItemTimestamps.IsChecked)
                         {
-                            message = Environment.NewLine + $"<!-- {DateTime.Now} -->" + Environment.NewLine + valueSyncMl + Environment.NewLine;
+                            message = $"{Environment.NewLine}<!-- {DateTime.Now} -->{Environment.NewLine}{valueSyncMl}{Environment.NewLine}";
                         }
                         else
                         {
-                            message = Environment.NewLine + valueSyncMl + Environment.NewLine;
+                            message = $"{Environment.NewLine}{valueSyncMl}{Environment.NewLine}";
                         }
                     }
 
@@ -571,10 +573,9 @@ namespace SyncMLViewer
                         SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
                     }
                 }
-                else if (string.Equals(userState.EventName, "OmaDmSessionStart",
-                    StringComparison.CurrentCultureIgnoreCase))
+                else if (string.Equals(userState.EventName, "OmaDmSessionStart", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var message = "<!-- OmaDmSessionStart -->" + Environment.NewLine;
+                    var message = $"<!-- OmaDmSessionStart -->{Environment.NewLine}";
                     if (menuItemBackgroundLogging.IsChecked)
                     {
                         Trace.WriteLine(message);
@@ -588,10 +589,9 @@ namespace SyncMLViewer
                         }
                     }
                 }
-                else if (string.Equals(userState.EventName, "OmaDmSessionComplete",
-                    StringComparison.CurrentCultureIgnoreCase))
+                else if (string.Equals(userState.EventName, "OmaDmSessionComplete", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var message = Environment.NewLine + "<!-- OmaDmSessionComplete -->" + Environment.NewLine;
+                    var message = $"{Environment.NewLine}<!-- OmaDmSessionComplete -->{Environment.NewLine}";
                     if (menuItemBackgroundLogging.IsChecked)
                     {
                         Trace.WriteLine(message);
@@ -669,7 +669,7 @@ namespace SyncMLViewer
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("MDM Sync", "MDM Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("MDM Sync", $"MDM Sync failed to start\n\n{ex}", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
@@ -703,7 +703,7 @@ namespace SyncMLViewer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("MMP-C Sync", "MMP-C Sync failed to start\n\n" + ex.ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("MMP-C Sync", $"MMP-C Sync failed to start\n\n{ex}", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1054,7 +1054,7 @@ namespace SyncMLViewer
                 TextEditorMessages.Clear();
 
                 TextEditorStream.IsEnabled = false;
-                TextEditorStream.AppendText(Environment.NewLine + "\t'Background Logging Mode' enabled.");
+                TextEditorStream.AppendText($"{Environment.NewLine}\t'Background Logging Mode' enabled.");
             }
             else
             {
@@ -1198,7 +1198,12 @@ namespace SyncMLViewer
                     if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
                     {
                         Debug.WriteLine($"The ETW session '{SessionName}' is running, stopping existing session now.");
-                        TraceEventSession.GetActiveSession(SessionName).Stop(true);
+                        var traceEventSession = TraceEventSession.GetActiveSession(SessionName);
+                        if (traceEventSession.EventsLost > 0)
+                        {
+                            Debug.WriteLine($"The ETW session '{SessionName}' lost in total {traceEventSession.EventsLost} events.");
+                        }
+                        traceEventSession.Stop(true);
 
                         TraceEventSessionState.Started = false;
                     }
@@ -1369,12 +1374,12 @@ namespace SyncMLViewer
 
         private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenFolder(@"C:\ProgramData\Microsoft\IntuneManagementExtension\Logs");
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\IntuneManagementExtension\Logs"));
         }
 
         private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenFolder(@"C:\Users\Public\Documents\MDMDiagnostics");
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), @"MDMDiagnostics"));
         }
 
         private void MenuItemOpenSystemProfileMDM_Click(object sender, RoutedEventArgs e)
@@ -1384,7 +1389,7 @@ namespace SyncMLViewer
 
         private void MenuItemOpenDeclaredConfigurationHostOSFolder_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenFolder(@"C:\ProgramData\microsoft\DC\HostOS");
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\DC\HostOS"));
         }
 
         private void ParseCommandlineArgs(string[] args)
@@ -1493,21 +1498,24 @@ namespace SyncMLViewer
                 var omaUri = TextBoxUri.Text.Replace(" ", "%20");
                 TextBoxUri.Text = omaUri;
 
-                syncML = "<SyncBody>\n" +
-                        "<CMD-ITEM>\n" +
-                            "<CmdID>CMDID-ITEM</CmdID>\n" +
-                            "<Item>\n" +
-                                "<Target>\n" +
-                                    "<LocURI>OMAURI-ITEM</LocURI>\n" +
-                                "</Target>\n" +
-                                "<Meta>\n" +
-                                    "<Format xmlns=\"syncml:metinf\">FORMAT-ITEM</Format>\n" +
-                                    "<Type xmlns=\"syncml:metinf\">TYPE-ITEM</Type>\n" +
-                                "</Meta>\n" +
-                                "<Data>DATA-ITEM</Data>\n" +
-                            "</Item>\n" +
-                            "</CMD-ITEM>\n" +
-                        "</SyncBody>";
+                StringBuilder syncMLBuilder = new StringBuilder();
+                syncMLBuilder.Append("<SyncBody>\n");
+                syncMLBuilder.Append("    <CMD-ITEM>\n");
+                syncMLBuilder.Append("        <CmdID>CMDID-ITEM</CmdID>\n");
+                syncMLBuilder.Append("        <Item>\n");
+                syncMLBuilder.Append("            <Target>\n");
+                syncMLBuilder.Append("                <LocURI>OMAURI-ITEM</LocURI>\n");
+                syncMLBuilder.Append("            </Target>\n");
+                syncMLBuilder.Append("            <Meta>\n");
+                syncMLBuilder.Append("                <Format xmlns=\"syncml:metinf\">FORMAT-ITEM</Format>\n");
+                syncMLBuilder.Append("                <Type xmlns=\"syncml:metinf\">TYPE-ITEM</Type>\n");
+                syncMLBuilder.Append("            </Meta>\n");
+                syncMLBuilder.Append("            <Data>DATA-ITEM</Data>\n");
+                syncMLBuilder.Append("        </Item>\n");
+                syncMLBuilder.Append("    </CMD-ITEM>\n");
+                syncMLBuilder.Append("</SyncBody>");
+
+                syncML = syncMLBuilder.ToString();
 
                 syncML = syncML.Replace("CMD-ITEM", ComboBoxCmd.Text);
                 syncML = syncML.Replace("CMDID-ITEM", _CmdIdCounter.ToString());
@@ -1557,7 +1565,7 @@ namespace SyncMLViewer
 
             var assembly = Assembly.GetExecutingAssembly();
 
-            var resourceName = "SyncMLViewer." + Properties.Resources.Executer;
+            var resourceName = $"SyncMLViewer.{Properties.Resources.Executer}";
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (resourceStream != null)
@@ -1581,7 +1589,7 @@ namespace SyncMLViewer
             }
 
             var hash = string.Empty;
-            var resourceNameHash = "SyncMLViewer." + Properties.Resources.Executer + ".hash";
+            var resourceNameHash = $"SyncMLViewer.{Properties.Resources.Executer}.hash";
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceNameHash))
             {
                 if (resourceStream != null)
@@ -1679,7 +1687,7 @@ namespace SyncMLViewer
             }
             catch (Exception ex)
             {
-                TextEditorSyncMlRequests.Text = "Failed to read " + syncMlOutputFilePath + " from disk, ex = " + ex;
+                TextEditorSyncMlRequests.Text = $"Failed to read {syncMlOutputFilePath} from disk, ex = {ex}";
             }
             
             TextEditorSyncMlRequests.Text += $"\n\n-------------------- Response {_CmdIdCounter} -------------------\n\n";
