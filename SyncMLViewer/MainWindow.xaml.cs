@@ -1090,6 +1090,9 @@ namespace SyncMLViewer
 
             if (openFileDialog.ShowDialog() ==  true)
             {
+                // add opened file name to the window title
+                Title += $" - {Path.GetFileName(openFileDialog.FileName)}";
+
                 TextEditorStream.Clear();
                 TextEditorMessages.Clear();
 
@@ -1508,6 +1511,10 @@ namespace SyncMLViewer
                 // ./Device/Vendor/MSFT/DMClient/Provider/MS DM Server/FirstSyncStatus/SkipUserStatusPage
                 // ./Device/Vendor/MSFT/DMClient/Provider/MS%20DM%20Server/FirstSyncStatus/SkipUserStatusPage
                 var omaUri = TextBoxUri.Text.Replace(" ", "%20");
+                // replace { and } with %7B and %7D:
+                // ./Device/Vendor/MSFT/EnterpriseDesktopAppManagement/MSI/{1803A630-3C38-4D2B-9B9A-0CB37243539C}
+                // ./Device/Vendor/MSFT/EnterpriseDesktopAppManagement/MSI/%7B1803A630-3C38-4D2B-9B9A-0CB37243539C%7D
+                omaUri = TextBoxUri.Text.Replace("{", "%7B").Replace("}", "%7D");
                 TextBoxUri.Text = omaUri;
 
                 StringBuilder syncMLBuilder = new StringBuilder();
