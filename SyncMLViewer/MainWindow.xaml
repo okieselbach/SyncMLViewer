@@ -63,17 +63,17 @@
             </TabItem>
             <TabItem x:Name="TabItemMessages" Header="SyncML Sessions/Messages" >
                 <Grid Background="White">
-                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _decode inline" Margin="200,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="132" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
+                    <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _decode inline" Margin="224,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="132" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
                         SyntaxHighlighting="XML"
                         FontFamily="Consolas"
-                        FontSize="10pt" Margin="200,10,10,34"
+                        FontSize="10pt" Margin="224,10,10,34"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
-                        IsReadOnly="True" Grid.ColumnSpan="2" MouseDoubleClick="TextEditorMessages_MouseDoubleClick"/>
-                    <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxSessions_SelectionChanged" MouseDoubleClick="ListBoxSessions_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxSessions_KeyDown"/>
-                    <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="185" SelectionChanged="ListBoxMessages_SelectionChanged" MouseDoubleClick="ListBoxMessages_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxMessages_KeyDown"/>
+                        IsReadOnly="True" MouseDoubleClick="TextEditorMessages_MouseDoubleClick"/>
+                    <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxSessions_SelectionChanged" MouseDoubleClick="ListBoxSessions_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxSessions_KeyDown"/>
+                    <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxMessages_SelectionChanged" MouseDoubleClick="ListBoxMessages_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxMessages_KeyDown"/>
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
                     <Label x:Name="LabelBackToTop" Content="[Top]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom" Grid.Column="1"/>
@@ -143,7 +143,7 @@
                         <TabItem x:Name="TabItemWifi" Header="Wifi Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                                <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="218" SelectionChanged="ListBoxWifi_SelectionChanged" />
+                                <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWifi_SelectionChanged" />
                                 <avalonedit:TextEditor
                                     x:Name="TextEditorWifiProfiles"
                                     SyntaxHighlighting="XML"
@@ -152,7 +152,7 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="230,10,0,34"/>
+                                    WordWrap="True" Margin="220,10,0,34"/>
                                 <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiInfo" Content="[Information]" Margin="230,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="80" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiInfo_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiKey" Content="[Key]" Margin="310,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiKey_MouseLeftButtonUp"/>
@@ -162,7 +162,7 @@
                         <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                                <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="218" SelectionChanged="ListBoxVpn_SelectionChanged" />
+                                <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxVpn_SelectionChanged" />
                                 <avalonedit:TextEditor
                                     x:Name="TextEditorVpnProfiles"
                                     SyntaxHighlighting="XML"
@@ -171,7 +171,7 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="230,10,0,34"/>
+                                    WordWrap="True" Margin="220,10,0,34"/>
                                 <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
                                 <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh VPN profiles list"/>
                             </Grid>
