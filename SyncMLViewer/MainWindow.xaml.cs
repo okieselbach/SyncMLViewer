@@ -1968,7 +1968,6 @@ namespace SyncMLViewer
             }
             
             var decodedText = HttpUtility.HtmlDecode(text);
-            //Clipboard.SetText(decodedText);
 
             DataEditor dataEditor = new DataEditor
             {
