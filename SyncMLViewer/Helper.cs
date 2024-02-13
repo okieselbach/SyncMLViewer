@@ -328,7 +328,8 @@ namespace SyncMLViewer
                 string selfClosingTagPattern = @"<[^>]+/>";
                 string valuePattern = @"[^<]+";
 
-                string indent = "    ";
+                // Define the indent string with 2 whitespaces like the other xml parsing is done
+                string indent = "  ";
 
                 // Split XML string by opening, closing, and self-closing tags
                 string[] rawTokens = Regex.Split(xml, $@"({openTagPattern}|{closeTagPattern}|{selfClosingTagPattern})");
