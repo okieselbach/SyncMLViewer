@@ -252,6 +252,7 @@
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
                     <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" />
+                    <MenuItem x:Name="menuItemTurnOnDebugLogging" Header="Turn on Debug Logging" IsCheckable="True" IsChecked="false" Click="MenuItemTurnOnDebugLogging_Click" />
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Actions">

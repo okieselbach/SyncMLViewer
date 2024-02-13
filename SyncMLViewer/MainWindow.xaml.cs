@@ -1042,9 +1042,12 @@ namespace SyncMLViewer
 
         private void MenuItemBackgroundLogging_Click(object sender, RoutedEventArgs e)
         {
+            var listenerName = "listenerSyncMLStream";
+
+            // I simply use the Trace class to handle my background logging. I'm not using trace for anything else.
             if (menuItemBackgroundLogging.IsChecked)
             {
-                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", "listenerSyncMLStream"));
+                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", listenerName));
                 Trace.AutoFlush = true;
 
                 SyncMlSessions.Clear();
@@ -1059,7 +1062,7 @@ namespace SyncMLViewer
             else
             {
                 Trace.Close();
-                Trace.Listeners.Remove("listenerSyncMLStream");
+                Trace.Listeners.Remove(listenerName);
 
                 TextEditorStream.Clear();
                 TextEditorStream.IsEnabled = true;
@@ -2382,6 +2385,22 @@ namespace SyncMLViewer
             if (ListBoxMessages.SelectedItem != null)
             {
                 Helper.OpenInNotepad(((SyncMlMessage)ListBoxMessages.SelectedItem).Xml);
+            }
+        }
+
+        private void MenuItemTurnOnDebugLogging_Click(object sender, RoutedEventArgs e)
+        {
+            var listenerName = "listenerSyncMlViewerDebug";
+
+            if (menuItemTurnOnDebugLogging.IsChecked)
+            {
+                Debug.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-DebugLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.log", listenerName));
+                Debug.AutoFlush = true;
+            }
+            else
+            {
+                Debug.Close();
+                Debug.Listeners.Remove(listenerName);
             }
         }
     }
