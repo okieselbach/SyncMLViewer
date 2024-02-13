@@ -29,6 +29,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using System.Web.UI.WebControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -39,6 +40,7 @@ using System.Xml.XPath;
 using static System.Net.Mime.MediaTypeNames;
 using Application = System.Windows.Application;
 using Path = System.IO.Path;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace SyncMLViewer
 {
@@ -499,6 +501,12 @@ namespace SyncMLViewer
                     if (startIndex == -1) return;
 
                     var valueSyncMl = TryFormatXml(eventDataText.Substring(startIndex, eventDataText.Length - startIndex - 1));
+
+                    if (!valueSyncMl.EndsWith("</SyncML>", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // if the message is not complete (truncated becasue of ETW 64KB buffer), we add a closing tag to get the parsing right for the Sessions/Messages viewer tab
+                        valueSyncMl += "\n<!-- following closing SyncML tag was added to allow parsing of truncated xml data -->\n</SyncML>";
+                    }
 
                     var message = string.Empty;
 
@@ -1096,6 +1104,7 @@ namespace SyncMLViewer
                 if (TextEditorStream.Text.Length > 0)
                 {
                     var syncMlMessages = Regex.Matches(TextEditorStream.Text, @"<SyncML[\s\S]*?</SyncML>", RegexOptions.IgnoreCase);
+
                     foreach (Match message in syncMlMessages)
                     {
                         var valueSyncMl = TryFormatXml(message.Value);
