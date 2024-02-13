@@ -152,7 +152,7 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="220,10,0,34"/>
+                                    WordWrap="True" Margin="220,10,10,34"/>
                                 <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiInfo" Content="[Information]" Margin="230,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="80" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiInfo_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiKey" Content="[Key]" Margin="310,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiKey_MouseLeftButtonUp"/>
@@ -171,7 +171,7 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="220,10,0,34"/>
+                                    WordWrap="True" Margin="220,10,10,34"/>
                                 <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
                                 <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh VPN profiles list"/>
                             </Grid>
