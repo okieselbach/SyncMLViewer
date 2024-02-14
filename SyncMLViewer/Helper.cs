@@ -364,11 +364,12 @@ namespace SyncMLViewer
                             {
                                 formattedXml.Append(tokens[index + 1]);
                                 formattedXml.Append(tokens[index + 2]);
-                                index = index + 2;
+                                index += 2;
                                 level--;
                             }
-                            level++;
                             formattedXml.AppendLine();
+
+                            level++;
                             for (int i = 0; i < level; i++)
                             {
                                 formattedXml.Append(indent);
@@ -378,9 +379,9 @@ namespace SyncMLViewer
                     else if (Regex.IsMatch(token, $@"^{closeTagPattern}"))
                     {
                         formattedXml.Append(token);
+                        formattedXml.AppendLine();
 
                         level--;
-                        formattedXml.AppendLine();
                         for (int i = 0; i < level; i++)
                         {
                             formattedXml.Append(indent);
