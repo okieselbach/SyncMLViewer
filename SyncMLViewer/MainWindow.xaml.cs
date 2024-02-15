@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration.Assemblies;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -39,6 +40,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using static System.Net.Mime.MediaTypeNames;
 using Application = System.Windows.Application;
+using MenuItem = System.Windows.Controls.MenuItem;
 using Path = System.IO.Path;
 using TextBox = System.Windows.Controls.TextBox;
 
@@ -326,8 +328,42 @@ namespace SyncMLViewer
             }
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (menuItemKeepLocalMDMEnrollmentUntilExit.IsChecked)
+            {
+                var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                var binaryName = Properties.Resources.Executer;
+                var pathExecuter = Path.Combine(assemblyPath, binaryName);
+
+                if (File.Exists(pathExecuter))
+                {
+                    var arguments = $"-UnregisterLocalMDMEnrollment";
+                    var resultError = string.Empty;
+
+                    // Start Executer process
+                    using (var p = new Process
+                    {
+                        StartInfo =
+                        {
+                            UseShellExecute = false,
+                            FileName = pathExecuter,
+                            Arguments = arguments,
+                            CreateNoWindow = true,
+                            RedirectStandardError = true,
+                        }
+                    })
+                    {
+                        p.ErrorDataReceived += (o, args) => { resultError += args.Data + Environment.NewLine; };
+                        p.Start();
+                        p.BeginErrorReadLine();
+                        Task processExited = WaitForExitAsync(p);
+
+                        await processExited;
+                    }
+                }
+            }
+
             if (menuItemCleanupAfterExit.IsChecked)
             {
                 try
@@ -1474,6 +1510,28 @@ namespace SyncMLViewer
             var syncML = string.Empty;
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             ButtonRunRequest.IsEnabled = false;
+            var redirectLocalMDMEnrollment = false;
+
+            if (Keyboard.IsKeyDown(Key.LeftShift) && Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightShift) && Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                if (MessageBox.Show(
+                    "Experimental setting activated!\n"+
+                    "\n"+
+                    "Redirecting local MDM enrollment requests to real MDM enrollment\n"+
+                    "\n" +
+                    "This could render the device unusable!\n" +
+                    "\n" +
+                    "Proceed only if you really know what you're doing!", 
+                    "SyncML Viewer - Experimental setting", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
+                {
+                    ButtonRunRequest.IsEnabled = true;
+                    return;
+                }
+                else
+                {
+                    redirectLocalMDMEnrollment = true;
+                }
+            }
 
             // SyncML Editor
             if (CheckBoxUseSyncML.IsChecked == true)
@@ -1653,6 +1711,11 @@ namespace SyncMLViewer
             if (menuItemKeepLocalMDMEnrollment.IsChecked)
             {
                 arguments = $"-SyncMLFile \"{syncMlInputFilePath}\" -KeepLocalMDMEnrollment";
+            }
+
+            if (redirectLocalMDMEnrollment)
+            {
+                arguments += $" -RedirectLocalMDMEnrollment";
             }
 
             var resultOutput = string.Empty;

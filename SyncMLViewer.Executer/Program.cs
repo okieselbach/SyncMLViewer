@@ -30,6 +30,10 @@ namespace SyncMLViewer.Executer
         private static bool argQuiet = false;
         private static bool argSetEmbeddedMode = false;
         private static bool argSetEmbeddedModeValue = false;
+        private static bool argUnregisterLocalMDMEnrollment = false;
+        private static bool argUnregisterLocalMDMEnrollmentValue = false;
+        private static bool argRedirectLocalMDMEnrollment = false;
+        private static bool argRedirectLocalMDMEnrollmentValue = false;
 
         // Important, MTA is necessary otherwise the Local MDM API will not work!
         [MTAThread]
@@ -47,6 +51,7 @@ namespace SyncMLViewer.Executer
 
             ParseCommandlineArgs(args);
 
+            string prog = Assembly.GetExecutingAssembly().GetName().Name;
             bool inputFile = false;
             string syncMl = string.Empty;
             string syncMLResult = string.Empty;
@@ -55,6 +60,7 @@ namespace SyncMLViewer.Executer
             string formatDefault = "int";
             string typeDefault = "text/plain";
             bool keepLocalMDMEnrollmentDefault = false;
+            bool redirectLocalMDMEnrollmentDefault = false;
 
             if (args.Length == 1)
             {
@@ -63,7 +69,7 @@ namespace SyncMLViewer.Executer
 
                 if (argSyncMlFile)
                 {
-                    Debug.WriteLine($"Received: {args[0]}");
+                    Debug.WriteLine($"[{prog}] Received: {args[0]}");
                     try
                     {
                         int startIndex = "-syncmlfile".Length + 1;
@@ -73,15 +79,23 @@ namespace SyncMLViewer.Executer
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Failed to read file, ex = {ex}");
+                        Debug.WriteLine($"[{prog}] Failed to read file, ex = {ex}");
                     }
                 }
+                if (argUnregisterLocalMDMEnrollment)
+                {
+                    Debug.WriteLine($"[{prog}] Received {nameof(argUnregisterLocalMDMEnrollment)}: {argUnregisterLocalMDMEnrollmentValue}");
+                    MdmLocalManagement.SetEmbeddedMode();
+                    MdmLocalManagement.UnregisterLocalMDM();
+                    MdmLocalManagement.ClearEmbeddedMode();
+                    return;
+                }    
             }
             else if (args.Length >= 2)
             {
                 if (argSetEmbeddedMode)
                 {
-                    Debug.WriteLine($"Received {nameof(argSetEmbeddedMode)}: {argSetEmbeddedModeValue}");
+                    Debug.WriteLine($"[{prog}] Received {nameof(argSetEmbeddedMode)}: {argSetEmbeddedModeValue}");
                     if (argSetEmbeddedModeValue == true)
                     {
                         MdmLocalManagement.SetEmbeddedMode();
@@ -94,59 +108,64 @@ namespace SyncMLViewer.Executer
                 }
                 if (argKeepLocalMDMEnrollment)
                 {
-                    Debug.WriteLine($"Received {nameof(argKeepLocalMDMEnrollment)}: {argKeepLocalMDMEnrollmentValue}");
+                    Debug.WriteLine($"[{prog}] Received {nameof(argKeepLocalMDMEnrollment)}: {argKeepLocalMDMEnrollmentValue}");
                     keepLocalMDMEnrollmentDefault = argKeepLocalMDMEnrollmentValue;
+                }
+                if (argRedirectLocalMDMEnrollment)
+                {
+                    Debug.WriteLine($"[{prog}] Received {nameof(argRedirectLocalMDMEnrollment)}: {argRedirectLocalMDMEnrollmentValue}");
+                    redirectLocalMDMEnrollmentDefault = argRedirectLocalMDMEnrollmentValue;
                 }
                 if (argSyncMlFile)
                 {
                     try
                     {
-                        Debug.WriteLine($"Received {nameof(argSyncMlFile)}: {argSyncMlFileValue}");
+                        Debug.WriteLine($"[{prog}] Received {nameof(argSyncMlFile)}: {argSyncMlFileValue}");
                         syncMl = File.ReadAllText(argSyncMlFileValue);
                         inputFile = true;
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Failed to read file {argSyncMlFileValue}, ex = {ex}");
+                        Debug.WriteLine($"[{prog}] Failed to read file {argSyncMlFileValue}, ex = {ex}");
                     }
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(syncMl, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(syncMl, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault, redirectLocalMDMEnrollment: redirectLocalMDMEnrollmentDefault);
                 }
                 if (argSyncMl)
                 {
-                    Debug.WriteLine($"Received {nameof(argSyncMl)}: {argSyncMlValue}");
+                    Debug.WriteLine($"[{prog}] Received {nameof(argSyncMl)}: {argSyncMlValue}");
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argSyncMlValue, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argSyncMlValue, keepLocalMDMEnrollment: keepLocalMDMEnrollmentDefault, redirectLocalMDMEnrollment: redirectLocalMDMEnrollmentDefault);
                 }
                 if (argOmaUri)
                 {
-                    Debug.WriteLine($"Received {nameof(argOmaUri)}: {argOmaUriValue}");
+                    Debug.WriteLine($"[{prog}] Received {nameof(argOmaUri)}: {argOmaUriValue}");
 
                     if (argCommand)
                     {
-                        Debug.WriteLine($"Received {nameof(argCommand)}: {argCommandValue}");
+                        Debug.WriteLine($"[{prog}] Received {nameof(argCommand)}: {argCommandValue}");
                         commandDefault = argCommandValue;
                     }
                     if (argData)
                     {
-                        Debug.WriteLine($"Received {nameof(argData)}: {argDataValue}");
+                        Debug.WriteLine($"[{prog}] Received {nameof(argData)}: {argDataValue}");
                         dataDefault = argDataValue;
                     }
                     if (argFormat)
                     {
-                        Debug.WriteLine($"Received {nameof(argFormat)}: {argFormatValue}");
+                        Debug.WriteLine($"[{prog}] Received {nameof(argFormat)}: {argFormatValue}");
                         formatDefault = argFormatValue;
                     }
                     if (argType)
                     {
-                        Debug.WriteLine($"Received {nameof(argType)}: {argTypeValue}");
+                        Debug.WriteLine($"[{prog}] Received {nameof(argType)}: {argTypeValue}");
                         typeDefault = argTypeValue;
                     }
 
                     // Call the Local MDM API
-                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argOmaUriValue, commandDefault, dataDefault, formatDefault, typeDefault, keepLocalMDMEnrollmentDefault);
+                    syncMLResult = MdmLocalManagement.SendRequestProcedure(argOmaUriValue, commandDefault, dataDefault, formatDefault, typeDefault, keepLocalMDMEnrollmentDefault, redirectLocalMDMEnrollment: redirectLocalMDMEnrollmentDefault);
                 }
             }
 
@@ -163,7 +182,7 @@ namespace SyncMLViewer.Executer
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to write {syncMlOutputFilePath} to disk, ex = {ex}");
+                    Debug.WriteLine($"[{prog}] Failed to write {syncMlOutputFilePath} to disk, ex = {ex}");
                 }
             }
 
@@ -217,6 +236,10 @@ namespace SyncMLViewer.Executer
                                 argKeepLocalMDMEnrollment = true;
                                 argKeepLocalMDMEnrollmentValue = true;
                                 break;
+                            case "unregisterlocalmdmenrollment":
+                                argUnregisterLocalMDMEnrollment = true;
+                                argUnregisterLocalMDMEnrollmentValue = true;
+                                break;
                             case "setembeddedmode":
                                 argSetEmbeddedMode = true;
                                 try
@@ -227,6 +250,10 @@ namespace SyncMLViewer.Executer
                                 {
                                     Console.WriteLine($"ERROR: {arg} requires a boolean value (true|false)");
                                 }
+                                break;
+                            case "redirectlocalmdmenrollment":
+                                argRedirectLocalMDMEnrollment = true;
+                                argRedirectLocalMDMEnrollmentValue = true;
                                 break;
                             case "quiet":
                                 argQuiet = true;
@@ -249,6 +276,9 @@ namespace SyncMLViewer.Executer
                                 Console.WriteLine($"-Type <type>                    specify Type: e.g. text/plain, b64, registered MIME content-type");
                                 Console.WriteLine($"-SetEmbeddedMode <true|false>   specify SetEmbeddedMode, must be used without other parameters");
                                 Console.WriteLine($"-KeepLocalMDMEnrollment         specify KeepLocalMDMEnrollment, prevent call of Unregister API to revert most changes");
+                                Console.WriteLine($"-UnregisterLocalMDMEnrollment   specify UnregisterLocalMDMEnrollment, call Unregister API to revert most changes");
+                                Console.WriteLine($"-RedirectLocalMDMEnrollment     specify RedirectLocalMDMEnrollment, redirect local MDM requests to real MDM enrollment");
+                                Console.WriteLine($"                                redirection will be the MDM enrollment not MMP-C enrollment");
                                 Console.WriteLine($"-Quiet                          specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;

@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -112,13 +113,54 @@ namespace SyncMLViewer.Executer
             return 0;
         }
 
-        public static void RegisterLocalMDM()
+        public static string RegisterLocalMDM()
         {
-            bool alreadyRegistered = false;
-            var rc = RegisterDeviceWithLocalManagement(out alreadyRegistered);
+            var keyPathEnrollments = @"SOFTWARE\Microsoft\Enrollments";
+            string[] enrollmentIdsBefore = new string[0];
+            string[] enrollmentIdsAfter = new string[0];
+            string newEnrollmentId;
+
+            try
+            {
+                using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default).OpenSubKey(keyPathEnrollments))
+                {
+                    enrollmentIdsBefore = registryKey.GetSubKeyNames();
+                }
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+
+            var rc = RegisterDeviceWithLocalManagement(out bool alreadyRegistered);
+
             Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), GetLastWin32Error() = {Marshal.GetLastWin32Error()}");
             Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), rc = {rc}");
             Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), alreadyRegistered = {alreadyRegistered}");
+
+            try
+            {
+                using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default).OpenSubKey(keyPathEnrollments))
+                {
+                    enrollmentIdsAfter = registryKey.GetSubKeyNames();
+                }
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+            try
+            {
+                newEnrollmentId = enrollmentIdsAfter.Except(enrollmentIdsBefore).ToList().First();
+                Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), found Enrollment ID = {newEnrollmentId}");
+            }
+            catch (Exception)
+            {
+                newEnrollmentId = string.Empty;
+                Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), no new Enrollment ID found");
+            }
+
+            return newEnrollmentId;
         }
 
         public static void UnregisterLocalMDM()
@@ -128,10 +170,12 @@ namespace SyncMLViewer.Executer
             Debug.WriteLine($"[MDMLocalManagement] UnregisterDeviceWithLocalManagement(), rc = {rc}");
         }
 
-        public static string SendRequestProcedure(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain", bool keepLocalMDMEnrollment = true)
+        public static string SendRequestProcedure(string dataText, string command = "GET", string data = "", string format = "int", string type = "text/plain", bool keepLocalMDMEnrollment = true, bool redirectLocalMDMEnrollment = false)
         {
             string syncMLResult = string.Empty;
             object originalFlagsValue = 0;
+
+            Helper.GetEnrollmentGuids(out string OmaDmAccountIdMDM, out _);
 
             try
             {
@@ -142,9 +186,44 @@ namespace SyncMLViewer.Executer
                     return string.Empty;
                 }
 
-                RegisterLocalMDM();
+                var newEnrollmentId = RegisterLocalMDM();
+
+                if (redirectLocalMDMEnrollment && !string.IsNullOrEmpty(newEnrollmentId))
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] Normal MDM Enrollment ID = {OmaDmAccountIdMDM}");
+                    Debug.WriteLine($"[MDMLocalManagement] Temporarily changing EnrollmentType of normal MDM enrollment to local MDM EnrollmentType ID");
+
+                    var enrollmentid = newEnrollmentId;
+                    var value = 6;
+                    var result = Helper.SetRegistryLocalMachineDWordValue($"SOFTWARE\\Microsoft\\Enrollments\\{enrollmentid}", "EnrollmentType", value);
+                    Debug.WriteLine($"[MDMLocalManagement] Enrollment ID = {enrollmentid}, set EnrollmentType = {value}, rc = {result}");
+
+                    enrollmentid = OmaDmAccountIdMDM;
+                    value = 20;
+                    result = Helper.SetRegistryLocalMachineDWordValue($"SOFTWARE\\Microsoft\\Enrollments\\{enrollmentid}", "EnrollmentType", value);
+                    Debug.WriteLine($"[MDMLocalManagement] Enrollment ID = {enrollmentid}, set EnrollmentType = {value}, rc = {result}");
+                }
+                else
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] RedirectLocalMDMEnrollment not possible, new enrollment not detected!");
+                }
 
                 syncMLResult = SendRequest(dataText, command, data, format, type);
+
+                if (redirectLocalMDMEnrollment && !string.IsNullOrEmpty(newEnrollmentId))
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] Reverting change of EnrollmentType");
+
+                    var enrollmentid = newEnrollmentId;
+                    var value = 20;
+                    var result = Helper.SetRegistryLocalMachineDWordValue($"SOFTWARE\\Microsoft\\Enrollments\\{enrollmentid}", "EnrollmentType", value);
+                    Debug.WriteLine($"[MDMLocalManagement] Enrollment ID = {enrollmentid}, set EnrollmentType = {value}, rc = {result}");
+
+                    enrollmentid = OmaDmAccountIdMDM;
+                    value = 6;
+                    result = Helper.SetRegistryLocalMachineDWordValue($"SOFTWARE\\Microsoft\\Enrollments\\{enrollmentid}", "EnrollmentType", value);
+                    Debug.WriteLine($"[MDMLocalManagement] Enrollment ID = {enrollmentid}, set EnrollmentType = {value}, rc = {result}");
+                }
 
                 if (!keepLocalMDMEnrollment)
                 {

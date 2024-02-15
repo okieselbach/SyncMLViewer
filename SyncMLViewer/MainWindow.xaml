@@ -249,10 +249,11 @@
                     <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
                     <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
                     <MenuItem x:Name="menuItemExecutionTime" Header="_Enable Request Execution Time" IsCheckable="True" IsChecked="False" />
+                    <MenuItem x:Name="menuItemTurnOnDebugLogging" Header="Turn on debug logging" IsCheckable="True" IsChecked="false" Click="MenuItemTurnOnDebugLogging_Click" />
                     <Separator />
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
-                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" />
-                    <MenuItem x:Name="menuItemTurnOnDebugLogging" Header="Turn on Debug Logging" IsCheckable="True" IsChecked="false" Click="MenuItemTurnOnDebugLogging_Click" />
+                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
+                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollmentUntilExit" Header="-> but Unregister local MDM after exit" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Actions">
@@ -310,8 +311,6 @@
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
                     <MenuItem Header="Set EmbeddedMode Registry Flag" Click="MenuItemSetEmbeddedMode_Click"/>
                     <MenuItem Header="Clear EmbeddedMode Registry Flag" Click="MenuItemClearEmbeddedMode_Click"/>
-                    <!--<MenuItem Header="Set EnrollmentType Registry Flag" IsEnabled="False"/>-->
-                    <!--<MenuItem Header="clear EnrollmentType Registry Flag" IsEnabled="False"/>-->
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Help">
