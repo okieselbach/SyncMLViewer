@@ -2482,6 +2482,16 @@ namespace SyncMLViewer
                 Debug.Listeners.Remove(listenerName);
             }
         }
+
+        private void MenuItemCleanupEnrollments_Click(object sender, RoutedEventArgs e)
+        {
+            var count = Helper.ClenaupEnrollments();
+
+            if (count > 0)
+            {
+                MessageBox.Show($"{count} Local MDM enrollment(s) have been removed.", "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }
 

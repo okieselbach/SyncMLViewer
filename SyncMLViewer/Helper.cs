@@ -475,5 +475,79 @@ namespace SyncMLViewer
 
             return sb.ToString();
         }
+
+        // TODO: broken!
+        public static int ClenaupEnrollments(string excludeEnrollment = "")
+        {
+            int counter = 0;
+            string enrollmentPath = @"SOFTWARE\Microsoft\Enrollments\";
+
+            try
+            {
+                using (var baseKey = Registry.LocalMachine.OpenSubKey(enrollmentPath, true))
+                {
+                    if (baseKey != null)
+                    {
+                        string[] subKeyNames = baseKey.GetSubKeyNames();
+
+                        foreach (var subKeyName in subKeyNames)
+                        {
+                            if (subKeyName != excludeEnrollment)
+                            {
+                                using (var subKey = baseKey.OpenSubKey(subKeyName, true))
+                                {
+                                    if (subKey != null)
+                                    {
+                                        var providerId = subKey.GetValue("ProviderId") as string;
+                                        var enrollmentType = subKey.GetValue("EnrollmentType") as int?;
+
+                                        if (providerId == "Local_Management" && enrollmentType == 20)
+                                        {
+                                            Debug.WriteLine($"Found lingering LocalMDM Enrollment: {subKeyName}");
+
+                                            baseKey.DeleteSubKey(subKeyName);
+                                            Debug.WriteLine($"Deleted key: {baseKey}\\{subKeyName}");
+                                            counter++;
+
+                                            string[] basePaths = { @"SOFTWARE\Microsoft\Enrollments\Status\", @"SOFTWARE\Microsoft\Enrollments\Context\" };
+                                            foreach (var basePath in basePaths)
+                                            {
+                                                using (var subKey2 = Registry.LocalMachine.OpenSubKey(basePath, true))
+                                                {
+                                                    if (subKey2 != null)
+                                                    {
+                                                        string[] subKeyNames2 = baseKey.GetSubKeyNames();
+
+                                                        foreach (var subKeyName2 in subKeyNames)
+                                                        {
+                                                            if (subKeyName2 == subKeyName)
+                                                            {
+                                                                baseKey.DeleteSubKey(subKeyName);
+                                                                Debug.WriteLine($"Deleted key: {subKey2}\\{subKeyName}");
+                                                                counter++;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Skipped Enrollment: {subKeyName}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Cleanup Enrollments failed: {ex}");
+            }
+
+            return counter;
+        }
     }
 }
