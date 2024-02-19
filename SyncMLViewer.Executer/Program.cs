@@ -27,6 +27,7 @@ namespace SyncMLViewer.Executer
         private static string argTypeValue = string.Empty;
         private static bool argKeepLocalMDMEnrollment = false; 
         private static bool argKeepLocalMDMEnrollmentValue = false;
+        private static bool argVerbose = false;
         private static bool argQuiet = false;
         private static bool argSetEmbeddedMode = false;
         private static bool argSetEmbeddedModeValue = false;
@@ -109,6 +110,12 @@ namespace SyncMLViewer.Executer
             }
             else if (args.Length >= 2)
             {
+                if (argVerbose)
+                {
+                    Debug.WriteLine($"[{prog}] Received {nameof(argVerbose)}: {argVerbose}");
+                    Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+                    Debug.AutoFlush = true;
+                }
                 if (argSetEmbeddedMode)
                 {
                     Debug.WriteLine($"[{prog}] Received {nameof(argSetEmbeddedMode)}: {argSetEmbeddedModeValue}");
@@ -275,6 +282,9 @@ namespace SyncMLViewer.Executer
                                 argCleanupLocalMDMEnrollment = true;
                                 argCleanupLocalMDMEnrollmentValue = true;
                                 break;
+                            case "verbose":
+                                argVerbose = true;
+                                break;
                             case "quiet":
                                 argQuiet = true;
                                 break;
@@ -301,6 +311,7 @@ namespace SyncMLViewer.Executer
                                 Console.WriteLine($"                                redirection will be the MDM enrollment not MMP-C enrollment");
                                 Console.WriteLine($"-CleanupLocalMDMEnrollment      specify CleanupLocalMDMEnrollment, cleanup orphaned local MDM registry entires");
                                 Console.WriteLine($"                                can only be used as single parameter");
+                                Console.WriteLine($"-Verbose                        generate verbose/debug output");
                                 Console.WriteLine($"-Quiet                          specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;

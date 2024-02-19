@@ -164,7 +164,10 @@ namespace SyncMLViewer.Executer
 
             // alternative approach if no new enrollment ID is found, search for existing LocalMDM enrollment and use that one
             // Danger: there could be multiple LocalMDM enrollments, cleanup advised, we should handle that case somehow in future...
-            newEnrollmentId = GetLocalMDMEnrollment();
+            if (string.IsNullOrEmpty(newEnrollmentId))
+            {
+                newEnrollmentId = GetLocalMDMEnrollment();
+            }
 
             return newEnrollmentId;
         }
@@ -211,7 +214,10 @@ namespace SyncMLViewer.Executer
                 }
                 else
                 {
-                    Debug.WriteLine($"[MDMLocalManagement] RedirectLocalMDMEnrollment not possible, new enrollment not detected!");
+                    if (redirectLocalMDMEnrollment)
+                    { 
+                        Debug.WriteLine($"[MDMLocalManagement] RedirectLocalMDMEnrollment not possible, new enrollment not detected!"); 
+                    }
                 }
 
                 syncMLResult = SendRequest(dataText, command, data, format, type);
@@ -421,6 +427,7 @@ namespace SyncMLViewer.Executer
         {
             string enrollmentPath = @"SOFTWARE\Microsoft\Enrollments\";
             string enrollmentId = string.Empty;
+            int counter = 0;
 
             try
             {
@@ -443,8 +450,9 @@ namespace SyncMLViewer.Executer
 
                                         if (providerId == "Local_Management" && enrollmentType == 20)
                                         {
-                                            Debug.WriteLine($"Found LocalMDM Enrollment: {subKeyName}");
+                                            Debug.WriteLine($"[MDMLocalManagement] GetLocalMDMEnrollment(), Found LocalMDM Enrollment: {subKeyName}");
                                             enrollmentId = subKeyName;
+                                            counter++;
                                         }
                                     }
                                 }
@@ -462,7 +470,22 @@ namespace SyncMLViewer.Executer
                 Debug.WriteLine($"Get LocalMDM Enrollment failed: {ex}");
             }
 
-            return enrollmentId;
+            if (counter == 1)
+            {
+                return enrollmentId;
+            }
+            else
+            {
+                if (counter == 0)
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] GetLocalMDMEnrollment(), Found no LocalMDM Enrollment!");
+                }
+                else if (counter > 1)
+                {
+                    Debug.WriteLine($"[MDMLocalManagement] GetLocalMDMEnrollment(), Found multiple LocalMDM Enrollments!");
+                }
+                return string.Empty;
+            }
         }
 
         public static int ClenaupEnrollments(string excludeEnrollment = "")
