@@ -467,7 +467,7 @@ namespace SyncMLViewer.Executer
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Get LocalMDM Enrollment failed: {ex}");
+                Debug.WriteLine($"[MDMLocalManagement] GetLocalMDMEnrollment(), failed: {ex}");
             }
 
             if (counter == 1)

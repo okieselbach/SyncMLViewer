@@ -289,20 +289,20 @@ namespace SyncMLViewer
             TextEditorAbout.Text = Properties.Resources.About;
 
             StringBuilder diagnosticsBuilder = new StringBuilder();
-            diagnosticsBuilder.AppendLine($"Hostname:                 {MdmDiagnostics.Hostname}");
-            diagnosticsBuilder.AppendLine($"OS Version:               {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})");
-            diagnosticsBuilder.AppendLine($"Display Version:          {MdmDiagnostics.DisplayVersion}");
-            diagnosticsBuilder.AppendLine($"Version:                  {MdmDiagnostics.Version}");
-            diagnosticsBuilder.AppendLine($"Current Build:            {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}");
-            // diagnosticsBuilder.AppendLine($"Release ID:               {MdmDiagnostics.ReleaseId}");
-            diagnosticsBuilder.AppendLine($"Build Branch:             {MdmDiagnostics.BuildBranch}");
-            diagnosticsBuilder.AppendLine($"IME Version:              {MdmDiagnostics.IntuneAgentVersion}");
-            diagnosticsBuilder.AppendLine($"Logon Username:           {MdmDiagnostics.LogonUsername}");
-            diagnosticsBuilder.AppendLine($"Logon User SID:           {MdmDiagnostics.LogonUserSid}");
-            diagnosticsBuilder.AppendLine($"Enrollment UPN:           {_mdmDiagnostics.EnrollmentUpn}");
-            diagnosticsBuilder.AppendLine($"AAD TenantID:             {_mdmDiagnostics.AadTenantId}");
-            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MDM):   {_mdmDiagnostics.OmaDmAccountIdMDM}");
-            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MMP-C): {_mdmDiagnostics.OmaDmAccountIdMMPC}");
+            diagnosticsBuilder.AppendLine($"Hostname:                    {MdmDiagnostics.Hostname}");
+            diagnosticsBuilder.AppendLine($"OS Version:                  {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})");
+            diagnosticsBuilder.AppendLine($"Display Version:             {MdmDiagnostics.DisplayVersion}");
+            diagnosticsBuilder.AppendLine($"Version:                     {MdmDiagnostics.Version}");
+            diagnosticsBuilder.AppendLine($"Current Build:               {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}");
+            // diagnosticsBuilder.AppendLine($"Release ID:                  {MdmDiagnostics.ReleaseId}");
+            diagnosticsBuilder.AppendLine($"Build Branch:                {MdmDiagnostics.BuildBranch}");
+            diagnosticsBuilder.AppendLine($"IME Version:                 {MdmDiagnostics.IntuneAgentVersion}");
+            diagnosticsBuilder.AppendLine($"Logon Username:              {MdmDiagnostics.LogonUsername}");
+            diagnosticsBuilder.AppendLine($"Logon User SID:              {MdmDiagnostics.LogonUserSid}");
+            diagnosticsBuilder.AppendLine($"Enrollment UPN:              {_mdmDiagnostics.EnrollmentUpn}");
+            diagnosticsBuilder.AppendLine($"AAD TenantID:                {_mdmDiagnostics.AadTenantId}");
+            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MDM):      {_mdmDiagnostics.OmaDmAccountIdMDM}");
+            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MMP-C):    {_mdmDiagnostics.OmaDmAccountIdMMPC}");
 
             TextEditorDiagnostics.Text = diagnosticsBuilder.ToString();
               
@@ -1782,6 +1782,15 @@ namespace SyncMLViewer
             if (menuItemAutoScroll.IsChecked)
             {
                 TextEditorSyncMlRequests.ScrollToEnd();
+            }
+
+            if (menuItemKeepLocalMDMEnrollment.IsChecked)
+            {
+                var enrollment = Helper.GetLocalMDMEnrollment();
+                if (!string.IsNullOrEmpty(enrollment))
+                {
+                    TextEditorDiagnostics.Text += $"OMA-DM AccountID (LocalMDM): {enrollment}\n";
+                }
             }
 
             ButtonRunRequest.IsEnabled = true;
