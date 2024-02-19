@@ -1789,7 +1789,10 @@ namespace SyncMLViewer
                 var enrollment = Helper.GetLocalMDMEnrollment();
                 if (!string.IsNullOrEmpty(enrollment))
                 {
-                    TextEditorDiagnostics.Text += $"OMA-DM AccountID (LocalMDM): {enrollment}\n";
+                    if (!TextEditorDiagnostics.Text.Contains(enrollment))
+                    {
+                        TextEditorDiagnostics.Text += $"OMA-DM AccountID (LocalMDM): {enrollment}\n";
+                    }
                 }
             }
 
