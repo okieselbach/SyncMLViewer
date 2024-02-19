@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -159,6 +161,10 @@ namespace SyncMLViewer.Executer
                 newEnrollmentId = string.Empty;
                 Debug.WriteLine($"[MDMLocalManagement] RegisterDeviceWithLocalManagement(), no new Enrollment ID found");
             }
+
+            // alternative approach if no new enrollment ID is found, search for existing LocalMDM enrollment and use that one
+            // Danger: there could be multiple LocalMDM enrollments, cleanup advised, we should handle that case somehow in future...
+            newEnrollmentId = GetLocalMDMEnrollment();
 
             return newEnrollmentId;
         }
@@ -409,6 +415,54 @@ namespace SyncMLViewer.Executer
                 originalFlagsValue = 0;
                 return false;
             }
+        }
+
+        public static string GetLocalMDMEnrollment()
+        {
+            string enrollmentPath = @"SOFTWARE\Microsoft\Enrollments\";
+            string enrollmentId = string.Empty;
+
+            try
+            {
+                using (var baseKey = Registry.LocalMachine.OpenSubKey(enrollmentPath, true))
+                {
+                    if (baseKey != null)
+                    {
+                        string[] subKeyNames = baseKey.GetSubKeyNames();
+
+                        foreach (var subKeyName in subKeyNames)
+                        {
+                            try
+                            {
+                                using (var subKey = baseKey.OpenSubKey(subKeyName, true))
+                                {
+                                    if (subKey != null)
+                                    {
+                                        var providerId = subKey.GetValue("ProviderId") as string;
+                                        var enrollmentType = subKey.GetValue("EnrollmentType") as int?;
+
+                                        if (providerId == "Local_Management" && enrollmentType == 20)
+                                        {
+                                            Debug.WriteLine($"Found LocalMDM Enrollment: {subKeyName}");
+                                            enrollmentId = subKeyName;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // ignore
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Get LocalMDM Enrollment failed: {ex}");
+            }
+
+            return enrollmentId;
         }
 
         public static int ClenaupEnrollments(string excludeEnrollment = "")

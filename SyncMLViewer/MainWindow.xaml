@@ -311,7 +311,7 @@
                     <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
                     <MenuItem Header="Set EmbeddedMode Registry Flag" Click="MenuItemSetEmbeddedMode_Click"/>
                     <MenuItem Header="Clear EmbeddedMode Registry Flag" Click="MenuItemClearEmbeddedMode_Click"/>
-                    <MenuItem Header="Cleanup Local MDM Enrollments" Click="MenuItemCleanupEnrollments_Click"/>
+                    <MenuItem Header="Cleanup Local MDM Enrollments Registry" Click="MenuItemCleanupEnrollments_Click"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Help">

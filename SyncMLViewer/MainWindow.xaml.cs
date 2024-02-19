@@ -1572,7 +1572,8 @@ namespace SyncMLViewer
                 // replace { and } with %7B and %7D:
                 // ./Device/Vendor/MSFT/EnterpriseDesktopAppManagement/MSI/{1803A630-3C38-4D2B-9B9A-0CB37243539C}
                 // ./Device/Vendor/MSFT/EnterpriseDesktopAppManagement/MSI/%7B1803A630-3C38-4D2B-9B9A-0CB37243539C%7D
-                omaUri = TextBoxUri.Text.Replace("{", "%7B").Replace("}", "%7D");
+                omaUri = omaUri.Replace("{", "%7B").Replace("}", "%7D");
+
                 TextBoxUri.Text = omaUri;
 
                 StringBuilder syncMLBuilder = new StringBuilder();
@@ -1717,6 +1718,8 @@ namespace SyncMLViewer
             {
                 arguments += $" -RedirectLocalMDMEnrollment";
             }
+
+            Debug.WriteLine($"Executer arguments: {arguments}");
 
             var resultOutput = string.Empty;
             var resultError = string.Empty;
