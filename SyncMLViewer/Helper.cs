@@ -476,7 +476,6 @@ namespace SyncMLViewer
             return sb.ToString();
         }
 
-        // TODO: broken!
         public static int ClenaupEnrollments(string excludeEnrollment = "")
         {
             int counter = 0;
@@ -494,44 +493,58 @@ namespace SyncMLViewer
                         {
                             if (subKeyName != excludeEnrollment)
                             {
-                                using (var subKey = baseKey.OpenSubKey(subKeyName, true))
+                                try
                                 {
-                                    if (subKey != null)
+                                    using (var subKey = baseKey.OpenSubKey(subKeyName, true))
                                     {
-                                        var providerId = subKey.GetValue("ProviderId") as string;
-                                        var enrollmentType = subKey.GetValue("EnrollmentType") as int?;
-
-                                        if (providerId == "Local_Management" && enrollmentType == 20)
+                                        if (subKey != null)
                                         {
-                                            Debug.WriteLine($"Found lingering LocalMDM Enrollment: {subKeyName}");
+                                            var providerId = subKey.GetValue("ProviderId") as string;
+                                            var enrollmentType = subKey.GetValue("EnrollmentType") as int?;
 
-                                            baseKey.DeleteSubKey(subKeyName);
-                                            Debug.WriteLine($"Deleted key: {baseKey}\\{subKeyName}");
-                                            counter++;
-
-                                            string[] basePaths = { @"SOFTWARE\Microsoft\Enrollments\Status\", @"SOFTWARE\Microsoft\Enrollments\Context\" };
-                                            foreach (var basePath in basePaths)
+                                            if (providerId == "Local_Management" && enrollmentType == 20)
                                             {
-                                                using (var subKey2 = Registry.LocalMachine.OpenSubKey(basePath, true))
-                                                {
-                                                    if (subKey2 != null)
-                                                    {
-                                                        string[] subKeyNames2 = baseKey.GetSubKeyNames();
+                                                Debug.WriteLine($"Found lingering LocalMDM Enrollment: {subKeyName}");
 
-                                                        foreach (var subKeyName2 in subKeyNames)
+                                                baseKey.DeleteSubKey(subKeyName);
+                                                Debug.WriteLine($"Deleted key: {baseKey}\\{subKeyName}");
+                                                counter++;
+
+                                                string[] basePaths = { @"SOFTWARE\Microsoft\Enrollments\Status\", @"SOFTWARE\Microsoft\Enrollments\Context\" };
+                                                foreach (var basePath in basePaths)
+                                                {
+                                                    try
+                                                    {
+                                                        using (var subKey2 = Registry.LocalMachine.OpenSubKey(basePath, true))
                                                         {
-                                                            if (subKeyName2 == subKeyName)
+                                                            if (subKey2 != null)
                                                             {
-                                                                baseKey.DeleteSubKey(subKeyName);
-                                                                Debug.WriteLine($"Deleted key: {subKey2}\\{subKeyName}");
-                                                                counter++;
+                                                                string[] subKeyNames2 = subKey2.GetSubKeyNames();
+
+                                                                foreach (var subKeyName2 in subKeyNames2)
+                                                                {
+                                                                    if (subKeyName2 == subKeyName)
+                                                                    {
+                                                                        subKey2.DeleteSubKey(subKeyName2);
+                                                                        Debug.WriteLine($"Deleted key: {subKey2}\\{subKeyName2}");
+                                                                        counter++;
+                                                                    }
+                                                                }
                                                             }
                                                         }
+                                                    }
+                                                    catch (Exception)
+                                                    {
+                                                        // ignore
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                }
+                                catch (Exception)
+                                {
+                                    // ignore
                                 }
                             }
                             else

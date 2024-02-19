@@ -411,6 +411,93 @@ namespace SyncMLViewer.Executer
             }
         }
 
+        public static int ClenaupEnrollments(string excludeEnrollment = "")
+        {
+            int counter = 0;
+            string enrollmentPath = @"SOFTWARE\Microsoft\Enrollments\";
+
+            try
+            {
+                using (var baseKey = Registry.LocalMachine.OpenSubKey(enrollmentPath, true))
+                {
+                    if (baseKey != null)
+                    {
+                        string[] subKeyNames = baseKey.GetSubKeyNames();
+
+                        foreach (var subKeyName in subKeyNames)
+                        {
+                            if (subKeyName != excludeEnrollment)
+                            {
+                                try
+                                {
+                                    using (var subKey = baseKey.OpenSubKey(subKeyName, true))
+                                    {
+                                        if (subKey != null)
+                                        {
+                                            var providerId = subKey.GetValue("ProviderId") as string;
+                                            var enrollmentType = subKey.GetValue("EnrollmentType") as int?;
+
+                                            if (providerId == "Local_Management" && enrollmentType == 20)
+                                            {
+                                                Debug.WriteLine($"Found lingering LocalMDM Enrollment: {subKeyName}");
+
+                                                baseKey.DeleteSubKey(subKeyName);
+                                                Debug.WriteLine($"Deleted key: {baseKey}\\{subKeyName}");
+                                                counter++;
+
+                                                string[] basePaths = { @"SOFTWARE\Microsoft\Enrollments\Status\", @"SOFTWARE\Microsoft\Enrollments\Context\" };
+                                                foreach (var basePath in basePaths)
+                                                {
+                                                    try
+                                                    {
+                                                        using (var subKey2 = Registry.LocalMachine.OpenSubKey(basePath, true))
+                                                        {
+                                                            if (subKey2 != null)
+                                                            {
+                                                                string[] subKeyNames2 = subKey2.GetSubKeyNames();
+
+                                                                foreach (var subKeyName2 in subKeyNames2)
+                                                                {
+                                                                    if (subKeyName2 == subKeyName)
+                                                                    {
+                                                                        subKey2.DeleteSubKey(subKeyName2);
+                                                                        Debug.WriteLine($"Deleted key: {subKey2}\\{subKeyName2}");
+                                                                        counter++;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    catch (Exception)
+                                                    {
+                                                        // ignore
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    // ignore
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Skipped Enrollment: {subKeyName}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Cleanup Enrollments failed: {ex}");
+            }
+
+            return counter;
+        }
+
         private static byte[] GetSHA265(string text)
         {
             byte[] hash;

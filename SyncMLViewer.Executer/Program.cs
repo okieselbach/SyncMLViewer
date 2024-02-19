@@ -34,6 +34,8 @@ namespace SyncMLViewer.Executer
         private static bool argUnregisterLocalMDMEnrollmentValue = false;
         private static bool argRedirectLocalMDMEnrollment = false;
         private static bool argRedirectLocalMDMEnrollmentValue = false;
+        private static bool argCleanupLocalMDMEnrollment = false;
+        private static bool argCleanupLocalMDMEnrollmentValue = false;
 
         // Important, MTA is necessary otherwise the Local MDM API will not work!
         [MTAThread]
@@ -89,7 +91,21 @@ namespace SyncMLViewer.Executer
                     MdmLocalManagement.UnregisterLocalMDM();
                     MdmLocalManagement.ClearEmbeddedMode();
                     return;
-                }    
+                }
+                if (argCleanupLocalMDMEnrollment)
+                {
+                    Debug.WriteLine($"[{prog}] Received {nameof(argCleanupLocalMDMEnrollment)}: {argCleanupLocalMDMEnrollmentValue}");
+                    var count = MdmLocalManagement.ClenaupEnrollments();
+                    if (count > 0)
+                    {
+                        Console.WriteLine($"Cleaned up {count} orphaned local MDM enrollment entries");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No orphaned local MDM enrollment entries found");
+                    }   
+                    return;
+                }
             }
             else if (args.Length >= 2)
             {
@@ -255,6 +271,10 @@ namespace SyncMLViewer.Executer
                                 argRedirectLocalMDMEnrollment = true;
                                 argRedirectLocalMDMEnrollmentValue = true;
                                 break;
+                            case "cleanuplocalmdmenrollment":
+                                argCleanupLocalMDMEnrollment = true;
+                                argCleanupLocalMDMEnrollmentValue = true;
+                                break;
                             case "quiet":
                                 argQuiet = true;
                                 break;
@@ -279,6 +299,8 @@ namespace SyncMLViewer.Executer
                                 Console.WriteLine($"-UnregisterLocalMDMEnrollment   specify UnregisterLocalMDMEnrollment, call Unregister API to revert most changes");
                                 Console.WriteLine($"-RedirectLocalMDMEnrollment     specify RedirectLocalMDMEnrollment, redirect local MDM requests to real MDM enrollment");
                                 Console.WriteLine($"                                redirection will be the MDM enrollment not MMP-C enrollment");
+                                Console.WriteLine($"-CleanupLocalMDMEnrollment      specify CleanupLocalMDMEnrollment, cleanup orphaned local MDM registry entires");
+                                Console.WriteLine($"                                can only be used as single parameter");
                                 Console.WriteLine($"-Quiet                          specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;
