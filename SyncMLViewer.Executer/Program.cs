@@ -311,7 +311,7 @@ namespace SyncMLViewer.Executer
                                 Console.WriteLine($"                                redirection will be the MDM enrollment not MMP-C enrollment");
                                 Console.WriteLine($"-CleanupLocalMDMEnrollment      specify CleanupLocalMDMEnrollment, cleanup orphaned local MDM registry entires");
                                 Console.WriteLine($"                                can only be used as single parameter");
-                                Console.WriteLine($"-Verbose                        generate verbose/debug output");
+                                Console.WriteLine($"-Verbose                        specify Verbose, generate verbose/debug output");
                                 Console.WriteLine($"-Quiet                          specify Quiet, surpress any ouput");
                                 Environment.Exit(0);
                                 break;
