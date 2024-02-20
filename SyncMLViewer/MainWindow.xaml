@@ -44,8 +44,8 @@
         <KeyBinding Key="F1" Command="{Binding SearchWithGoogleCommand}" />
     </Window.InputBindings>
     <Grid>
-        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,11" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)" Panel.ZIndex="10"/>
-        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,11" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)" Panel.ZIndex="10"/>
+        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,11" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)" />
+        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,11" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)"/>
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,50" SelectionChanged="TabControlSyncMlViewer_SelectionChanged">
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
@@ -156,7 +156,8 @@
                                 <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiInfo" Content="[Information]" Margin="230,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="80" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiInfo_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiKey" Content="[Key]" Margin="310,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiKey_MouseLeftButtonUp"/>
-                                <Button x:Name="ButtonRefreshWifi" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshWifi_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh Wifi profiles list"/>
+                                <Button x:Name="ButtonRefreshWifi" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshWifi_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" ToolTip="Refresh Wifi profiles list"/>
+                                <Button x:Name="ButtonDeleteWifi" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteWifi_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected Wifi profile"/>
                             </Grid>
                         </TabItem>
                         <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
@@ -173,7 +174,8 @@
                                     IsReadOnly="True"
                                     WordWrap="True" Margin="220,10,10,34"/>
                                 <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
-                                <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="85" ToolTip="Refresh VPN profiles list"/>
+                                <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" ToolTip="Refresh VPN profiles list"/>
+                                <Button x:Name="ButtonDeleteVpn" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteVpn_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected VPN profile"/>
                             </Grid>
                         </TabItem>
                     </TabControl>

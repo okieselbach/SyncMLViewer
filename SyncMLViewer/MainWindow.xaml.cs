@@ -2161,6 +2161,26 @@ namespace SyncMLViewer
             ListBoxWifi.Items.Refresh();
         }
 
+        private void ButtonDeleteWifi_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
+            {
+                return;
+            }
+
+            var rc = MessageBox.Show($"Do you really want to delete the WiFi profile '{wifiProfile.Name}'?", "SyncML Viewer", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (rc == MessageBoxResult.No)
+            {
+                return;
+            }
+
+            Helper.RunCommand("netsh", $"wlan delete profile name=\"{wifiProfile.Name}\"");
+
+            TextEditorWifiProfiles.Clear();
+
+            ButtonRefreshWifi_Click(null, null);
+        }
+
         private void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
         {
             VpnProfileList.Clear();
@@ -2177,6 +2197,33 @@ namespace SyncMLViewer
             }
 
             ListBoxVpn.Items.Refresh();
+        }
+
+        private void ButtonDeleteVpn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(ListBoxVpn.SelectedItem is VpnProfile vpnProfile))
+            {
+                return;
+            }
+
+            var rc = MessageBox.Show($"Do you really want to delete the VPN profile '{vpnProfile.Name}'?", "SyncML Viewer", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (rc == MessageBoxResult.No)
+            {
+                return;
+            }
+
+            using (var ps = PowerShell.Create())
+            {
+                ps.AddCommand("Remove-VpnConnection")
+                    .AddParameter("Name", $"{vpnProfile.Name}")
+                    .AddParameter("Force");
+
+                var result = ps.Invoke();
+            }
+
+            TextEditorVpnProfiles.Clear();
+
+            ButtonRefreshVpn_Click(null, null);
         }
 
         private void LabelWifiKey_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
