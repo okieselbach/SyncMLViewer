@@ -328,7 +328,7 @@
         </Menu>
         <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="189,0,0,12" Visibility="Visible" Height="26" VerticalAlignment="Bottom" />
         <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,3,3,0" Visibility="Visible" HorizontalAlignment="Right" Width="142" Height="26" VerticalAlignment="Top" FontSize="10"/>
-        <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,43,9" HorizontalAlignment="Right" Width="170" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick" />
+        <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,47,9" HorizontalAlignment="Right" Width="170" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick" />
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,225,11" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible" />
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
         <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (64KB max)" Margin="311,0,395,12" Height="26" VerticalAlignment="Bottom" Visibility="Visible" FontWeight="Bold" />
