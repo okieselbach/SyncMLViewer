@@ -542,6 +542,7 @@ namespace SyncMLViewer
                     {
                         // if the message is not complete (truncated becasue of ETW 64KB buffer), we add a closing tag to get the parsing right for the Sessions/Messages viewer tab
                         valueSyncMl += "\n<!-- ignore this line, closing SyncML tag added to support parsing of truncated xml data --></SyncML>";
+                        valueSyncMl = Helper.TryFormatTruncatedXml(valueSyncMl);
                     }
 
                     var message = string.Empty;
