@@ -100,6 +100,48 @@ namespace SyncMLViewer
             AddStatusCode(516, "Atomic roll back failed. Command was inside Atomic element and Atomic failed. This command was not rolled back successfully. Server SHOULD take action to try to recover client back into original state.");
             AddStatusCode(517, "Atomic response too large to fit. The response to an atomic command was too large to fit in a single message.");
 
+            // Health Attestation Exception (6xx)
+            AddStatusCode(600, "HEALTHATTESTATION_CERT_RETRIEVAL_UNINITIALIZED This is the initial state for devices that have never participated in a DHA-Session.");
+            AddStatusCode(601, "HEALTHATTESTATION_CERT_RETRIEVAL_REQUESTED This state signifies that MDM client’s Exec call on the node VerifyHealth has been triggered and now the OS is trying to retrieve DHA-EncBlob from DHA-Server.");
+            AddStatusCode(602, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED This state signifies that the device failed to retrieve DHA-EncBlob from DHA-Server.");
+            AddStatusCode(603, "HEALTHATTESTATION_CERT_RETRIEVAL_COMPLETE This state signifies that the device failed to retrieve DHA-EncBlob from DHA-Server.");
+            AddStatusCode(604, "HEALTHATTESTATION_CERT_RETRIEVAL_PCR_FAIL Deprecated in Windows 10, version 1607.");
+            AddStatusCode(605, "HEALTHATTESTATION_CERT_RETRIEVAL_GETQUOTE_FAIL DHA-CSP failed to get a claim quote.");
+            AddStatusCode(606, "HEALTHATTESTATION_CERT_RETRIEVAL_DEVICE_NOT_READY DHA-CSP failed in opening a handle to Microsoft Platform Crypto Provider.");
+            AddStatusCode(607, "HEALTHATTESTATION_CERT_RETRIEVAL_WINDOWS_AIK_FAIL DHA-CSP failed in retrieving Windows AIK");
+            AddStatusCode(608, "HEALTHATTESTATION_CERT_RETRIEVAL_FROM_WEB_FAIL Deprecated in Windows 10, version 1607.");
+            AddStatusCode(609, "HEALTHATTESTATION_CERT_RETRIEVAL_INVALID_TPM_VERSION Invalid TPM version (TPM version is not 1.2 or 2.0)");
+            AddStatusCode(610, "HEALTHATTESTATION_CERT_RETRIEVAL_GETNONCE_FAIL Nonce was not found in the registry.");
+            AddStatusCode(611, "HEALTHATTESTATION_CERT_RETRIEVAL_GETCORRELATIONID_FAIL Correlation ID was not found in the registry.");
+            AddStatusCode(612, "HEALTHATTESTATION_CERT_RETRIEVAL_GETCERT_FAIL Deprecated in Windows 10, version 1607.");
+            AddStatusCode(613, "HEALTHATTESTATION_CERT_RETRIEVAL_GETCLAIM_FAIL Deprecated in Windows 10, version 1607.");
+            AddStatusCode(614, "HEALTHATTESTATION_CERT_RETRIEVAL_ENCODING_FAIL Failure in Encoding functions.");
+            AddStatusCode(615, "HEALTHATTESTATION_CERT_RETRIEVAL_ENDPOINTOVERRIDE_FAIL Deprecated in Windows 10, version 1607.");
+            AddStatusCode(616, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_LOAD_XML DHA-CSP failed to load the payload it received from DHA-Service");
+            AddStatusCode(617, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_CORRUPT_XML DHA-CSP received a corrupted response from DHA-Service.");
+            AddStatusCode(618, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_EMPTY_XML DHA-CSP received an empty response from DHA-Service.");
+            AddStatusCode(619, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_DECRYPT_AES_EK DHA-CSP failed in decrypting the AES key from the EK challenge.");
+            AddStatusCode(620, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_DECRYPT_CERT_AES_EK DHA-CSP failed in decrypting the health cert with the AES key.");
+            AddStatusCode(621, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_EXPORT_AIKPUB DHA-CSP failed in exporting the AIK Public Key.");
+            AddStatusCode(622, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_CREATE_CLAIMAUTHORITYONLY DHA-CSP failed in trying to create a claim with AIK attestation data.");
+            AddStatusCode(623, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_APPEND_AIKPUB DHA-CSP failed in appending the AIK Pub to the request blob.");
+            AddStatusCode(624, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_APPEND_AIKCERT DHA-CSP failed in appending the AIK Cert to the request blob.");
+            AddStatusCode(625, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_INIT_HTTPHANDLE DHA-CSP failed to obtain a Session handle.");
+            AddStatusCode(626, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_GETTARGET_HTTPHANDLE DHA-CSP failed to connect to the DHA-Service.");
+            AddStatusCode(627, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_CREATE_HTTPHANDLE DHA-CSP failed to create a HTTP request handle.");
+            AddStatusCode(628, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_SET_INTERNETOPTION DHA-CSP failed to set options.");
+            AddStatusCode(629, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_ADD_REQUESTHEADERS DHA-CSP failed to add request headers.");
+            AddStatusCode(630, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_SEND_REQUEST DHA-CSP failed to send the HTTP request.");
+            AddStatusCode(631, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_RECEIVE_RESPONSE DHA-CSP failed to receive a response from the DHA-Service.");
+            AddStatusCode(632, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_QUERY_HEADERS DHA-CSP failed to query headers when trying to get HTTP status code.");
+            AddStatusCode(633, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_EMPTY_RESPONSE DHA-CSP received an empty response from DHA-Service even though HTTP status was OK.");
+            AddStatusCode(634, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_MISSING_RESPONSE DHA-CSP received an empty response along with a HTTP error code from DHA-Service.");
+            AddStatusCode(635, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_IMPERSONATE_USER DHA-CSP failed to impersonate user.");
+            AddStatusCode(636, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_ACQUIRE_PDCNETWORKACTIVATOR DHA-CSP failed to acquire the PDC activators that are needed for network communication when the device is in Connected standby mode.");
+            AddStatusCode(637, "HEALTHATTESTATION_CERT_RETRIEVAL_FAILED_UNKNOWN DHA-CSP failed due to an unknown reason");
+            AddStatusCode(638, "Bad_Request_From_Client DHA-CSP has received a bad (malformed) attestation request.");
+            AddStatusCode(639, "Endpoint_Not_Reachable DHA-Service is not reachable by DHA-CSP");
+
             // Additional application-specific codes
             AddStatusCodeRange(1100, 1199, "Application specific: Should be used for Informational (11xx)");
             AddStatusCodeRange(1200, 1299, "Application specific: Should be used for Successful (12xx)");
