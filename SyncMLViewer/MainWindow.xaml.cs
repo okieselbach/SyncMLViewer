@@ -60,10 +60,10 @@ namespace SyncMLViewer
         // more MDM ETW Provider details
         // https://docs.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10
         // 3b9602ff-e09b-4c6c-bc19-1a3dfa8f2250	= Microsoft-WindowsPhone-OmaDm-Client-Provider
-        // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider
+        // 3da494e4-0fe2-415C-b895-fb5265c5c83b = Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider
         private static readonly Guid OmaDmClientProvider = new Guid("{3B9602FF-E09B-4C6C-BC19-1A3DFA8F2250}");
 
-        // interestingly Microsoft-WindowsPhone-Enterprise-Diagnostics-Provider is not needed...
+        // interestingly Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider is not needed...
         //private static readonly Guid EnterpriseDiagnosticsProvider = new Guid("{3da494e4-0fe2-415C-b895-fb5265c5c83b}");
 
         private const string UpdateXmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update.xml";
@@ -89,7 +89,7 @@ namespace SyncMLViewer
         private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
         private int _CmdIdCounter;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
-        private StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
+        private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -1515,15 +1515,16 @@ namespace SyncMLViewer
 
             if (Keyboard.IsKeyDown(Key.LeftShift) && Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightShift) && Keyboard.IsKeyDown(Key.RightCtrl))
             {
-                if (MessageBox.Show(
-                    "Experimental setting activated!\n"+
-                    "\n"+
-                    "Redirecting local MDM enrollment requests to real MDM enrollment\n"+
-                    "\n" +
-                    "This could render the device unusable!\n" +
-                    "\n" +
-                    "Proceed only if you really know what you're doing!", 
-                    "SyncML Viewer - Experimental setting", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
+                StringBuilder message = new StringBuilder();
+                message.AppendLine("Experimental setting activated!");
+                message.AppendLine();
+                message.AppendLine("Redirecting local MDM enrollment requests to real MDM enrollment");
+                message.AppendLine();
+                message.AppendLine("This could render the device unusable!");
+                message.AppendLine();
+                message.AppendLine("Proceed only if you really know what you're doing!");
+
+                if (MessageBox.Show(message.ToString(), "SyncML Viewer - Experimental setting", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
                 {
                     ButtonRunRequest.IsEnabled = true;
                     return;
