@@ -2140,11 +2140,11 @@ namespace SyncMLViewer
             }
         }
 
-        private void ButtonRefreshWifi_Click(object sender, RoutedEventArgs e)
+        private async void ButtonRefreshWifi_Click(object sender, RoutedEventArgs e)
         {
             WifiProfileList.Clear();
 
-            var output = Helper.RunCommand("netsh", "wlan show interfaces");
+            var output = await Task.Run(() => Helper.RunCommand("netsh", "wlan show interfaces"));
             var guid = Helper.RegexExtractStringValueAfterKeyAndColon(output, "GUID"); // Hopefully this is in every language the same as netsh is localized
 
             var directoryPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Wlansvc\Profiles\Interfaces\{" + guid + "}";
@@ -2185,14 +2185,17 @@ namespace SyncMLViewer
             ButtonRefreshWifi_Click(null, null);
         }
 
-        private void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
+        private async void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
         {
             VpnProfileList.Clear();
 
             using (var ps = PowerShell.Create())
             {
                 ps.AddCommand("Get-VpnConnection");
-                foreach (var item in ps.Invoke())
+
+                var psOutput = await Task.Run(() => ps.Invoke());
+
+                foreach (var item in psOutput)
                 {
                     var name = item.Members["Name"].Value as string;
                     var xml = item.Members["VpnConfigurationXml"].Value as string;
