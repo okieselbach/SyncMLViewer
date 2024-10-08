@@ -828,7 +828,9 @@ namespace SyncMLViewer
                 wellFormatedXml = false;
             }
             
-            if (selectedItem.Xml.Length > 60 * 1000 && !wellFormatedXml)
+            // seen cases where messages char count was 50k but the xml was not well formatted
+            // therefore lower the threshold to 450k and try to format it
+            if (selectedItem.Xml.Length > 45 * 1000 && !wellFormatedXml)
             {
                 LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
 
