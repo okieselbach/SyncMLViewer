@@ -104,6 +104,8 @@ namespace SyncMLViewer
         public ICommand DecodeBase64Command { get; }
         public ICommand DecodeCertCommand { get; }
         public ICommand DecodeHtmlCommand { get; }
+        public ICommand DecodeAutopilotCommand { get; }
+        public ICommand ViewAsHexCommand { get; }
         public ICommand WordWrapCommand { get; }
         public ICommand MdmSyncCommand { get; }
         public ICommand MmpcSyncCommand { get; }
@@ -111,6 +113,7 @@ namespace SyncMLViewer
         public ICommand ClearCommand { get; }
         public ICommand HelpCspCommand { get; }
         public ICommand StatusCodeCommand { get; }
+        public ICommand NodeCacheCommand { get; }
         public ICommand FormatCommand { get; }
         public ICommand TopMostCommand { get; }
         public ICommand AutoScrollCommand { get; }
@@ -144,6 +147,8 @@ namespace SyncMLViewer
             DecodeBase64Command = new RelayCommand(() => { MenuItemDecodeBase64_Click(null, null); });
             DecodeCertCommand = new RelayCommand(() => { MenuItemDecodeCertificate_Click(null, null); });
             DecodeHtmlCommand = new RelayCommand(() => { MenuItemDecodeHTML_Click(null, null); });
+            DecodeAutopilotCommand = new RelayCommand(() => { MenuItemDecodeAutopilot_Click(null, null); });
+            ViewAsHexCommand = new RelayCommand(() => { MenuItemViewAsHex_Click(null, null); });
             WordWrapCommand = new RelayCommand(() => {
                 menuItemWordWrap.IsChecked = !menuItemWordWrap.IsChecked;
                 MenuItemWordWrap_Click(null, null); 
@@ -154,6 +159,7 @@ namespace SyncMLViewer
             ClearCommand = new RelayCommand(() => { ButtonClear_Click(null, null); });
             HelpCspCommand = new RelayCommand(() => { MenuItemOpenHelp_Click(null, null); });
             StatusCodeCommand = new RelayCommand(() => { MenuItemLookupStatusCode_Click(null, null); });
+            NodeCacheCommand = new RelayCommand(() => { MenuItemLookupNodeCache_Click(null, null); });
             FormatCommand = new RelayCommand(() => { LabelFormat_MouseUp(null, null); });
             TopMostCommand = new RelayCommand(() => {
                 menuItemAlwaysOnTop.IsChecked = !menuItemAlwaysOnTop.IsChecked;
@@ -283,6 +289,7 @@ namespace SyncMLViewer
             TextEditorCodes.Options.EnableHyperlinks = true;
             TextEditorCodes.Options.RequireControlModifierForHyperlinkClick = false;
             TextEditorCodes.Text = Properties.Resources.StatusCodes;
+            TabItemCodes.Visibility = Settings.Default.ShowStatusCodeTab ? Visibility.Visible : Visibility.Collapsed;
 
             TextEditorAbout.Options.EnableHyperlinks = true;
             TextEditorAbout.Options.RequireControlModifierForHyperlinkClick = false;
@@ -300,7 +307,7 @@ namespace SyncMLViewer
             diagnosticsBuilder.AppendLine($"Logon Username:              {MdmDiagnostics.LogonUsername}");
             diagnosticsBuilder.AppendLine($"Logon User SID:              {MdmDiagnostics.LogonUserSid}");
             diagnosticsBuilder.AppendLine($"Enrollment UPN:              {_mdmDiagnostics.EnrollmentUpn}");
-            diagnosticsBuilder.AppendLine($"AAD TenantID:                {_mdmDiagnostics.AadTenantId}");
+            diagnosticsBuilder.AppendLine($"Entra TenantID:              {_mdmDiagnostics.AadTenantId}");
             diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MDM):      {_mdmDiagnostics.OmaDmAccountIdMDM}");
             diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MMP-C):    {_mdmDiagnostics.OmaDmAccountIdMMPC}");
 
@@ -1408,7 +1415,7 @@ namespace SyncMLViewer
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
-                dataEditor.ShowDialog();
+                dataEditor.Show();
             }
             catch (Exception)
             {
@@ -2036,7 +2043,7 @@ namespace SyncMLViewer
                 DataFromMainWindow = TextBoxData.Text
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
 
             TextBoxData.Text = dataEditor.DataFromSecondWindow;
         }
@@ -2078,7 +2085,7 @@ namespace SyncMLViewer
                 TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
         }
 
         private void LabelFormat_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2248,7 +2255,7 @@ namespace SyncMLViewer
                 TextEditorData = { ShowLineNumbers = false }
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
         }
 
         private void LabelWifiInfo_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -2266,7 +2273,7 @@ namespace SyncMLViewer
                 TextEditorData = { ShowLineNumbers = false }
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
         }
 
         private void LabelBackToTopWifi_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -2380,7 +2387,7 @@ namespace SyncMLViewer
                 TextEditorData = { ShowLineNumbers = false }
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
         }
 
         private void MenuItemDecodeCertificate_Click(object sender, RoutedEventArgs e)
@@ -2422,7 +2429,7 @@ namespace SyncMLViewer
                 TextEditorData = { ShowLineNumbers = false }
             };
 
-            dataEditor.ShowDialog();
+            dataEditor.Show();
         }
 
         private void MenuItemSearchWithGoogle_Click(object sender, RoutedEventArgs e)
@@ -2559,6 +2566,121 @@ namespace SyncMLViewer
             if (count > 0)
             {
                 MessageBox.Show($"{count} Local MDM enrollment(s) have been removed.", "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void MenuItemDecodeAutopilot_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            {
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+
+            var sb = new StringBuilder();
+            try
+            {
+                foreach (var item in AutopilotHashUtility.ConvertFromAutopilotHash(Hash: text))
+                {
+                    foreach (var kvp in item)
+                    {
+                        sb.AppendLine($"{kvp.Key}: {kvp.Value}");
+                    }
+                }
+                text = sb.ToString();
+            }
+            catch (Exception)
+            {
+                // prevent Exceptions for non-Base64 data
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                Width = 800,
+                Height =800,
+                DataFromMainWindow = text,
+                HideButonClear = true,
+                Title = "Data Editor - Autopilot Decode",
+                TextEditorData = 
+                { 
+                    ShowLineNumbers = false, 
+                    Options = { ShowBoxForControlCharacters = false }
+                }
+            };
+
+            dataEditor.Show();
+        }
+
+        private void MenuItemViewAsHex_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            {
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+
+            try
+            {
+                text = Helper.ConvertTextToHex(text);
+            }
+            catch (Exception)
+            {
+                // prevent Exceptions for non-Base64 data
+            }
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = text,
+                HideButonClear = true,
+                Title = "Data Editor - Hex Viewer",
+                TextEditorData =
+                {
+                    ShowLineNumbers = false,
+                    Options = { ShowBoxForControlCharacters = false }
+                }
+            };
+
+            dataEditor.Show();
+        }
+
+        private void MenuItemLookupNodeCache_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText.Trim();
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText.Trim();
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            {
+                text = TextEditorSyncMlRequests.SelectedText.Trim();
+            }
+
+            if (int.TryParse(text, out _))
+            { 
+                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
             }
         }
     }

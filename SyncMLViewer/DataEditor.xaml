@@ -11,6 +11,8 @@
         <KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding DecodeBase64Command}" />
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding DecodeCertCommand}" />
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding DecodeHtmlCommand}" />
+        <KeyBinding Key="U" Modifiers="Ctrl" Command="{Binding DecodeAutopilotCommand}" />
+        <KeyBinding Key="T" Modifiers="Ctrl" Command="{Binding ViewAsHexCommand}" />
         <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding WordWrapCommand}" />
         <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
     </Window.InputBindings>

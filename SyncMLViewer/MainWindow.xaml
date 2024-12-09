@@ -12,6 +12,8 @@
         <KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding DecodeBase64Command}" />
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding DecodeCertCommand}" />
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding DecodeHtmlCommand}" />
+        <KeyBinding Key="U" Modifiers="Ctrl" Command="{Binding DecodeAutopilotCommand}" />
+        <KeyBinding Key="T" Modifiers="Ctrl" Command="{Binding ViewAsHexCommand}" />
         <KeyBinding Key="F4" Modifiers="Alt" Command="{Binding ExitCommand}" />
         <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding WordWrapCommand}" />
         <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding MdmSyncCommand}" />
@@ -20,6 +22,7 @@
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ClearCommand}" />
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
         <KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding StatusCodeCommand}" />
+        <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding NodeCacheCommand}" />
         <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
         <KeyBinding Key="T" Modifiers="Ctrl+Alt" Command="{Binding TopMostCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl+Alt" Command="{Binding AutoScrollCommand}" />
@@ -193,7 +196,7 @@
                         WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
-            <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference">
+            <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference" Visibility="Visible">
                 <Grid Background="White">
                     <avalonedit:TextEditor
                         x:Name="TextEditorCodes"
@@ -270,8 +273,11 @@
                 <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
                 <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Decode _Autopilot Info" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
                 <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click" />
                 <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
                 <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                 <Separator />
                 <MenuItem Header="View Message in Notepad" Click="MenuItemViewMessageInNotepad_Click" InputGestureText="Ctrl+Shift+O"/>

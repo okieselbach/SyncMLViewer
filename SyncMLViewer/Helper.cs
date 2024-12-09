@@ -281,6 +281,92 @@ namespace SyncMLViewer
             return output;
         }
 
+        public static string ConvertTextToHex(string input)
+        {
+            //StringBuilder hexBuilder = new StringBuilder();
+            //int count = 0;
+
+            //foreach (char c in input)
+            //{
+            //    hexBuilder.AppendFormat("{0:X2} ", (int)c);
+            //    count++;
+
+            //    // after 16 Bytes (32 Hex-chars) add line break
+            //    if (count % 16 == 0)
+            //    {
+            //        // remove last char before line break
+            //        if (hexBuilder.Length > 0 && hexBuilder[hexBuilder.Length - 1] == ' ')
+            //        {
+            //            hexBuilder.Length -= 1;
+            //        }
+            //        hexBuilder.AppendLine();
+            //    }
+            //}
+
+            //return hexBuilder.ToString().TrimEnd();
+
+            StringBuilder hexBuilder = new StringBuilder();
+            StringBuilder asciiBuilder = new StringBuilder();
+            int count = 0;
+
+            foreach (char c in input)
+            {
+                // Convert the character to its two-digit hex representation, followed by a space.
+                hexBuilder.AppendFormat("{0:X2} ", (int)c);
+
+                // For the ASCII representation: use the character if it's printable (from 0x20 to 0x7E), otherwise use '.'
+                if (c >= 0x20 && c <= 0x7E)
+                {
+                    asciiBuilder.Append(c);
+                }
+                else
+                {
+                    asciiBuilder.Append('.');
+                }
+
+                count++;
+
+                // Every 16 bytes, start a new line
+                if (count % 16 == 0)
+                {
+                    // Remove the trailing space
+                    if (hexBuilder.Length > 0 && hexBuilder[hexBuilder.Length - 1] == ' ')
+                    {
+                        hexBuilder.Length -= 1;
+                    }
+
+                    // Add two spaces before the ASCII part
+                    hexBuilder.Append("  ");
+                    hexBuilder.Append(asciiBuilder.ToString());
+                    hexBuilder.AppendLine();
+
+                    // Reset the ASCII builder for the next line
+                    asciiBuilder.Clear();
+                }
+            }
+
+            // If the last line wasn't complete (less than 16 bytes):
+            int remainder = count % 16;
+            if (remainder != 0)
+            {
+                // Calculate how many bytes are missing to complete the line
+                int missing = 16 - remainder;
+
+                // Each byte in hex takes "XX " -> 3 characters, so fill in the missing hex bytes with spaces
+                for (int i = 0; i < missing; i++)
+                {
+                    hexBuilder.Append("   ");
+                }
+
+                // Add one space before the ASCII part
+                hexBuilder.Append(" ");
+                hexBuilder.Append(asciiBuilder.ToString());
+                hexBuilder.AppendLine();
+            }
+
+            return hexBuilder.ToString();
+        }
+
         public static string RegexExtractStringValueAfterKeyAndColon(string input, string key)
         {
             string pattern = $@"{key}\s+:\s+(.+)";

@@ -329,6 +329,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AutoCompleteModel.cs" />
+    <Compile Include="AutopilotUtility.cs" />
     <Compile Include="BindableBase.cs" />
     <Compile Include="DataEditor.xaml.cs">
       <DependentUpon>DataEditor.xaml</DependentUpon>

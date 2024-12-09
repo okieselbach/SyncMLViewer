@@ -31,9 +31,11 @@ namespace SyncMLViewer
 
         public ICommand DecodeBase64Command { get; }
         public ICommand DecodeCertCommand {  get; }
+        public ICommand DecodeAutopilotCommand { get; }
         public ICommand WordWrapCommand { get; }
         public ICommand FormatCommand { get; }
         public ICommand DecodeHtmlCommand { get; }
+        public ICommand ViewAsHexCommand { get; }
 
         public DataEditor()
         {
@@ -70,7 +72,7 @@ namespace SyncMLViewer
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
-                dataEditor.ShowDialog();
+                dataEditor.Show();
             });
 
             DecodeBase64Command = new RelayCommand(() => {
@@ -130,7 +132,7 @@ namespace SyncMLViewer
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
-                dataEditor.ShowDialog();
+                dataEditor.Show();
             });
 
             DecodeHtmlCommand = new RelayCommand(() =>
@@ -154,7 +156,73 @@ namespace SyncMLViewer
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
-                dataEditor.ShowDialog();
+                dataEditor.Show();
+            });
+
+            DecodeAutopilotCommand = new RelayCommand(() =>
+            {
+                var text = TextEditorData.SelectedText;
+
+                var sb = new StringBuilder();
+                try
+                {
+                    foreach (var item in AutopilotHashUtility.ConvertFromAutopilotHash(Hash: text))
+                    {
+                        foreach (var kvp in item)
+                        {
+                            sb.AppendLine($"{kvp.Key}: {kvp.Value}");
+                        }
+                    }
+                    text = sb.ToString();
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    Width = 800,
+                    Height = 800,
+                    DataFromMainWindow = text,
+                    HideButonClear = true,
+                    Title = "Data Editor - Autopilot Decode",
+                    TextEditorData =
+                    {
+                        ShowLineNumbers = false,
+                        Options = { ShowBoxForControlCharacters = false }
+                    }
+                };
+
+                dataEditor.Show();
+            });
+
+            ViewAsHexCommand = new RelayCommand(() =>
+            {
+                var text = TextEditorData.SelectedText;
+
+                try
+                {
+                    text = Helper.ConvertTextToHex(text);
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = text,
+                    HideButonClear = true,
+                    Title = "Data Editor - Hex Viewer",
+                    TextEditorData =
+                    {
+                        ShowLineNumbers = false,
+                        Options = { ShowBoxForControlCharacters = false }
+                    }
+                };
+
+                dataEditor.Show();
             });
 
             WordWrapCommand = new RelayCommand(() =>
