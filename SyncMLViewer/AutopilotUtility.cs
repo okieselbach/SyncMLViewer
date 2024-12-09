@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace SyncMLViewer
 {
+    // Basis of this c# class is Michael Niehaus Powershell Module
+    // https://www.powershellgallery.com/packages/AutopilotUtility
+
     public static class AutopilotHashUtility
     {
         // This enum is referenced in the original code. Adjust as needed.
