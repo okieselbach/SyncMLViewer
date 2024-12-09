@@ -217,7 +217,7 @@ namespace SyncMLViewer
                     break;
                 default:
                     argument = $"-out {path}";
-                    return;
+                    break;
             };
 
             await Task.Factory.StartNew(() =>
