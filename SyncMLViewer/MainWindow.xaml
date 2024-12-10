@@ -270,6 +270,8 @@
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator />
+                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click" />
+                <Separator />
                 <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
                 <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>

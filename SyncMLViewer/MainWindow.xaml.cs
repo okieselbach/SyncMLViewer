@@ -90,6 +90,8 @@ namespace SyncMLViewer
         private int _CmdIdCounter;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
         private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
+        private ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
+        private ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -254,8 +256,8 @@ namespace SyncMLViewer
             VpnProfileList = new List<VpnProfile>();
             ListBoxVpn.ItemsSource = VpnProfileList;
 
-            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
-            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
+            _searchPanelStream = ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
+            _searchPanelMessages = ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorCodes);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorDiagnostics);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequests);
@@ -785,6 +787,12 @@ namespace SyncMLViewer
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
+            MessageBoxResult result = MessageBox.Show("Do you really want to clear all data?", "Clear all data", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.No)
+            {
+                return;
+            }
+
             SyncMlSessions.Clear();
 
             TextEditorMessages.Clear();
@@ -2685,6 +2693,18 @@ namespace SyncMLViewer
             if (int.TryParse(text, out _))
             { 
                 Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
+            }
+        }
+
+        private void MenuItemFind_Click(object sender, RoutedEventArgs e)
+        {
+            if (TextEditorStream.IsVisible)
+            {
+                _searchPanelStream.Open();
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                _searchPanelMessages.Open();
             }
         }
     }
