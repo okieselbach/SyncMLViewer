@@ -34,6 +34,7 @@ using System.Web.UI.WebControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
@@ -90,8 +91,9 @@ namespace SyncMLViewer
         private int _CmdIdCounter;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
         private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
-        private ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
-        private ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
+        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
+        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
+        private ulong _totalBytesReceived;
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -534,6 +536,8 @@ namespace SyncMLViewer
                     try
                     {
                         eventDataText = Encoding.UTF8.GetString(userState.EventData());
+                        _totalBytesReceived += (ulong)userState.EventData().Length;
+                        ImageCaptureTraffic.ToolTip = $"Capturing traffic... (F12)\nTotal bytes received: {_totalBytesReceived:N0}";
                     }
                     catch (Exception)
                     {
