@@ -2600,7 +2600,7 @@ namespace SyncMLViewer
             }
             catch (Exception)
             {
-                // prevent Exceptions for non-Base64 data
+                // prevent Exceptions for non-Autopilot data
             }
 
             DataEditor dataEditor = new DataEditor
@@ -2643,7 +2643,7 @@ namespace SyncMLViewer
             }
             catch (Exception)
             {
-                // prevent Exceptions for non-Base64 data
+                // prevent Exceptions
             }
 
             DataEditor dataEditor = new DataEditor
