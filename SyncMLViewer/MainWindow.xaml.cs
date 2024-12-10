@@ -311,9 +311,9 @@ namespace SyncMLViewer
             diagnosticsBuilder.AppendLine($"Logon Username:              {MdmDiagnostics.LogonUsername}");
             diagnosticsBuilder.AppendLine($"Logon User SID:              {MdmDiagnostics.LogonUserSid}");
             diagnosticsBuilder.AppendLine($"Enrollment UPN:              {_mdmDiagnostics.EnrollmentUpn}");
-            diagnosticsBuilder.AppendLine($"Entra TenantID:              {_mdmDiagnostics.AadTenantId}");
-            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MDM):      {_mdmDiagnostics.OmaDmAccountIdMDM}");
-            diagnosticsBuilder.AppendLine($"OMA-DM AccountID (MMP-C):    {_mdmDiagnostics.OmaDmAccountIdMMPC}");
+            diagnosticsBuilder.AppendLine($"Entra Tenant ID:             {_mdmDiagnostics.AadTenantId}");
+            diagnosticsBuilder.AppendLine($"OMA-DM Account ID (MDM):     {_mdmDiagnostics.OmaDmAccountIdMDM}");
+            diagnosticsBuilder.AppendLine($"OMA-DM Account ID (MMP-C):   {_mdmDiagnostics.OmaDmAccountIdMMPC}");
 
             TextEditorDiagnostics.Text = diagnosticsBuilder.ToString();
               
