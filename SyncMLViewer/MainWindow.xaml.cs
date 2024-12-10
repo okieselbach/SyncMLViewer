@@ -2359,6 +2359,10 @@ namespace SyncMLViewer
             if (string.Compare(result, "Unknown status code.", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 Debug.WriteLine("Fallback to Windows Error Messages DB and assuming hex error code");
+
+                // celanup a bit, maybe not perfectly selected...
+                text = text.Trim('"');
+
                 if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                 {
                     text = text.Substring(2);
