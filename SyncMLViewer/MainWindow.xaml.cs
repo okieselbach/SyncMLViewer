@@ -94,6 +94,7 @@ namespace SyncMLViewer
         private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
         private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
         private ulong _totalBytesReceived;
+        private const double _rightColumnRequestsMaxWidth = 260;
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -2709,6 +2710,35 @@ namespace SyncMLViewer
             else if (TextEditorMessages.IsVisible)
             {
                 _searchPanelMessages.Open();
+            }
+        }
+
+        private void UpdateLeftColumnMaxWidthGridRequests()
+        {
+            double totalWidth = GridRequests.ActualWidth;
+            if (totalWidth == 0)
+            {
+                LeftColumn.MaxWidth = 740;
+                return;
+            }
+            // calculate max width for left column
+            double rightColumnWidth = _rightColumnRequestsMaxWidth;
+            double splitterWidth = GridRequests.ColumnDefinitions[1].ActualWidth;
+
+            // max width for left column
+            double maxLeftWidth = totalWidth - rightColumnWidth - splitterWidth;
+
+            // MaxWidth for left column
+            LeftColumn.MaxWidth = maxLeftWidth > 0 ? maxLeftWidth : 0;
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateLeftColumnMaxWidthGridRequests();
+
+            if (TextBoxUri.IsVisible)
+            {
+                BorderAutoComplete.Width = TextBoxUri.ActualWidth;
             }
         }
     }

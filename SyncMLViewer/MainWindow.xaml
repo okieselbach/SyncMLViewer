@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" xmlns:syncmlviewer="clr-namespace:SyncMLViewer" d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow}" x:Class="SyncMLViewer.MainWindow"
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-arrows.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded">
+        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-arrows.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged">
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
@@ -84,8 +84,21 @@
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemSyncMLRequests" Header="SyncML Requests">
-                <Grid Background="White">
-                    <ComboBox x:Name="ComboBoxCmd" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="75" IsReadOnly="True" GotFocus="HideAutoCompleteStackPanel" ToolTip="COMMAND">
+                <Grid Name="GridRequests" Background="White">
+                    
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="55" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="260" MaxWidth="400" Name="LeftColumn"/>
+                        <ColumnDefinition Width="2" />
+                        <!-- GridSplitter -->
+                        <ColumnDefinition Width="1.5*" Name="RightColumn"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <ComboBox x:Name="ComboBoxCmd" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="75" IsReadOnly="True" GotFocus="HideAutoCompleteStackPanel" ToolTip="COMMAND" Grid.Row="0" Grid.ColumnSpan="3">
                         <ComboBoxItem Content="GET" IsSelected="True"/>
                         <ComboBoxItem Content="ADD"/>
                         <ComboBoxItem Content="ATOMIC"/>
@@ -94,38 +107,21 @@
                         <ComboBoxItem Content="REPLACE"/>
                         <ComboBoxItem Content="RESULT"/>
                     </ComboBox>
-                    <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="NoWrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22" ToolTip="OMA-URI (case sensitive)" VerticalScrollBarVisibility="Hidden"/>
-                    <Border BorderBrush="LightGray" BorderThickness="1" Margin="90,36,115,0" Background="White" Panel.ZIndex="100" Visibility="Collapsed" Height="154" VerticalAlignment="Top">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Name="resultStack"/>
-                        </ScrollViewer>
-                    </Border>
-                    <Button x:Name="ButtonRunRequest" Content="Run Request" Margin="0,14,10,0" VerticalAlignment="Top" Height="22" Click="ButtonRunRequest_Click" HorizontalAlignment="Right" Width="100" GotFocus="HideAutoCompleteStackPanel" ToolTip="Run Request (Ctrl+R)"/>
-                    <avalonedit:TextEditor
-                        x:Name="TextEditorSyncMlRequests"
-                        SyntaxHighlighting="XML"
-                        FontFamily="Consolas"
-                        FontSize="10pt"
-                        HorizontalScrollBarVisibility="Auto"
-                        ShowLineNumbers="True"
-                        IsReadOnly="True"
-                        WordWrap="True" Margin="459,81,10,28" GotFocus="HideAutoCompleteStackPanel"/>
-                    <avalonedit:TextEditor
-                        x:Name="TextEditorSyncMlRequestsRequestViewer"
-                        SyntaxHighlighting="XML"
-                        FontFamily="Consolas"
-                        FontSize="10pt"
-                        HorizontalScrollBarVisibility="Auto"
-                        IsReadOnly="True"
-                        WordWrap="True" Margin="10,81,0,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" HorizontalAlignment="Left" Width="444"/>
-                    <Label Content="Current generated/edited SyncML request:" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                    <Label Content="SyncML request/response log:" HorizontalAlignment="Left" Margin="459,50,0,0" VerticalAlignment="Top"/>
-                    <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Click="CheckBoxUseSyncML_Click" Height="15" VerticalAlignment="Bottom"/>
-                    <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom"/>
-                    <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84" ToolTip="DATA TYPE (free to type own)">
+                    
+                    <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="NoWrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22" ToolTip="OMA-URI (case sensitive)" VerticalScrollBarVisibility="Hidden" Grid.Row="0" Grid.ColumnSpan="3"/>
+                    <!-- AutoComplete Panel -->
+                    <Canvas Panel.ZIndex="10">
+                        <Border x:Name="BorderAutoComplete" BorderBrush="LightGray" BorderThickness="1" Canvas.Left="90" Canvas.Top="36" Background="White" Visibility="Collapsed" Width="508" Height="154" VerticalAlignment="Top" >
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Name="resultStack"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Canvas>
+
+                    <ComboBox x:Name="ComboBoxDataType" Margin="0,14,291,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="84" ToolTip="DATA TYPE (free to type own)" Grid.Row="0" Grid.ColumnSpan="3">
                         <ComboBoxItem Content="text/plain" IsSelected="True"/>
                     </ComboBox>
-                    <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57" ToolTip="DATA FORMAT (free to type own)">
+                    <ComboBox x:Name="ComboBoxFormat" Margin="0,14,229,0" VerticalAlignment="Top" IsEditable="True" HorizontalAlignment="Right" Width="57" ToolTip="DATA FORMAT (free to type own)" Grid.Row="0" Grid.ColumnSpan="3">
                         <ComboBoxItem Content="chr" IsSelected="True"/>
                         <ComboBoxItem Content="int" />
                         <ComboBoxItem Content="bool" />
@@ -134,10 +130,39 @@
                         <ComboBoxItem Content="node" />
                         <ComboBoxItem Content="null" />
                     </ComboBox>
-                    <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="DATA"/>
-                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42" ToolTip="Open Data Editor"/>
-                    <Label x:Name="LabelFormat" Content="[Format Document]" Margin="340,0,0,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114" ToolTip="Try to format SycML xml (Ctrl+Alt+F)"/>
-                    <Label x:Name="LabelProcessingTime" Content="1.035s" Margin="459,0,475,2" VerticalAlignment="Bottom"/>
+                    <TextBox x:Name="TextBoxData" Margin="0,14,115,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Right" Width="109" Height="22" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="DATA" Grid.Row="0" Grid.ColumnSpan="3"/>
+                    <Label x:Name="LabelEditor" Content="[Editor]" Margin="0,31,110,0" VerticalAlignment="Top" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelEditor_MouseUp" FontSize="10" HorizontalAlignment="Right" Width="42" ToolTip="Open Data Editor" Grid.Row="0" Grid.ColumnSpan="3"/>
+                    <Button x:Name="ButtonRunRequest" Content="Run Request" Margin="0,14,10,0" VerticalAlignment="Top" Height="22" Click="ButtonRunRequest_Click" HorizontalAlignment="Right" Width="100" GotFocus="HideAutoCompleteStackPanel" ToolTip="Run Request (Ctrl+R)" Grid.Row="0" Grid.ColumnSpan="3"/>
+
+                    <Label Content="Current generated/edited SyncML request:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Grid.Row="1" Grid.Column="0"/>
+                    <!-- left Texteditor -->
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorSyncMlRequestsRequestViewer"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="10,31,10,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="0"/>
+
+                    <GridSplitter Grid.Column="1" Grid.Row="1" Width="2" Background="#FFEEEEEE" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+                    <Label Content="SyncML request/response log:" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1" Grid.Column="2" Margin="5,0,0,0"/>
+                    <!-- right Texteditor -->
+                    <avalonedit:TextEditor
+                        x:Name="TextEditorSyncMlRequests"
+                        SyntaxHighlighting="XML"
+                        FontFamily="Consolas"
+                        FontSize="10pt"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        IsReadOnly="True"
+                        WordWrap="True" Margin="5,31,10,28" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="2"/>
+                    
+                    <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Click="CheckBoxUseSyncML_Click" Height="15" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0"/>
+                    <Label x:Name="LabelFormat" Content="[Format Document]" Margin="0,0,8,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" ToolTip="Try to format SycML xml (Ctrl+Alt+F)" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Width="114"/>
+                    <Label x:Name="LabelProcessingTime" Content="1.035s" Margin="10,0,0,2" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Width="70"/>
+                    <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="3"/>
                 </Grid>
             </TabItem>
             <TabItem x:Name="TabItemConnectivityProfiles" Header="Connectivity Profiles">
