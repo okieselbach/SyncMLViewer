@@ -15,8 +15,8 @@ namespace SyncMLViewer
         public AutoCompleteModel()
         {
             _data.Add("./DevDetail/OEM");
+            _data.Add("./DevDetail/Ext/DeviceHardwareData");
             _data.Add("./DevDetail/Ext/Microsoft/DeviceName");
-            _data.Add("./DevDetail/Ext/Microsoft/HardwareData");
             _data.Add("./DevDetail/Ext/Microsoft/LocalTime");
             _data.Add("./DevDetail/Ext/Microsoft/OSPlatform");
             _data.Add("./DevDetail/Ext/Microsoft/Resolution");
@@ -25,7 +25,6 @@ namespace SyncMLViewer
             _data.Add("./DevDetail/Ext/Microsoft/TotalRAM");
             _data.Add("./DevDetail/Ext/Microsoft/TotalStorage");
             _data.Add("./Device/Vendor/MSFT/LAPS/Policies");
-            //_data.Add("./Device/Vendor/MSFT/DMClient/Provider/MS%20DM%20SERVER/Recovery/AllowRecovery");
         }
 
         public List<string> GetData()
