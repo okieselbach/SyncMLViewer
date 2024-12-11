@@ -71,12 +71,19 @@ namespace SyncMLViewer
         private const string Update2XmlUri = "https://github.com/okieselbach/SyncMLViewer/raw/master/SyncMLViewer/dist/update2.xml";
 
         private const string SessionName = "SyncMLViewer";
+        private const double _rightColumnRequestsMaxWidth = 260;
+
         private readonly BackgroundWorker _backgroundWorker;
         private readonly Runspace _rs;
         private readonly FoldingManager _foldingManager;
         private readonly XmlFoldingStrategy _foldingStrategy;
         private readonly Timer _timer = new Timer();
         private readonly string _version;
+        private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
+        private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
+        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
+        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
+
         private string _updateTempFileName;
         private bool _updateStarted;
         private bool _updateCheckInitial;
@@ -84,17 +91,12 @@ namespace SyncMLViewer
         private bool _syncMMPCSwitch;
         private bool _backgroundLoggingSwitch;
         private bool _hideWhenMinimizedSwitch;
-        private System.Windows.Forms.NotifyIcon _notifyIcon;
         private bool _notifyIconBallonShownOnce;
-        private WindowState _storedWindowState = WindowState.Normal;
-        private readonly MdmDiagnostics _mdmDiagnostics = new MdmDiagnostics();
         private int _CmdIdCounter;
-        private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
-        private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
-        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
-        private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
         private ulong _totalBytesReceived;
-        private const double _rightColumnRequestsMaxWidth = 260;
+        private System.Windows.Forms.NotifyIcon _notifyIcon;
+        private WindowState _storedWindowState = WindowState.Normal;
+        private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
 
         public List<WifiProfile> WifiProfileList { get; set; }
         public List<VpnProfile> VpnProfileList { get; set; }
@@ -103,6 +105,7 @@ namespace SyncMLViewer
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
 
+        #region ICommands definitions
         public ICommand OpenCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand ExitCommand { get; }
@@ -141,11 +144,13 @@ namespace SyncMLViewer
         public ICommand CaptureCommand { get; }
         public ICommand SearchWithGoogleCommand { get; }
         public ICommand OpenInNotepadCommand { get; }
+        #endregion
 
         public MainWindow()
         {
             InitializeComponent();
 
+            #region RelayCommand bindings
             OpenCommand = new RelayCommand(() => { MenuItemOpen_Click(null, null); });
             SaveCommand = new RelayCommand(() => { ButtonSaveAs_Click(null, null); });
             ExitCommand = new RelayCommand(() => { MenuItemExit_OnClick(null, null); });
@@ -199,6 +204,7 @@ namespace SyncMLViewer
             });
             SearchWithGoogleCommand = new RelayCommand(() => { MenuItemSearchWithGoogle_Click(null, null); });
             OpenInNotepadCommand = new RelayCommand(() => { MenuItemViewMessageInNotepad_Click(null, null); });
+            #endregion
 
             _syncMDMSwitch = false;
             _syncMMPCSwitch = false;
@@ -340,6 +346,36 @@ namespace SyncMLViewer
             }
         }
 
+        private void ParseCommandlineArgs(string[] args)
+        {
+            if (args.Any())
+            {
+                foreach (var arg in args)
+                {
+                    if (arg.StartsWith("-") || arg.StartsWith("/"))
+                    {
+                        switch (arg.TrimStart(new[] { '-', '/' })[0].ToString().ToLower())
+                        {
+                            case "s":
+                                _syncMDMSwitch = true;
+                                break;
+                            case "m":
+                                _syncMMPCSwitch = true;
+                                break;
+                            case "b":
+                                _backgroundLoggingSwitch = true;
+                                break;
+                            case "h":
+                                _hideWhenMinimizedSwitch = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
         private async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (menuItemKeepLocalMDMEnrollmentUntilExit.IsChecked)
@@ -404,25 +440,6 @@ namespace SyncMLViewer
             _notifyIcon = null;
         }
 
-        private void NotifyIcon_Click(object sender, EventArgs e)
-        {
-            Show();
-            WindowState = _storedWindowState;
-        }
-
-        private void CheckTrayIcon()
-        {
-            ShowTrayIcon(!IsVisible);
-        }
-
-        private void ShowTrayIcon(bool show)
-        {
-            if (_notifyIcon != null)
-            {
-                _notifyIcon.Visible = show;
-            }
-        }
-
         private void Window_StateChanged(object sender, EventArgs e)
         {
             if (menuItemHideWhenMinimized.IsChecked)
@@ -448,6 +465,89 @@ namespace SyncMLViewer
             if (menuItemHideWhenMinimized.IsChecked)
             {
                 CheckTrayIcon();
+            }
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateLeftColumnMaxWidthGridRequests();
+
+            if (TextBoxUri.IsVisible)
+            {
+                BorderAutoComplete.Width = TextBoxUri.ActualWidth;
+            }
+        }
+
+        private void UpdateLeftColumnMaxWidthGridRequests()
+        {
+            double totalWidth = GridRequests.ActualWidth;
+            if (totalWidth == 0)
+            {
+                LeftColumn.MaxWidth = 740;
+                return;
+            }
+            // calculate max width for left column
+            double rightColumnWidth = _rightColumnRequestsMaxWidth;
+            double splitterWidth = GridRequests.ColumnDefinitions[1].ActualWidth;
+
+            // max width for left column
+            double maxLeftWidth = totalWidth - rightColumnWidth - splitterWidth;
+
+            // MaxWidth for left column
+            LeftColumn.MaxWidth = maxLeftWidth > 0 ? maxLeftWidth : 0;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            // Cleanup TraceSession, Listener and temp update files...
+
+            TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
+            _backgroundWorker.Dispose();
+
+            Trace.Close();
+            Trace.Listeners.Remove("listenerSyncMLStream");
+
+            if (_updateStarted) return;
+            try
+            {
+                if (_updateTempFileName == null) return;
+                if (!File.Exists(_updateTempFileName))
+                    File.Delete(_updateTempFileName);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParseCommandlineArgs(Environment.GetCommandLineArgs());
+
+            if (_backgroundLoggingSwitch)
+            {
+                menuItemBackgroundLogging.IsChecked = true;
+            }
+
+            if (_hideWhenMinimizedSwitch)
+            {
+                // prevent ballon tip on startup for commandline start
+                _notifyIconBallonShownOnce = true;
+
+                menuItemHideWhenMinimized.IsChecked = true;
+                WindowState = WindowState.Minimized;
+                Hide();
+            }
+
+            // only one MDM sync can be triggert at a time, so we check for the commandline args and trigger the sync
+            // if both are set, the MDM sync is triggered
+            if (_syncMDMSwitch)
+            {
+                ButtonMDMSync_Click(null, null);
+            }
+            else if (_syncMMPCSwitch)
+            {
+                ButtonMMPCSync_Click(null, null);
             }
         }
 
@@ -673,19 +773,6 @@ namespace SyncMLViewer
             }
         }
 
-        private string TryFormatXml(string text)
-        {
-            try
-            {
-                // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
-                return XElement.Parse(text).ToString();
-            }
-            catch (Exception)
-            {
-                return text;
-            }
-        }
-
         private void ButtonMDMSync_Click(object sender, RoutedEventArgs e)
         {
             if (menuItemAlternateMDMTrigger.IsChecked)
@@ -771,13 +858,6 @@ namespace SyncMLViewer
             LabelStatus.Visibility = Visibility.Visible;
         }
 
-        private void MenuItemResetSyncTriggerStatus_Click(object sender, RoutedEventArgs e)
-        {
-            SyncMlProgress.NotInProgress = true;
-            LabelStatus.Content = "";
-            LabelStatus.Visibility = Visibility.Hidden;
-        }
-
         private void CheckBoxHtmlDecode_Checked(object sender, RoutedEventArgs e)
         {
             if (CheckBoxHtmlDecode.IsChecked == true)
@@ -802,186 +882,6 @@ namespace SyncMLViewer
 
             TextEditorMessages.Clear();
             TextEditorStream.Clear();
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            // Cleanup TraceSession, Listener and temp update files...
-
-            TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
-            _backgroundWorker.Dispose();
-
-            Trace.Close();
-            Trace.Listeners.Remove("listenerSyncMLStream");
-
-            if (_updateStarted) return;
-            try
-            {
-                if (_updateTempFileName == null) return;
-                if (!File.Exists(_updateTempFileName))
-                    File.Delete(_updateTempFileName);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
-            {
-                return;
-            }
-
-            TextEditorMessages.Text = selectedItem.Xml;
-
-            LabelMessageStats.Content = $"Message length: {selectedItem.Xml.Length}";
-
-            bool wellFormatedXml = true;
-            try
-            {
-                XElement.Parse(selectedItem.Xml);
-            }
-            catch (Exception)
-            {
-                wellFormatedXml = false;
-            }
-            
-            // seen cases where messages char count was 50k but the xml was not well formatted
-            // therefore lower the threshold to 450k and try to format it
-            if (selectedItem.Xml.Length > 45 * 1000 && !wellFormatedXml)
-            {
-                LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
-
-                Debug.WriteLine("Truncated XML detected, trying to format it...");
-                // parse the truncated xml again with more robust parsing logic
-                TextEditorMessages.Text = Helper.TryFormatTruncatedXml(selectedItem.Xml);
-            }
-            else
-            {
-                LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
-            }
-
-            try
-            {
-                _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            CheckBoxHtmlDecode.IsChecked = false;
-        }
-
-        private void ListBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!(ListBoxSessions.SelectedItem is SyncMlSession selectedItem))
-            {
-                return;
-            }
-
-            ListBoxMessages.ItemsSource = selectedItem.Messages;
-            ListBoxMessages.Items.Refresh();
-
-            if (ListBoxMessages.Items.Count > 0)
-            {
-                ListBoxMessages.SelectedIndex = 0;
-            }
-        }
-
-        private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (!_updateStarted)
-            {
-                try
-                {
-                    if (_updateTempFileName != null)
-                    {
-                        if (!File.Exists(_updateTempFileName))
-                            File.Delete(_updateTempFileName);
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-            }
-
-            Application.Current.Shutdown(0);
-        }
-
-        private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
-        {
-            TabControlSyncMlViewer.SelectedItem = TabItemAbout;
-        }
-
-        private void MenuItemCodes_Click(object sender, RoutedEventArgs e)
-        {
-            TabControlSyncMlViewer.SelectedItem = TabItemCodes;
-        }
-
-        private void MenuItemDiagnostics_Click(object sender, RoutedEventArgs e)
-        {
-            TabControlSyncMlViewer.SelectedItem = TabItemDiagnostics;
-        }
-
-        private async void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                using (var webClient = new System.Net.WebClient())
-                {
-                    var systemWebProxy = System.Net.WebRequest.GetSystemWebProxy();
-                    systemWebProxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                    webClient.Proxy = systemWebProxy;
-                    webClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-
-                    var updateUrl = UpdateXmlUri;
-                    if (Settings.Default.Properties["DeveloperPreview"] != null)
-                    {
-                        if (Settings.Default.DeveloperPreview)
-                            updateUrl = Update2XmlUri;
-                    }
-
-                    var data = await webClient.DownloadDataTaskAsync(new Uri(updateUrl));
-                    var xDocument = XDocument.Load(new MemoryStream(data));
-
-                    var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
-                    var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
-
-                    if (url == null || !url.StartsWith("https")) return;
-                    if (version == null) return;
-                    if (string.CompareOrdinal(version, 0, _version, 0, version.Length) <= 0) return;
-
-                    if (_updateCheckInitial)
-                    {
-                        LabelUpdateIndicator.Content = LabelUpdateIndicator.Content.ToString().Replace("[0.0.0]", version);
-                        LabelUpdateIndicator.Visibility = Visibility.Visible;
-                        _updateCheckInitial = false;
-                        return;
-                    }
-
-                    LabelUpdateIndicator.Visibility = Visibility.Hidden;
-                    ButtonRestartUpdate.Content = ButtonRestartUpdate.Content.ToString().Replace("[0.0.0]", version);
-
-                    _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
-                    if (_updateTempFileName == null) return;
-
-                    await webClient.DownloadFileTaskAsync(new Uri(url), _updateTempFileName);
-
-                    if (!File.Exists(_updateTempFileName)) return;
-
-                    // simple sanity check, bigger than 10KB? we assume it is not a dummy or broken binary (e.g. 0 KB file)
-                    if (new FileInfo(_updateTempFileName).Length > 1024 * 10)
-                        ButtonRestartUpdate.Visibility = Visibility.Visible;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
         }
 
         private void ButtonRestartUpdate_Click(object sender, RoutedEventArgs e)
@@ -1027,187 +927,6 @@ namespace SyncMLViewer
             Application.Current.Shutdown(0);
         }
 
-        private void MenuItemRegistryEnrollments_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments");
-        }
-
-        private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
-        }
-
-        private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
-        }
-
-        private void MenuItemRegistryRebootRequiredUris_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
-        }
-
-        private void MenuItemRegistryDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
-        }
-
-        private void MenuItemRegistryEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
-        }
-
-        private void MenuItemRegistryIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
-        }
-
-        private async void MenuItemMdmDiagnostics_OnClick(object sender, RoutedEventArgs e)
-        {
-            LabelStatusTop.Visibility = Visibility.Visible;
-
-            await Helper.RunMdmDiagnosticsTool("");
-
-            LabelStatusTop.Visibility = Visibility.Hidden;
-        }
-
-        private async void MenuItemMdmDiagnosticsAutopilot_OnClick(object sender, RoutedEventArgs e)
-        {
-            LabelStatusTop.Visibility = Visibility.Visible;
-
-            await Helper.RunMdmDiagnosticsTool("Autopilot");
-
-            LabelStatusTop.Visibility = Visibility.Hidden;
-        }
-
-        private async void MenuItemMdmDiagnosticsDeviceEnrollment_OnClick(object sender, RoutedEventArgs e)
-        {
-            LabelStatusTop.Visibility = Visibility.Visible;
-
-            await Helper.RunMdmDiagnosticsTool("DeviceEnrollment");
-
-            LabelStatusTop.Visibility = Visibility.Hidden;
-        }
-
-        private async void MenuItemMdmDiagnosticsDeviceProvisioning_OnClick(object sender, RoutedEventArgs e)
-        {
-            LabelStatusTop.Visibility = Visibility.Visible;
-
-            await Helper.RunMdmDiagnosticsTool("DeviceProvisioning");
-
-            LabelStatusTop.Visibility = Visibility.Hidden;
-        }
-
-        private async void MenuItemMdmDiagnosticsTpm_OnClick(object sender, RoutedEventArgs e)
-        {
-            LabelStatusTop.Visibility = Visibility.Visible;
-
-            await Helper.RunMdmDiagnosticsTool("TPM");
-
-            LabelStatusTop.Visibility = Visibility.Hidden;
-        }
-
-        private void MenuItemBackgroundLogging_Click(object sender, RoutedEventArgs e)
-        {
-            var listenerName = "listenerSyncMLStream";
-
-            // I simply use the Trace class to handle my background logging. I'm not using trace for anything else.
-            if (menuItemBackgroundLogging.IsChecked)
-            {
-                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", listenerName));
-                Trace.AutoFlush = true;
-
-                SyncMlSessions.Clear();
-                ListBoxMessages.ItemsSource = null;
-
-                TextEditorStream.Clear();
-                TextEditorMessages.Clear();
-
-                TextEditorStream.IsEnabled = false;
-                TextEditorStream.AppendText($"{Environment.NewLine}\t'Background Logging Mode' enabled.");
-            }
-            else
-            {
-                Trace.Close();
-                Trace.Listeners.Remove(listenerName);
-
-                TextEditorStream.Clear();
-                TextEditorStream.IsEnabled = true;
-            }
-        }
-
-        private void MenuItemOpen_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                InitialDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                Filter = "Xml files|*.xml|All files|*.*",
-                FilterIndex = 0,
-                RestoreDirectory = true,
-                Title = "Open SyncML stream",
-            };
-
-            if (openFileDialog.ShowDialog() ==  true)
-            {
-                // add opened file name to the window title
-                Title += $" - {Path.GetFileName(openFileDialog.FileName)}";
-
-                TextEditorStream.Clear();
-                TextEditorMessages.Clear();
-
-                SyncMlSessions.Clear();
-
-                var fileStream = openFileDialog.OpenFile();
-                using (StreamReader reader = new StreamReader(fileStream))
-                {
-                    TextEditorStream.Text = reader.ReadToEnd();
-                }
-
-                if (TextEditorStream.Text.Length > 0)
-                {
-                    var syncMlMessages = Regex.Matches(TextEditorStream.Text, @"<SyncML[\s\S]*?</SyncML>", RegexOptions.IgnoreCase);
-
-                    foreach (Match message in syncMlMessages)
-                    {
-                        var valueSyncMl = TryFormatXml(message.Value);
-
-                        TextEditorMessages.Text = valueSyncMl;
-                        try
-                        {
-                            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
-                        }
-                        catch (Exception)
-                        {
-                            // ignored
-                        }
-
-                        var valueSessionId = "0";
-                        var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
-                        if (matchSessionId.Success)
-                        {
-                            valueSessionId = matchSessionId.Groups[1].Value;
-                        }
-
-                        if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
-                        {
-                            var syncMlSession = new SyncMlSession(valueSessionId);
-                            SyncMlSessions.Add(syncMlSession);
-                        }
-
-                        var valueMsgId = "0";
-                        var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
-                        if (matchMsgId.Success)
-                        {
-                            valueMsgId = matchMsgId.Groups[1].Value;
-                        }
-
-                        var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
-                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
-                    }
-                }
-            }
-        }
-
         private void ButtonSaveAs_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog fileDialog;
@@ -1244,287 +963,6 @@ namespace SyncMLViewer
             }
 
             fileDialog.ShowDialog();
-        }
-
-        private void MenuItemAlwaysOnTop_Click(object sender, RoutedEventArgs e)
-        {
-            if (menuItemAlwaysOnTop.IsChecked)
-            {
-                Topmost = true;
-            }
-            else
-            {
-                Topmost = false;
-            }
-        }
-
-        private void MenuItemCaptureTraffic_Click(object sender, RoutedEventArgs e)
-        {
-            if (!menuItemCaptureTraffic.IsChecked)
-            {
-                try
-                {
-                    if (TraceEventSession.IsElevated() != true)
-                    {
-                        throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
-                    }
-
-                    if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
-                    {
-                        Debug.WriteLine($"The ETW session '{SessionName}' is running, stopping existing session now.");
-                        var traceEventSession = TraceEventSession.GetActiveSession(SessionName);
-                        if (traceEventSession.EventsLost > 0)
-                        {
-                            Debug.WriteLine($"The ETW session '{SessionName}' lost in total {traceEventSession.EventsLost} events.");
-                        }
-                        traceEventSession.Stop(true);
-
-                        TraceEventSessionState.Started = false;
-                    }
-
-                    _backgroundWorker.CancelAsync();
-
-                    ImageCaptureTraffic.Visibility = Visibility.Hidden;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Exception: {ex}");
-                }
-            }
-            else
-            {
-                if (!_backgroundWorker.IsBusy)
-                {
-                    _backgroundWorker.RunWorkerAsync();
-                    Debug.WriteLine($"The ETW session '{SessionName}' is now running.");
-
-                    ImageCaptureTraffic.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    Debug.WriteLine("The ETW session is still running.");
-                }
-            }
-        }
-
-        private void MenuItemShowAllChars_Click(object sender, RoutedEventArgs e)
-        {
-            if (menuItemShowAllChars.IsChecked)
-            {
-                TextEditorMessages.Options.ShowSpaces = true;
-                TextEditorMessages.Options.ShowBoxForControlCharacters = true;
-                TextEditorStream.Options.ShowSpaces = true;
-                TextEditorStream.Options.ShowBoxForControlCharacters = true;
-                TextEditorSyncMlRequests.Options.ShowSpaces = true;
-                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = true;
-                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = true;
-                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = true;
-            }
-            else
-            {
-                TextEditorMessages.Options.ShowSpaces = false;
-                TextEditorMessages.Options.ShowBoxForControlCharacters = false;
-                TextEditorStream.Options.ShowSpaces = false;
-                TextEditorStream.Options.ShowBoxForControlCharacters = false;
-                TextEditorSyncMlRequests.Options.ShowSpaces = false;
-                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = false;
-                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = false;
-                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = false;
-            }
-        }
-
-        private void MenuItemWordWrap_Click(object sender, RoutedEventArgs e)
-        {
-            if (menuItemWordWrap.IsChecked)
-            {
-                TextEditorMessages.WordWrap = true;
-                TextEditorStream.WordWrap = true;
-                TextEditorSyncMlRequests.WordWrap = true;
-                TextEditorSyncMlRequestsRequestViewer.WordWrap = true;
-                TextEditorWifiProfiles.WordWrap = true;
-                TextEditorVpnProfiles.WordWrap = true;
-            }
-            else
-            {
-                TextEditorMessages.WordWrap = false;
-                TextEditorStream.WordWrap = false;
-                TextEditorSyncMlRequests.WordWrap = false;
-                TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
-                TextEditorWifiProfiles.WordWrap = false;
-                TextEditorVpnProfiles.WordWrap = false;
-            }
-        }
-
-        private void MenuItemDecodeBase64_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var text = string.Empty;
-                var prettyJson = string.Empty;
-                var resultText = string.Empty;
-                bool isJson = false;
-
-                if (TextEditorStream.IsVisible)
-                {
-                    text = TextEditorStream.SelectedText;                  
-                }
-                else if (TextEditorMessages.IsVisible)
-                {
-                    text = TextEditorMessages.SelectedText;
-                }
-                else if (TextEditorSyncMlRequests.IsVisible)
-                {
-                    text = TextEditorSyncMlRequests.SelectedText;
-                }
-
-                // try to be nice and remove some unwanted characters for higher success rate
-                text = text.Replace(".", "");
-                text = text.Replace("\n", "");
-                text = text.Replace("\r", "");
-                text = text.Replace("\t", "");
-
-                // base64 test should be divisible by 4 or append =
-                while (text.Length % 4 != 0)
-                {
-                    text += '=';
-                }
-
-                try
-                {
-                    text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
-                }
-                catch (Exception)
-                {
-                    // prevent Exceptions for non-Base64 data
-                }
-
-                try
-                {
-                    prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
-                    isJson = true;
-
-                }
-                catch (Exception)
-                {
-                    // prevent Exceptions for non-JSON data
-                }
-                if (string.IsNullOrEmpty(prettyJson))
-                {
-                    //Clipboard.SetText(text);
-                    resultText = text;
-                }
-                else
-                {
-                    //Clipboard.SetText(prettyJson);
-                    resultText = prettyJson;
-                }
-
-                DataEditor dataEditor = new DataEditor
-                {
-                    DataFromMainWindow = resultText,
-                    JsonSyntax = isJson,
-                    HideButonClear = true,
-                    Title = "Data Editor - Base64 Decode",
-                    TextEditorData = { ShowLineNumbers = false }
-                };
-
-                dataEditor.Show();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        private void LabelDeviceName_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            Clipboard.SetText(LabelDeviceName.Content.ToString(), TextDataFormat.Text);
-        }
-
-        private void LabelBackToTop_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            TextEditorMessages.ScrollToHome();
-        }
-
-        private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\IntuneManagementExtension\Logs"));
-        }
-
-        private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), @"MDMDiagnostics"));
-        }
-
-        private void MenuItemOpenSystemProfileMDM_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenFolder(Path.Combine(Environment.SystemDirectory, @"Config\SystemProfile\AppData\Local\mdm"));
-        }
-
-        private void MenuItemOpenDeclaredConfigurationHostOSFolder_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\DC\HostOS"));
-        }
-
-        private void ParseCommandlineArgs(string[] args)
-        {
-            if (args.Any())
-            {
-                foreach (var arg in args)
-                {
-                    if (arg.StartsWith("-") || arg.StartsWith("/"))
-                    {
-                        switch (arg.TrimStart(new[] { '-', '/' })[0].ToString().ToLower())
-                        {
-                            case "s":
-                                _syncMDMSwitch = true;
-                                break;
-                            case "m":
-                                _syncMMPCSwitch = true;
-                                break;
-                            case "b":
-                                _backgroundLoggingSwitch = true;
-                                break;
-                            case "h":
-                                _hideWhenMinimizedSwitch = true;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            ParseCommandlineArgs(Environment.GetCommandLineArgs());
-
-            if (_backgroundLoggingSwitch)
-            {
-                menuItemBackgroundLogging.IsChecked = true;
-            }
-
-            if (_hideWhenMinimizedSwitch)
-            {
-                // prevent ballon tip on startup for commandline start
-                _notifyIconBallonShownOnce = true;
-
-                menuItemHideWhenMinimized.IsChecked = true;
-                WindowState = WindowState.Minimized;
-                Hide();
-            }
-
-            // only one MDM sync can be triggert at a time, so we check for the commandline args and trigger the sync
-            // if both are set, the MDM sync is triggered
-            if (_syncMDMSwitch)
-            {
-                ButtonMDMSync_Click(null, null);
-            }
-            else if (_syncMMPCSwitch)
-            {
-                ButtonMMPCSync_Click(null, null);
-            }
         }
 
         private async void ButtonRunRequest_Click(object sender, RoutedEventArgs e)
@@ -1798,7 +1236,7 @@ namespace SyncMLViewer
             {
                 TextEditorSyncMlRequests.Text = $"Failed to read {syncMlOutputFilePath} from disk, ex = {ex}";
             }
-            
+
             TextEditorSyncMlRequests.Text += $"\n\n-------------------- Response {_CmdIdCounter} -------------------\n\n";
             TextEditorSyncMlRequests.Text += resultOutput;
             TextEditorSyncMlRequests.Text += "\n" + resultError + "\n";
@@ -1908,6 +1346,70 @@ namespace SyncMLViewer
             }
         }
 
+        private void ListBoxMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(ListBoxMessages.SelectedItem is SyncMlMessage selectedItem))
+            {
+                return;
+            }
+
+            TextEditorMessages.Text = selectedItem.Xml;
+
+            LabelMessageStats.Content = $"Message length: {selectedItem.Xml.Length}";
+
+            bool wellFormatedXml = true;
+            try
+            {
+                XElement.Parse(selectedItem.Xml);
+            }
+            catch (Exception)
+            {
+                wellFormatedXml = false;
+            }
+            
+            // seen cases where messages char count was 50k but the xml was not well formatted
+            // therefore lower the threshold to 450k and try to format it
+            if (selectedItem.Xml.Length > 45 * 1000 && !wellFormatedXml)
+            {
+                LabelTruncatedDataIndicator.Visibility = Visibility.Visible;
+
+                Debug.WriteLine("Truncated XML detected, trying to format it...");
+                // parse the truncated xml again with more robust parsing logic
+                TextEditorMessages.Text = Helper.TryFormatTruncatedXml(selectedItem.Xml);
+            }
+            else
+            {
+                LabelTruncatedDataIndicator.Visibility = Visibility.Hidden;
+            }
+
+            try
+            {
+                _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            CheckBoxHtmlDecode.IsChecked = false;
+        }
+
+        private void ListBoxSessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(ListBoxSessions.SelectedItem is SyncMlSession selectedItem))
+            {
+                return;
+            }
+
+            ListBoxMessages.ItemsSource = selectedItem.Messages;
+            ListBoxMessages.Items.Refresh();
+
+            if (ListBoxMessages.Items.Count > 0)
+            {
+                ListBoxMessages.SelectedIndex = 0;
+            }
+        }
+
         private void CheckBoxUseSyncML_Click(object sender, RoutedEventArgs e)
         {
             if (CheckBoxUseSyncML.IsChecked == true)
@@ -1988,8 +1490,8 @@ namespace SyncMLViewer
 
             if (!found)
             {
-            //    resultStack.Children.Add(new TextBlock() { Text = "No results found." });
-            //    //resultStack.Children.Clear();
+                //    resultStack.Children.Add(new TextBlock() { Text = "No results found." });
+                //    //resultStack.Children.Clear();
                 border.Visibility = System.Windows.Visibility.Collapsed;
             }
         }
@@ -2027,78 +1529,91 @@ namespace SyncMLViewer
             resultStack.Children.Add(block);
         }
 
-        private void MenuItemClearHistoryItems_Click(object sender, RoutedEventArgs e)
+        private void NotifyIcon_Click(object sender, EventArgs e)
         {
-            resultStack.Children.Clear();
-            _autoCompleteModel.ClearData();
+            Show();
+            WindowState = _storedWindowState;
         }
 
-        private void HideAutoCompleteStackPanel(object sender, RoutedEventArgs e)
+        private void CheckTrayIcon()
         {
-            var border = (resultStack.Parent as ScrollViewer).Parent as Border;
-            border.Visibility = Visibility.Collapsed;
+            ShowTrayIcon(!IsVisible);
         }
 
-        private void LabelToBottom_MouseUp(object sender, MouseButtonEventArgs e)
+        private void ShowTrayIcon(bool show)
         {
-            TextEditorSyncMlRequests.ScrollToEnd();
-        }
-
-        private void MenuItemOpenHelp_Click(object sender, RoutedEventArgs e)
-        {
-            Helper.OpenUrl("http://aka.ms/CSPList");
-        }
-
-        private void LabelEditor_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            DataEditor dataEditor = new DataEditor
+            if (_notifyIcon != null)
             {
-                DataFromMainWindow = TextBoxData.Text
-            };
-
-            dataEditor.Show();
-
-            TextBoxData.Text = dataEditor.DataFromSecondWindow;
-        }
-
-        private void MenuItemSetEmbeddedMode_Click(object sender, RoutedEventArgs e)
-        {
-            RunExecuter("-SetEmbeddedMode true");
-        }
-
-        private void MenuItemClearEmbeddedMode_Click(object sender, RoutedEventArgs e)
-        {
-            RunExecuter("-SetEmbeddedMode false");
-        }
-
-        private void MenuItemDecodeHTML_Click(object sender, RoutedEventArgs e)
-        {
-            var text = string.Empty;
-
-            if (TextEditorStream.IsVisible)
-            {
-                text = TextEditorStream.SelectedText;
+                _notifyIcon.Visible = show;
             }
-            else if (TextEditorMessages.IsVisible)
-            {
-                text = TextEditorMessages.SelectedText;
-            }
-            else if (TextEditorSyncMlRequests.IsVisible)
-            { 
-                text = TextEditorSyncMlRequests.SelectedText;
-            }
-            
-            var decodedText = HttpUtility.HtmlDecode(text);
+        }
 
-            DataEditor dataEditor = new DataEditor
+        private void ListBoxMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxMessages.SelectedItem != null)
             {
-                DataFromMainWindow = decodedText,
-                HideButonClear = true,
-                Title = "Data Editor - HTML Decode",
-                TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
-            };
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment,
+                    HideButonClear = false,
+                    Title = "Data Editor - Add comment",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
 
-            dataEditor.Show();
+                dataEditor.ShowDialog();
+
+                ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
+
+                ListBoxMessages.Items.Refresh();
+            }
+        }
+
+        private void ListBoxSessions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxSessions.SelectedItem != null)
+            {
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = ((SyncMlSession)ListBoxSessions.SelectedItem).Comment,
+                    HideButonClear = false,
+                    Title = "Data Editor - Add comment",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.ShowDialog();
+
+                ((SyncMlSession)ListBoxSessions.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
+
+                ListBoxSessions.Items.Refresh();
+            }
+        }
+
+        private void ListBoxSessions_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ListBoxSessions_MouseDoubleClick(sender, null);
+            }
+        }
+
+        private void ListBoxMessages_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ListBoxMessages_MouseDoubleClick(sender, null);
+            }
+        }
+
+        private void TextEditorMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ListBoxMessages.SelectedItem != null)
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) &&
+                    Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
+                {
+                    Helper.OpenInNotepad(((SyncMlMessage)ListBoxMessages.SelectedItem).Xml);
+                }
+            }
         }
 
         private void LabelFormat_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2156,7 +1671,7 @@ namespace SyncMLViewer
             }
             catch (Exception)
             {
-                 // ignored
+                // ignored
             }
         }
 
@@ -2297,6 +1812,594 @@ namespace SyncMLViewer
         private void LabelBackToTopVpn_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             TextEditorVpnProfiles.ScrollToHome();
+        }
+
+        private void HideAutoCompleteStackPanel(object sender, RoutedEventArgs e)
+        {
+            var border = (resultStack.Parent as ScrollViewer).Parent as Border;
+            border.Visibility = Visibility.Collapsed;
+        }
+
+        private void LabelToBottom_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorSyncMlRequests.ScrollToEnd();
+        }
+
+        private void LabelEditor_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = TextBoxData.Text
+            };
+
+            dataEditor.Show();
+
+            TextBoxData.Text = dataEditor.DataFromSecondWindow;
+        }
+
+        private void LabelDeviceName_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Clipboard.SetText(LabelDeviceName.Content.ToString(), TextDataFormat.Text);
+        }
+
+        private void LabelBackToTop_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            TextEditorMessages.ScrollToHome();
+        }
+
+        private string TryFormatXml(string text)
+        {
+            try
+            {
+                // HtmlDecode did too much here... WebUtility.HtmlDecode(XElement.Parse(text).ToString());
+                return XElement.Parse(text).ToString();
+            }
+            catch (Exception)
+            {
+                return text;
+            }
+        }
+
+        private void MenuItemResetSyncTriggerStatus_Click(object sender, RoutedEventArgs e)
+        {
+            SyncMlProgress.NotInProgress = true;
+            LabelStatus.Content = "";
+            LabelStatus.Visibility = Visibility.Hidden;
+        }
+
+        private void MenuItemExit_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (!_updateStarted)
+            {
+                try
+                {
+                    if (_updateTempFileName != null)
+                    {
+                        if (!File.Exists(_updateTempFileName))
+                            File.Delete(_updateTempFileName);
+                    }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            Application.Current.Shutdown(0);
+        }
+
+        private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemAbout;
+        }
+
+        private void MenuItemCodes_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemCodes;
+        }
+
+        private void MenuItemDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            TabControlSyncMlViewer.SelectedItem = TabItemDiagnostics;
+        }
+
+        private async void MenuItemCheckUpdate_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                using (var webClient = new System.Net.WebClient())
+                {
+                    var systemWebProxy = System.Net.WebRequest.GetSystemWebProxy();
+                    systemWebProxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                    webClient.Proxy = systemWebProxy;
+                    webClient.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+
+                    var updateUrl = UpdateXmlUri;
+                    if (Settings.Default.Properties["DeveloperPreview"] != null)
+                    {
+                        if (Settings.Default.DeveloperPreview)
+                            updateUrl = Update2XmlUri;
+                    }
+
+                    var data = await webClient.DownloadDataTaskAsync(new Uri(updateUrl));
+                    var xDocument = XDocument.Load(new MemoryStream(data));
+
+                    var url = xDocument.XPathSelectElement("./LatestVersion/DownloadURL")?.Value;
+                    var version = xDocument.XPathSelectElement("./LatestVersion/VersionNumber")?.Value;
+
+                    if (url == null || !url.StartsWith("https")) return;
+                    if (version == null) return;
+                    if (string.CompareOrdinal(version, 0, _version, 0, version.Length) <= 0) return;
+
+                    if (_updateCheckInitial)
+                    {
+                        LabelUpdateIndicator.Content = LabelUpdateIndicator.Content.ToString().Replace("[0.0.0]", version);
+                        LabelUpdateIndicator.Visibility = Visibility.Visible;
+                        _updateCheckInitial = false;
+                        return;
+                    }
+
+                    LabelUpdateIndicator.Visibility = Visibility.Hidden;
+                    ButtonRestartUpdate.Content = ButtonRestartUpdate.Content.ToString().Replace("[0.0.0]", version);
+
+                    _updateTempFileName = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.zip");
+                    if (_updateTempFileName == null) return;
+
+                    await webClient.DownloadFileTaskAsync(new Uri(url), _updateTempFileName);
+
+                    if (!File.Exists(_updateTempFileName)) return;
+
+                    // simple sanity check, bigger than 10KB? we assume it is not a dummy or broken binary (e.g. 0 KB file)
+                    if (new FileInfo(_updateTempFileName).Length > 1024 * 10)
+                        ButtonRestartUpdate.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void MenuItemRegistryEnrollments_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments");
+        }
+
+        private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
+        }
+
+        private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
+        }
+
+        private void MenuItemRegistryRebootRequiredUris_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
+        }
+
+        private void MenuItemRegistryDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
+        }
+
+        private void MenuItemRegistryEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
+        }
+
+        private void MenuItemRegistryIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
+        }
+
+        private async void MenuItemMdmDiagnostics_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            await Helper.RunMdmDiagnosticsTool("");
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsAutopilot_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            await Helper.RunMdmDiagnosticsTool("Autopilot");
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsDeviceEnrollment_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            await Helper.RunMdmDiagnosticsTool("DeviceEnrollment");
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsDeviceProvisioning_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            await Helper.RunMdmDiagnosticsTool("DeviceProvisioning");
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private async void MenuItemMdmDiagnosticsTpm_OnClick(object sender, RoutedEventArgs e)
+        {
+            LabelStatusTop.Visibility = Visibility.Visible;
+
+            await Helper.RunMdmDiagnosticsTool("TPM");
+
+            LabelStatusTop.Visibility = Visibility.Hidden;
+        }
+
+        private void MenuItemBackgroundLogging_Click(object sender, RoutedEventArgs e)
+        {
+            var listenerName = "listenerSyncMLStream";
+
+            // I simply use the Trace class to handle my background logging. I'm not using trace for anything else.
+            if (menuItemBackgroundLogging.IsChecked)
+            {
+                Trace.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-BackgroundLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.xml", listenerName));
+                Trace.AutoFlush = true;
+
+                SyncMlSessions.Clear();
+                ListBoxMessages.ItemsSource = null;
+
+                TextEditorStream.Clear();
+                TextEditorMessages.Clear();
+
+                TextEditorStream.IsEnabled = false;
+                TextEditorStream.AppendText($"{Environment.NewLine}\t'Background Logging Mode' enabled.");
+            }
+            else
+            {
+                Trace.Close();
+                Trace.Listeners.Remove(listenerName);
+
+                TextEditorStream.Clear();
+                TextEditorStream.IsEnabled = true;
+            }
+        }
+
+        private void MenuItemOpen_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                Filter = "Xml files|*.xml|All files|*.*",
+                FilterIndex = 0,
+                RestoreDirectory = true,
+                Title = "Open SyncML stream",
+            };
+
+            if (openFileDialog.ShowDialog() ==  true)
+            {
+                // add opened file name to the window title
+                Title += $" - {Path.GetFileName(openFileDialog.FileName)}";
+
+                TextEditorStream.Clear();
+                TextEditorMessages.Clear();
+
+                SyncMlSessions.Clear();
+
+                var fileStream = openFileDialog.OpenFile();
+                using (StreamReader reader = new StreamReader(fileStream))
+                {
+                    TextEditorStream.Text = reader.ReadToEnd();
+                }
+
+                if (TextEditorStream.Text.Length > 0)
+                {
+                    var syncMlMessages = Regex.Matches(TextEditorStream.Text, @"<SyncML[\s\S]*?</SyncML>", RegexOptions.IgnoreCase);
+
+                    foreach (Match message in syncMlMessages)
+                    {
+                        var valueSyncMl = TryFormatXml(message.Value);
+
+                        TextEditorMessages.Text = valueSyncMl;
+                        try
+                        {
+                            _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
+                        }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
+
+                        var valueSessionId = "0";
+                        var matchSessionId = new Regex("<SessionID>([0-9a-zA-Z]+)</SessionID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
+                        if (matchSessionId.Success)
+                        {
+                            valueSessionId = matchSessionId.Groups[1].Value;
+                        }
+
+                        if (!SyncMlSessions.Any(item => item.SessionId == valueSessionId))
+                        {
+                            var syncMlSession = new SyncMlSession(valueSessionId);
+                            SyncMlSessions.Add(syncMlSession);
+                        }
+
+                        var valueMsgId = "0";
+                        var matchMsgId = new Regex("<MsgID>([0-9]+)</MsgID>", RegexOptions.IgnoreCase).Match(valueSyncMl);
+                        if (matchMsgId.Success)
+                        {
+                            valueMsgId = matchMsgId.Groups[1].Value;
+                        }
+
+                        var syncMlMessage = new SyncMlMessage(valueSessionId, valueMsgId, valueSyncMl);
+                        SyncMlSessions.FirstOrDefault(item => item.SessionId == valueSessionId)?.Messages.Add(syncMlMessage);
+                    }
+                }
+            }
+        }
+
+        private void MenuItemAlwaysOnTop_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuItemAlwaysOnTop.IsChecked)
+            {
+                Topmost = true;
+            }
+            else
+            {
+                Topmost = false;
+            }
+        }
+
+        private void MenuItemCaptureTraffic_Click(object sender, RoutedEventArgs e)
+        {
+            if (!menuItemCaptureTraffic.IsChecked)
+            {
+                try
+                {
+                    if (TraceEventSession.IsElevated() != true)
+                    {
+                        throw new InvalidOperationException("Collecting ETW trace events requires administrative privileges.");
+                    }
+
+                    if (TraceEventSession.GetActiveSessionNames().Contains(SessionName))
+                    {
+                        Debug.WriteLine($"The ETW session '{SessionName}' is running, stopping existing session now.");
+                        var traceEventSession = TraceEventSession.GetActiveSession(SessionName);
+                        if (traceEventSession.EventsLost > 0)
+                        {
+                            Debug.WriteLine($"The ETW session '{SessionName}' lost in total {traceEventSession.EventsLost} events.");
+                        }
+                        traceEventSession.Stop(true);
+
+                        TraceEventSessionState.Started = false;
+                    }
+
+                    _backgroundWorker.CancelAsync();
+
+                    ImageCaptureTraffic.Visibility = Visibility.Hidden;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Exception: {ex}");
+                }
+            }
+            else
+            {
+                if (!_backgroundWorker.IsBusy)
+                {
+                    _backgroundWorker.RunWorkerAsync();
+                    Debug.WriteLine($"The ETW session '{SessionName}' is now running.");
+
+                    ImageCaptureTraffic.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    Debug.WriteLine("The ETW session is still running.");
+                }
+            }
+        }
+
+        private void MenuItemShowAllChars_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuItemShowAllChars.IsChecked)
+            {
+                TextEditorMessages.Options.ShowSpaces = true;
+                TextEditorMessages.Options.ShowBoxForControlCharacters = true;
+                TextEditorStream.Options.ShowSpaces = true;
+                TextEditorStream.Options.ShowBoxForControlCharacters = true;
+                TextEditorSyncMlRequests.Options.ShowSpaces = true;
+                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = true;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = true;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = true;
+            }
+            else
+            {
+                TextEditorMessages.Options.ShowSpaces = false;
+                TextEditorMessages.Options.ShowBoxForControlCharacters = false;
+                TextEditorStream.Options.ShowSpaces = false;
+                TextEditorStream.Options.ShowBoxForControlCharacters = false;
+                TextEditorSyncMlRequests.Options.ShowSpaces = false;
+                TextEditorSyncMlRequests.Options.ShowBoxForControlCharacters = false;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowSpaces = false;
+                TextEditorSyncMlRequestsRequestViewer.Options.ShowBoxForControlCharacters = false;
+            }
+        }
+
+        private void MenuItemWordWrap_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuItemWordWrap.IsChecked)
+            {
+                TextEditorMessages.WordWrap = true;
+                TextEditorStream.WordWrap = true;
+                TextEditorSyncMlRequests.WordWrap = true;
+                TextEditorSyncMlRequestsRequestViewer.WordWrap = true;
+                TextEditorWifiProfiles.WordWrap = true;
+                TextEditorVpnProfiles.WordWrap = true;
+            }
+            else
+            {
+                TextEditorMessages.WordWrap = false;
+                TextEditorStream.WordWrap = false;
+                TextEditorSyncMlRequests.WordWrap = false;
+                TextEditorSyncMlRequestsRequestViewer.WordWrap = false;
+                TextEditorWifiProfiles.WordWrap = false;
+                TextEditorVpnProfiles.WordWrap = false;
+            }
+        }
+
+        private void MenuItemDecodeBase64_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var text = string.Empty;
+                var prettyJson = string.Empty;
+                var resultText = string.Empty;
+                bool isJson = false;
+
+                if (TextEditorStream.IsVisible)
+                {
+                    text = TextEditorStream.SelectedText;                  
+                }
+                else if (TextEditorMessages.IsVisible)
+                {
+                    text = TextEditorMessages.SelectedText;
+                }
+                else if (TextEditorSyncMlRequests.IsVisible)
+                {
+                    text = TextEditorSyncMlRequests.SelectedText;
+                }
+
+                // try to be nice and remove some unwanted characters for higher success rate
+                text = text.Replace(".", "");
+                text = text.Replace("\n", "");
+                text = text.Replace("\r", "");
+                text = text.Replace("\t", "");
+
+                // base64 test should be divisible by 4 or append =
+                while (text.Length % 4 != 0)
+                {
+                    text += '=';
+                }
+
+                try
+                {
+                    text = Encoding.UTF8.GetString(Convert.FromBase64String(text));
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-Base64 data
+                }
+
+                try
+                {
+                    prettyJson = JToken.Parse(text).ToString(Newtonsoft.Json.Formatting.Indented);
+                    isJson = true;
+
+                }
+                catch (Exception)
+                {
+                    // prevent Exceptions for non-JSON data
+                }
+                if (string.IsNullOrEmpty(prettyJson))
+                {
+                    //Clipboard.SetText(text);
+                    resultText = text;
+                }
+                else
+                {
+                    //Clipboard.SetText(prettyJson);
+                    resultText = prettyJson;
+                }
+
+                DataEditor dataEditor = new DataEditor
+                {
+                    DataFromMainWindow = resultText,
+                    JsonSyntax = isJson,
+                    HideButonClear = true,
+                    Title = "Data Editor - Base64 Decode",
+                    TextEditorData = { ShowLineNumbers = false }
+                };
+
+                dataEditor.Show();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
+        private void MenuItemOpenImeLogs_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\IntuneManagementExtension\Logs"));
+        }
+
+        private void MenuItemOpenMDMDiagnosticsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), @"MDMDiagnostics"));
+        }
+
+        private void MenuItemOpenSystemProfileMDM_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.SystemDirectory, @"Config\SystemProfile\AppData\Local\mdm"));
+        }
+
+        private void MenuItemOpenDeclaredConfigurationHostOSFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\DC\HostOS"));
+        }
+
+        private void MenuItemClearHistoryItems_Click(object sender, RoutedEventArgs e)
+        {
+            resultStack.Children.Clear();
+            _autoCompleteModel.ClearData();
+        }
+
+        private void MenuItemOpenHelp_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenUrl("http://aka.ms/CSPList");
+        }
+
+        private void MenuItemSetEmbeddedMode_Click(object sender, RoutedEventArgs e)
+        {
+            RunExecuter("-SetEmbeddedMode true");
+        }
+
+        private void MenuItemClearEmbeddedMode_Click(object sender, RoutedEventArgs e)
+        {
+            RunExecuter("-SetEmbeddedMode false");
+        }
+
+        private void MenuItemDecodeHTML_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText;
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText;
+            }
+            else if (TextEditorSyncMlRequests.IsVisible)
+            { 
+                text = TextEditorSyncMlRequests.SelectedText;
+            }
+            
+            var decodedText = HttpUtility.HtmlDecode(text);
+
+            DataEditor dataEditor = new DataEditor
+            {
+                DataFromMainWindow = decodedText,
+                HideButonClear = true,
+                Title = "Data Editor - HTML Decode",
+                TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
+            };
+
+            dataEditor.Show();
         }
 
         private async void MenuItemRunMdmAdvancedDiagnosticReport_Click(object sender, RoutedEventArgs e)
@@ -2484,74 +2587,6 @@ namespace SyncMLViewer
             }
         }
 
-        private void ListBoxMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (ListBoxMessages.SelectedItem != null)
-            {
-                DataEditor dataEditor = new DataEditor
-                {
-                    DataFromMainWindow = ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment,
-                    HideButonClear = false,
-                    Title = "Data Editor - Add comment",
-                    TextEditorData = { ShowLineNumbers = false }
-                };
-
-                dataEditor.ShowDialog();
-
-                ((SyncMlMessage)ListBoxMessages.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
-
-                ListBoxMessages.Items.Refresh();
-            }
-        }
-
-        private void ListBoxSessions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (ListBoxSessions.SelectedItem != null)
-            {
-                DataEditor dataEditor = new DataEditor
-                {
-                    DataFromMainWindow = ((SyncMlSession)ListBoxSessions.SelectedItem).Comment,
-                    HideButonClear = false,
-                    Title = "Data Editor - Add comment",
-                    TextEditorData = { ShowLineNumbers = false }
-                };
-
-                dataEditor.ShowDialog();
-
-                ((SyncMlSession)ListBoxSessions.SelectedItem).Comment = dataEditor.DataFromSecondWindow;
-
-                ListBoxSessions.Items.Refresh();
-            }
-        }
-
-        private void ListBoxSessions_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                ListBoxSessions_MouseDoubleClick(sender, null);
-            }
-        }
-
-        private void ListBoxMessages_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                ListBoxMessages_MouseDoubleClick(sender, null);
-            }
-        }
-
-        private void TextEditorMessages_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (ListBoxMessages.SelectedItem != null)
-            {
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) &&
-                    Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
-                {
-                    Helper.OpenInNotepad(((SyncMlMessage)ListBoxMessages.SelectedItem).Xml);
-                }
-            }
-        }
-
         private void MenuItemViewMessageInNotepad_Click(object sender, RoutedEventArgs e)
         {
             if (ListBoxMessages.SelectedItem != null)
@@ -2710,35 +2745,6 @@ namespace SyncMLViewer
             else if (TextEditorMessages.IsVisible)
             {
                 _searchPanelMessages.Open();
-            }
-        }
-
-        private void UpdateLeftColumnMaxWidthGridRequests()
-        {
-            double totalWidth = GridRequests.ActualWidth;
-            if (totalWidth == 0)
-            {
-                LeftColumn.MaxWidth = 740;
-                return;
-            }
-            // calculate max width for left column
-            double rightColumnWidth = _rightColumnRequestsMaxWidth;
-            double splitterWidth = GridRequests.ColumnDefinitions[1].ActualWidth;
-
-            // max width for left column
-            double maxLeftWidth = totalWidth - rightColumnWidth - splitterWidth;
-
-            // MaxWidth for left column
-            LeftColumn.MaxWidth = maxLeftWidth > 0 ? maxLeftWidth : 0;
-        }
-
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateLeftColumnMaxWidthGridRequests();
-
-            if (TextBoxUri.IsVisible)
-            {
-                BorderAutoComplete.Width = TextBoxUri.ActualWidth;
             }
         }
     }
