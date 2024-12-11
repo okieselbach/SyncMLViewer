@@ -25,6 +25,9 @@ namespace SyncMLViewer
             _data.Add("./DevDetail/Ext/Microsoft/TotalRAM");
             _data.Add("./DevDetail/Ext/Microsoft/TotalStorage");
             _data.Add("./Device/Vendor/MSFT/LAPS/Policies");
+            _data.Add("./Device/Vendor/MSFT/BitLocker/Status/DeviceEncryptionStatus");
+            _data.Add("./Device/Vendor/MSFT/DMClient/Provider/MS%20DM%20Server/AADDeviceID");
+            _data.Add("./Device/Vendor/MSFT/DeviceManageability/Capabilities/CSPVersions");
         }
 
         public List<string> GetData()
