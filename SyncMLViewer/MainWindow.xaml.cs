@@ -2319,7 +2319,7 @@ namespace SyncMLViewer
                     DataFromMainWindow = resultText,
                     JsonSyntax = isJson,
                     HideButonClear = true,
-                    Title = "Data Editor - Base64 Decode",
+                    Title = "Data Editor - Base64 Viewer",
                     TextEditorData = { ShowLineNumbers = false }
                 };
 
@@ -2395,7 +2395,7 @@ namespace SyncMLViewer
             {
                 DataFromMainWindow = decodedText,
                 HideButonClear = true,
-                Title = "Data Editor - HTML Decode",
+                Title = "Data Editor - HTML Viewer",
                 TextEditorData = { ShowLineNumbers = false, SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML") }
             };
 
@@ -2545,7 +2545,7 @@ namespace SyncMLViewer
             {
                 DataFromMainWindow = text,
                 HideButonClear = true,
-                Title = "Data Editor - Certificate Decode",
+                Title = "Data Editor - Certificate Viewer",
                 TextEditorData = { ShowLineNumbers = false }
             };
 
@@ -2661,7 +2661,7 @@ namespace SyncMLViewer
                 Height =800,
                 DataFromMainWindow = text,
                 HideButonClear = true,
-                Title = "Data Editor - Autopilot Decode",
+                Title = "Data Editor - Autopilot Hardware Hash Viewer",
                 TextEditorData = 
                 { 
                     ShowLineNumbers = false, 
