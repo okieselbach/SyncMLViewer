@@ -3,9 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" xmlns:syncmlviewer="clr-namespace:SyncMLViewer" d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow}" x:Class="SyncMLViewer.MainWindow"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" 
+        xmlns:syncmlviewer="clr-namespace:SyncMLViewer" 
         mc:Ignorable="d"
-        Title="SyncML Viewer - oliverkieselbach.com" Height="700" Width="1000" Closed="Window_Closed" MinWidth="1000" MinHeight="700" Icon="Icons\sync-arrows.ico" Closing="Window_Closing" StateChanged="Window_StateChanged" IsVisibleChanged="Window_IsVisibleChanged" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged">
+        d:DataContext="{d:DesignInstance Type=syncmlviewer:MainWindow, IsDesignTimeCreatable=True}" 
+        x:Class="SyncMLViewer.MainWindow"
+        Title="SyncML Viewer - oliverkieselbach.com" 
+        Height="700" 
+        Width="1000" 
+        MinWidth="1000" 
+        MinHeight="700" 
+        Icon="Icons\sync-arrows.ico" 
+        Closed="Window_Closed" 
+        Closing="Window_Closing" 
+        StateChanged="Window_StateChanged" 
+        IsVisibleChanged="Window_IsVisibleChanged" 
+        Loaded="Window_Loaded" 
+        SizeChanged="Window_SizeChanged">
+    
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}" />
@@ -46,10 +61,133 @@
         <KeyBinding Key="F12" Command="{Binding CaptureCommand}" />
         <KeyBinding Key="F1" Command="{Binding SearchWithGoogleCommand}" />
     </Window.InputBindings>
+    
     <Grid>
-        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,11" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)" />
-        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,11" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)"/>
+
+        <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
+            
+            <MenuItem Header="_File">
+                <MenuItem x:Name="menuItemCaptureTraffic" Header="Capture traffic" InputGestureText="F12" IsCheckable="True" IsChecked="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemCaptureTraffic_Click"/>
+                <Separator />
+                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/open.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Save As..." InputGestureText="Ctrl+S" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/save.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
+            </MenuItem>
+            
+            <MenuItem Header="_Options">
+                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" InputGestureText="Ctrl+Alt+T" IsCheckable="True" IsChecked="false" Click="MenuItemAlwaysOnTop_Click"/>
+                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" InputGestureText="Ctrl+Alt+S" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" InputGestureText="Ctrl+Alt+H" IsCheckable="True" IsChecked="false" />
+                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" InputGestureText="Ctrl+Alt+C" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
+                <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" InputGestureText="Ctrl+W" IsCheckable="True" IsChecked="false" Click="MenuItemWordWrap_Click" />
+                <Separator />
+                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" InputGestureText="Ctrl+Alt+B" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Click="MenuItemBackgroundLogging_Click"/>
+                <Separator />
+                <MenuItem Header="Advanced" StaysOpenOnClick="True">
+                    <MenuItem x:Name="menuItemCleanupAfterExit" Header="Cleanup working folder after exit" IsCheckable="True" IsChecked="true" />
+                    <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
+                    <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
+                    <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
+                    <MenuItem x:Name="menuItemExecutionTime" Header="_Enable Request Execution Time" IsCheckable="True" IsChecked="False" />
+                    <MenuItem x:Name="menuItemTurnOnDebugLogging" Header="Turn on debug logging" IsCheckable="True" IsChecked="false" Click="MenuItemTurnOnDebugLogging_Click" />
+                    <Separator />
+                    <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
+                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
+                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollmentUntilExit" Header="-> but Unregister local MDM after exit" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
+                </MenuItem>
+            </MenuItem>
+            
+            <MenuItem Header="_Actions">
+                <MenuItem Header="MDM _Sync" InputGestureText="Ctrl+M" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
+                <MenuItem Header="MMP-C Sy_nc" InputGestureText="Ctrl+K" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
+                <MenuItem Header="_Run Request" InputGestureText="Ctrl+R" Click="ButtonRunRequest_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/play.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click" />
+                <Separator />
+                <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
+                <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
+                <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                <MenuItem Header="Decode _Autopilot Hardware Hash" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
+                <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click" />
+                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click" ToolTip="Lookup for MDM Status Code and Windows Error Code"/>
+                <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click" ToolTip="Open Registry NodeCache Entry with Number XYZ"/>
+                <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
+                <Separator />
+                <MenuItem Header="View Message in Notepad" Click="MenuItemViewMessageInNotepad_Click" InputGestureText="Ctrl+Shift+O"/>
+                <Separator />
+                <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
+                <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
+                <Separator />
+                <MenuItem Header="Open MDM EventLog" InputGestureText="Ctrl+Alt+L" Click="MenuItemOpenMdmEventLog_Click" />
+                <Separator />
+                <MenuItem Header="Run MDM Advanced Diagnostic Report" InputGestureText="Ctrl+Alt+M" Click="MenuItemRunMdmAdvancedDiagnosticReport_Click" />
+                <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
+                    <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
+                    <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Open Registry" StaysOpenOnClick="True">
+                    <MenuItem Header="-> Enrollments" InputGestureText="Ctrl+Alt+E" Click="MenuItemRegistryEnrollments_Click"/>
+                    <MenuItem Header="-> Provisioning" InputGestureText="Ctrl+Alt+O" Click="MenuItemRegistryProvisioning_Click"/>
+                    <MenuItem Header="-> PolicyManager" InputGestureText="Ctrl+Alt+P" Click="MenuItemRegistryPolicyManager_OnClick"/>
+                    <MenuItem Header="-> RebootRequiredURIs" InputGestureText="Ctrl+Alt+K" Click="MenuItemRegistryRebootRequiredUris_Click"/>
+                    <MenuItem Header="-> DeclaredConfiguration" InputGestureText="Ctrl+Alt+D" Click="MenuItemRegistryDeclaredConfiguration_Click"/>
+                    <MenuItem Header="-> IntuneManagementExtension" InputGestureText="Ctrl+Alt+I" Click="MenuItemRegistryIntuneManagementExtension_Click" x:Name="menuItemIntuneManagementExtension"/>
+                    <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemRegistryEnterpriseDesktopAppManagement_Click"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Open Folder" StaysOpenOnClick="True">
+                    <MenuItem Header="-> _IME logs folder" InputGestureText="Ctrl+Shift+I" Click="MenuItemOpenImeLogs_Click"/>
+                    <MenuItem Header="-> MDM Diagnostics _folder" InputGestureText="Ctrl+Shift+M" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
+                    <MenuItem Header="-> DC\HostOS folder" InputGestureText="Ctrl+Shift+D" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
+                    <MenuItem Header="-> SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from C:\Windows\System32\Config\SystemProfile\AppData\Local\mdm as MSI and log files are written there."/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Advanced" StaysOpenOnClick="True">
+                    <MenuItem Header="Reset Sync tri_gger status" InputGestureText="Ctrl+Alt+R" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
+                    <Separator />
+                    <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
+                    <MenuItem Header="Set EmbeddedMode Registry Flag" Click="MenuItemSetEmbeddedMode_Click"/>
+                    <MenuItem Header="Clear EmbeddedMode Registry Flag" Click="MenuItemClearEmbeddedMode_Click"/>
+                    <MenuItem Header="Cleanup Local MDM Enrollments Registry" Click="MenuItemCleanupEnrollments_Click"/>
+                </MenuItem>
+            </MenuItem>
+            
+            <MenuItem Header="_Help">
+                <MenuItem Header="_MDM Diagnostics" Click="MenuItemDiagnostics_Click"/>
+                <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
+                <Separator />
+                <MenuItem Header="CSP Online Documentation" InputGestureText="Ctrl+F1" Click="MenuItemOpenHelp_Click"/>
+                <Separator />
+                <MenuItem Header="_Check for SyncML Viewer Updates" InputGestureText="Ctrl+Alt+U" Click="MenuItemCheckUpdate_OnClick"/>
+                <MenuItem Header="Send Feedback" Click="MenuItemFeedback_Click"/>
+                <Separator />
+                <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
+            </MenuItem>
+            
+        </Menu>
+
+        <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,3,3,0" Visibility="Visible" HorizontalAlignment="Right" Width="142" Height="26" VerticalAlignment="Top" FontSize="10"/>
+        
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,50" SelectionChanged="TabControlSyncMlViewer_SelectionChanged">
+            
             <TabItem Header="SyncML Representation Protocol Stream">
                 <Grid Background="White" Margin="0,0,0,-0.4">
                     <avalonedit:TextEditor
@@ -64,6 +202,7 @@
                     <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file. (Ctrl+S)"/>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemMessages" Header="SyncML Sessions/Messages" >
                 <Grid Background="White">
                     <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _decode inline" Margin="224,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="132" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
@@ -83,6 +222,7 @@
                     <Label x:Name="LabelMessageStats" Content="Message length: 65536" HorizontalAlignment="Left" Margin="10,0,0,2" Height="26" VerticalAlignment="Bottom" ToolTip="Total Char count in Message"/>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemSyncMLRequests" Header="SyncML Requests">
                 <Grid Name="GridRequests" Background="White">
                     
@@ -165,6 +305,7 @@
                     <Label x:Name="LabelToBottom" Content="[End]" Margin="0,0,6,2" MouseUp="LabelToBottom_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="3"/>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemConnectivityProfiles" Header="Connectivity Profiles">
                 <Grid Background="White">
                     <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">
@@ -209,6 +350,7 @@
                     </TabControl>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemDiagnostics" Header="MDM Diagnostics">
                 <Grid Background="White">
                     <avalonedit:TextEditor
@@ -221,6 +363,7 @@
                         WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference" Visibility="Visible">
                 <Grid Background="White">
                     <avalonedit:TextEditor
@@ -233,6 +376,7 @@
                         WordWrap="True" Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
+            
             <TabItem x:Name="TabItemAbout" Header="About">
                 <Grid Background="White">
                     <avalonedit:TextEditor
@@ -246,127 +390,20 @@
                         Margin="10,10,0,-0.4"/>
                 </Grid>
             </TabItem>
+            
         </TabControl>
-        <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
-            <MenuItem Header="_File">
-                <MenuItem x:Name="menuItemCaptureTraffic" Header="Capture traffic" InputGestureText="F12" IsCheckable="True" IsChecked="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemCaptureTraffic_Click"/>
-                <Separator />
-                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="MenuItemOpen_Click">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/open.ico" />
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="_Save As..." InputGestureText="Ctrl+S" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonSaveAs_Click">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/save.ico" />
-                    </MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuItemExit_OnClick"/>
-            </MenuItem>
-            <MenuItem Header="_Options">
-                <MenuItem x:Name="menuItemAlwaysOnTop" Header="_Always on top" InputGestureText="Ctrl+Alt+T" IsCheckable="True" IsChecked="false" Click="MenuItemAlwaysOnTop_Click"/>
-                <MenuItem x:Name="menuItemAutoScroll" Header="Auto _scroll" InputGestureText="Ctrl+Alt+S" IsCheckable="True" IsChecked="false" />
-                <MenuItem x:Name="menuItemHideWhenMinimized" Header="_Hide when minimized" InputGestureText="Ctrl+Alt+H" IsCheckable="True" IsChecked="false" />
-                <MenuItem x:Name="menuItemShowAllChars" Header="Show all _characters" InputGestureText="Ctrl+Alt+C" IsCheckable="True" IsChecked="false" Click="MenuItemShowAllChars_Click" />
-                <MenuItem x:Name="menuItemWordWrap" Header="Word _wrapping" InputGestureText="Ctrl+W" IsCheckable="True" IsChecked="false" Click="MenuItemWordWrap_Click" />
-                <Separator />
-                <MenuItem x:Name="menuItemBackgroundLogging" Header="Enable _Background Logging Mode" InputGestureText="Ctrl+Alt+B" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsCheckable="True" IsChecked="False" ToolTip="Output transferred to file, no SyncML output will be displayed in the UI" Click="MenuItemBackgroundLogging_Click"/>
-                <Separator />
-                <MenuItem Header="Advanced" StaysOpenOnClick="True">
-                    <MenuItem x:Name="menuItemCleanupAfterExit" Header="Cleanup working folder after exit" IsCheckable="True" IsChecked="true" />
-                    <MenuItem x:Name="menuItemAlternateMDMTrigger" Header="Use alternate MDM trigger (direct API call)" IsCheckable="True" IsChecked="false" />
-                    <MenuItem x:Name="menuItemTraceEvents" Header="_Enable additional ETW trace events info" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="false" ToolTip="Shows additional ETW TraceEvents like OmaDmClientExeStart etc."/>
-                    <MenuItem x:Name="menuItemTimestamps" Header="_Enable Timestamps" IsCheckable="True" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" IsChecked="True" ToolTip="Enables additional xml comments with timestamps for each SyncML message"/>
-                    <MenuItem x:Name="menuItemExecutionTime" Header="_Enable Request Execution Time" IsCheckable="True" IsChecked="False" />
-                    <MenuItem x:Name="menuItemTurnOnDebugLogging" Header="Turn on debug logging" IsCheckable="True" IsChecked="false" Click="MenuItemTurnOnDebugLogging_Click" />
-                    <Separator />
-                    <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
-                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollment" Header="Keep local MDM enrollment (SyncML Requests)" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
-                    <MenuItem x:Name="menuItemKeepLocalMDMEnrollmentUntilExit" Header="-> but Unregister local MDM after exit" IsCheckable="True" IsChecked="false" StaysOpenOnClick="True"/>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="_Actions">
-                <MenuItem Header="MDM _Sync" InputGestureText="Ctrl+M" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMDMSync_Click"/>
-                <MenuItem Header="MMP-C Sy_nc" InputGestureText="Ctrl+K" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonMMPCSync_Click"/>
-                <MenuItem Header="_Run Request" InputGestureText="Ctrl+R" Click="ButtonRunRequest_Click">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/play.ico" />
-                    </MenuItem.Icon>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click" />
-                <Separator />
-                <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
-                <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
-                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
-                <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
-                <MenuItem Header="Decode _Autopilot Hardware Hash" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
-                <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click" />
-                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click" ToolTip="Lookup for MDM Status Code and Windows Error Code"/>
-                <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click" ToolTip="Open Registry NodeCache Entry with Number XYZ"/>
-                <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
-                <Separator />
-                <MenuItem Header="View Message in Notepad" Click="MenuItemViewMessageInNotepad_Click" InputGestureText="Ctrl+Shift+O"/>
-                <Separator />
-                <MenuItem Header="_Clear Stream" InputGestureText="Ctrl+P" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" Click="ButtonClear_Click"/>
-                <MenuItem Header="Clear Requests History/AutoCompletion Items" Click="MenuItemClearHistoryItems_Click"/>
-                <Separator />
-                <MenuItem Header="Open MDM EventLog" InputGestureText="Ctrl+Alt+L" Click="MenuItemOpenMdmEventLog_Click" />
-                <Separator />
-                <MenuItem Header="Run MDM Advanced Diagnostic Report" InputGestureText="Ctrl+Alt+M" Click="MenuItemRunMdmAdvancedDiagnosticReport_Click" />
-                <MenuItem Header="Run MdmDiagnosticsTool" StaysOpenOnClick="True">
-                    <MenuItem Header="-> _MdmDiagnosticsTool (incl. MDM report, events, ...)" Click="MenuItemMdmDiagnostics_OnClick"/>
-                    <MenuItem Header="-> MdmDiagnosticsTool -Area _Autopilot" Click="MenuItemMdmDiagnosticsAutopilot_OnClick"/>
-                    <MenuItem Header="-> MdmDiagnosticsTool -Area Device_Enrollment" Click="MenuItemMdmDiagnosticsDeviceEnrollment_OnClick"/>
-                    <MenuItem Header="-> MdmDiagnosticsTool -Area _DeviceProvisioning" Click="MenuItemMdmDiagnosticsDeviceProvisioning_OnClick"/>
-                    <MenuItem Header="-> MdmDiagnosticsTool -Area _TPM" Click="MenuItemMdmDiagnosticsTpm_OnClick"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Open Registry" StaysOpenOnClick="True">
-                    <MenuItem Header="-> Enrollments" InputGestureText="Ctrl+Alt+E" Click="MenuItemRegistryEnrollments_Click"/>
-                    <MenuItem Header="-> Provisioning" InputGestureText="Ctrl+Alt+O" Click="MenuItemRegistryProvisioning_Click"/>
-                    <MenuItem Header="-> PolicyManager" InputGestureText="Ctrl+Alt+P" Click="MenuItemRegistryPolicyManager_OnClick"/>
-                    <MenuItem Header="-> RebootRequiredURIs" InputGestureText="Ctrl+Alt+K" Click="MenuItemRegistryRebootRequiredUris_Click"/>
-                    <MenuItem Header="-> DeclaredConfiguration" InputGestureText="Ctrl+Alt+D" Click="MenuItemRegistryDeclaredConfiguration_Click"/>
-                    <MenuItem Header="-> IntuneManagementExtension" InputGestureText="Ctrl+Alt+I" Click="MenuItemRegistryIntuneManagementExtension_Click" x:Name="menuItemIntuneManagementExtension"/>
-                    <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemRegistryEnterpriseDesktopAppManagement_Click"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Open Folder" StaysOpenOnClick="True">
-                    <MenuItem Header="-> _IME logs folder" InputGestureText="Ctrl+Shift+I" Click="MenuItemOpenImeLogs_Click"/>
-                    <MenuItem Header="-> MDM Diagnostics _folder" InputGestureText="Ctrl+Shift+M" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
-                    <MenuItem Header="-> DC\HostOS folder" InputGestureText="Ctrl+Shift+D" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
-                    <MenuItem Header="-> SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from C:\Windows\System32\Config\SystemProfile\AppData\Local\mdm as MSI and log files are written there."/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Advanced" StaysOpenOnClick="True">
-                    <MenuItem Header="Reset Sync tri_gger status" InputGestureText="Ctrl+Alt+R" IsEnabled="true" Click="MenuItemResetSyncTriggerStatus_Click"/>
-                    <Separator />
-                    <MenuItem Header="Experimental Section" StaysOpenOnClick="True" FontWeight="Bold"/>
-                    <MenuItem Header="Set EmbeddedMode Registry Flag" Click="MenuItemSetEmbeddedMode_Click"/>
-                    <MenuItem Header="Clear EmbeddedMode Registry Flag" Click="MenuItemClearEmbeddedMode_Click"/>
-                    <MenuItem Header="Cleanup Local MDM Enrollments Registry" Click="MenuItemCleanupEnrollments_Click"/>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_MDM Diagnostics" Click="MenuItemDiagnostics_Click"/>
-                <MenuItem Header="_Response Status Code Reference" Click="MenuItemCodes_Click"/>
-                <Separator />
-                <MenuItem Header="CSP Online Documentation" InputGestureText="Ctrl+F1" Click="MenuItemOpenHelp_Click"/>
-                <Separator />
-                <MenuItem Header="_Check for SyncML Viewer Updates" InputGestureText="Ctrl+Alt+U" Click="MenuItemCheckUpdate_OnClick"/>
-                <MenuItem Header="Send Feedback" Click="MenuItemFeedback_Click"/>
-                <Separator />
-                <MenuItem Header="_About" Click="MenuItemAbout_Click"/>
-            </MenuItem>
-        </Menu>
+
+        <Button x:Name="ButtonMDMSync" Content="MDM _Sync" Margin="13,0,0,11" Click="ButtonMDMSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MDM Sync (Ctrl+M)" />
+        <Button x:Name="ButtonMMPCSync" Content="MMP-C S_ync" Margin="101,0,0,11" Click="ButtonMMPCSync_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Start MMP-C Sync (Ctrl+K)"/>
+
         <Label x:Name="LabelStatus" Content="Sync is in progress" HorizontalAlignment="Left" Margin="189,0,0,12" Visibility="Visible" Height="26" VerticalAlignment="Bottom" />
-        <Label x:Name="LabelStatusTop" Content="Background process started..." Margin="0,3,3,0" Visibility="Visible" HorizontalAlignment="Right" Width="142" Height="26" VerticalAlignment="Top" FontSize="10"/>
         <Label x:Name="LabelDeviceName" Content="DeviceName" Margin="0,0,47,9" HorizontalAlignment="Right" Width="170" Height="34" VerticalAlignment="Bottom" FontSize="18" ToolTip="The name of the device, double click to copy to clipboard." MouseDoubleClick="LabelDeviceName_MouseDoubleClick" />
+        
         <Button x:Name="ButtonRestartUpdate" Content="_Update to version [0.0.0]" Margin="0,0,225,11" Click="ButtonRestartUpdate_Click" HorizontalAlignment="Right" Width="159" Height="29" VerticalAlignment="Bottom" Visibility="Visible" />
         <Label x:Name="LabelUpdateIndicator" Content="Update [0.0.0] available." Margin="0,0,212.6,13.4" HorizontalAlignment="Right" Width="153" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
         <Label x:Name="LabelTruncatedDataIndicator" Content="Received data truncated (64KB max)" Margin="311,0,395,12" Height="26" VerticalAlignment="Bottom" Visibility="Visible" FontWeight="Bold" />
+        
         <Image x:Name="ImageCaptureTraffic" Source="/Icons/data-traffic.ico" Margin="0,0,15,13" HorizontalAlignment="Right" Width="24" Height="24" ToolTip="Capturing traffic... (F12)" VerticalAlignment="Bottom"/>
+        
     </Grid>
 </Window>
