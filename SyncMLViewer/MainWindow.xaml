@@ -298,13 +298,13 @@
                 <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click" />
                 <Separator />
                 <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
-                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
-                <MenuItem Header="Decode _Autopilot Info" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
+                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
                 <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                <MenuItem Header="Decode _Autopilot Hardware Hash" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
                 <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click" />
-                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
-                <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
+                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click" ToolTip="Lookup for MDM Status Code and Windows Error Code"/>
+                <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click" ToolTip="Open Registry NodeCache Entry with Number XYZ"/>
                 <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                 <Separator />
                 <MenuItem Header="View Message in Notepad" Click="MenuItemViewMessageInNotepad_Click" InputGestureText="Ctrl+Shift+O"/>
