@@ -395,6 +395,8 @@
     <None Include="dist\SyncMLViewer-v112.zip" />
     <None Include="dist\SyncMLViewer-v113.zip" />
     <None Include="dist\SyncMLViewer-v120.zip" />
+    <None Include="dist\SyncMLViewer-v130.zip" />
+    <None Include="dist\SyncMLViewer-v131.zip" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
