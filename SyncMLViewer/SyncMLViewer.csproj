@@ -397,6 +397,14 @@
     <None Include="dist\SyncMLViewer-v120.zip" />
     <None Include="dist\SyncMLViewer-v130.zip" />
     <None Include="dist\SyncMLViewer-v131.zip" />
+    <None Include="dist\SyncMLViewer-v140.zip" />
+    <None Include="PackageManager\ScoopExtras\bucket\syncmlviewer.json" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.3.1\OliverKieselbach.SyncMLViewer.installer.yaml" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.3.1\OliverKieselbach.SyncMLViewer.locale.en-US.yaml" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.3.1\OliverKieselbach.SyncMLViewer.yaml" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.4.0\OliverKieselbach.SyncMLViewer.installer.yaml" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.4.0\OliverKieselbach.SyncMLViewer.locale.en-US.yaml" />
+    <None Include="PackageManager\WinGet-Pkgs\manifests\o\OliverKieselbach\SyncMLViewer\1.4.0\OliverKieselbach.SyncMLViewer.yaml" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
