@@ -335,6 +335,7 @@
       <DependentUpon>DataEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
+    <Compile Include="MainWindow.WiredLan.cs" />
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="StatusCodeLookupModel.cs" />
@@ -344,6 +345,7 @@
     <Compile Include="TraceEventSessionState.cs" />
     <Compile Include="VpnProfile.cs" />
     <Compile Include="WifiProfile.cs" />
+    <Compile Include="WiredLanProfile.cs" />
     <Page Include="DataEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

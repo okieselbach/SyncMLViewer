@@ -329,6 +329,26 @@
                                 <Button x:Name="ButtonDeleteWifi" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteWifi_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected Wifi profile"/>
                             </Grid>
                         </TabItem>
+
+                        <TabItem x:Name="TabItemWiredLan" Header="Wired Profiles" IsVisibleChanged="TabItemWiredLan_IsVisibleChanged">
+                            <Grid Background="White">
+                                <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
+                                <ListBox x:Name="ListBoxWiredLan" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWiredLan_SelectionChanged" />
+                                <avalonedit:TextEditor
+                                    x:Name="TextEditorWiredLanProfiles"
+                                    SyntaxHighlighting="XML"
+                                    FontFamily="Consolas"
+                                    FontSize="10pt"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    ShowLineNumbers="True"
+                                    IsReadOnly="True"
+                                    WordWrap="True" Margin="220,10,10,34"/>
+                                <Label x:Name="LabelBackToTopWiredLan" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWiredLan_MouseLeftButtonUp"/>
+                                <Button x:Name="ButtonRefreshWiredLan" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshWiredLan_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" ToolTip="Refresh Wired LAN / 802.1x profiles list"/>
+                                <Button x:Name="ButtonDeleteWiredLan" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteWiredLan_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected Wired LAN / 802.1x profile"/>
+                            </Grid>
+                        </TabItem>
+
                         <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
