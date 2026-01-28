@@ -314,6 +314,7 @@ namespace SyncMLViewer
             TextEditorAbout.Text = Properties.Resources.About;
 
             StringBuilder diagnosticsBuilder = new StringBuilder();
+            diagnosticsBuilder.AppendLine("=== System Information ===");
             diagnosticsBuilder.AppendLine($"Hostname:                    {MdmDiagnostics.Hostname}");
             diagnosticsBuilder.AppendLine($"OS Version:                  {MdmDiagnostics.OsVersion} (x{MdmDiagnostics.Bits})");
             diagnosticsBuilder.AppendLine($"Display Version:             {MdmDiagnostics.DisplayVersion}");
@@ -321,13 +322,31 @@ namespace SyncMLViewer
             diagnosticsBuilder.AppendLine($"Current Build:               {MdmDiagnostics.CurrentBuild}.{MdmDiagnostics.BuildRevision}");
             // diagnosticsBuilder.AppendLine($"Release ID:                  {MdmDiagnostics.ReleaseId}");
             diagnosticsBuilder.AppendLine($"Build Branch:                {MdmDiagnostics.BuildBranch}");
-            diagnosticsBuilder.AppendLine($"IME Version:                 {MdmDiagnostics.IntuneAgentVersion}");
+            diagnosticsBuilder.AppendLine($"Serial Number:               {_mdmDiagnostics.SerialNumber}");
+            diagnosticsBuilder.AppendLine();
+            diagnosticsBuilder.AppendLine("=== User Information ===");
             diagnosticsBuilder.AppendLine($"Logon Username:              {MdmDiagnostics.LogonUsername}");
             diagnosticsBuilder.AppendLine($"Logon User SID:              {MdmDiagnostics.LogonUserSid}");
-            diagnosticsBuilder.AppendLine($"Enrollment UPN:              {_mdmDiagnostics.EnrollmentUpn}");
+            diagnosticsBuilder.AppendLine();
+            diagnosticsBuilder.AppendLine("=== Enrollment Information ===");
             diagnosticsBuilder.AppendLine($"Entra Tenant ID:             {_mdmDiagnostics.AadTenantId}");
+            diagnosticsBuilder.AppendLine($"Enrollment UPN:              {_mdmDiagnostics.EnrollmentUpn}");
+            diagnosticsBuilder.AppendLine($"Management Authority:        {_mdmDiagnostics.ManagementAuthority}");
+            diagnosticsBuilder.AppendLine();
+            diagnosticsBuilder.AppendLine("=== Device Identity ===");
+            diagnosticsBuilder.AppendLine($"Entra Device ID:             {_mdmDiagnostics.EntraDeviceId}");
+            diagnosticsBuilder.AppendLine($"Intune Device ID:            {_mdmDiagnostics.IntuneDeviceId}");
             diagnosticsBuilder.AppendLine($"OMA-DM Account ID (MDM):     {_mdmDiagnostics.OmaDmAccountIdMDM}");
             diagnosticsBuilder.AppendLine($"OMA-DM Account ID (MMP-C):   {_mdmDiagnostics.OmaDmAccountIdMMPC}");
+            diagnosticsBuilder.AppendLine();
+            diagnosticsBuilder.AppendLine("=== Autopilot Information ===");
+            diagnosticsBuilder.AppendLine($"Autopilot Registered:        {_mdmDiagnostics.AutopilotRegistered}");
+            diagnosticsBuilder.AppendLine($"Autopilot Profile:           {_mdmDiagnostics.AutopilotProfileName}");
+            diagnosticsBuilder.AppendLine($"Deployment Profile:          {_mdmDiagnostics.AutopilotDeploymentProfile}");
+            diagnosticsBuilder.AppendLine();
+            diagnosticsBuilder.AppendLine("=== Management Information ===");
+            diagnosticsBuilder.AppendLine($"IME Version:                 {MdmDiagnostics.IntuneAgentVersion}");
+            diagnosticsBuilder.AppendLine($"Declared Configuration:      {_mdmDiagnostics.DeclaredConfigurationEnabled}");
 
             TextEditorDiagnostics.Text = diagnosticsBuilder.ToString();
               
@@ -798,7 +817,7 @@ namespace SyncMLViewer
             }
             else
             {
-                // with linkedEnrollment I had the issue it triggerd all the time the MMPC sync,
+                // with linked Enrollment I had the issue it triggered all the time the MMPC sync,
                 // so I switched to the scheduled task approach and trigger the correct task
                 try
                 {
@@ -1158,7 +1177,7 @@ namespace SyncMLViewer
                 {
                     Debug.WriteLine($"Resource {resourceNameHash} not found.");
                 }
-            }
+            };
 
             var fileHashString = CalculateSha256FileHash(pathExecuter);
 
@@ -2502,7 +2521,7 @@ namespace SyncMLViewer
             DataEditor dataEditor = new DataEditor
             {
                 Width = 800,
-                Height =800,
+                Height = 800,
                 DataFromMainWindow = text,
                 HideButonClear = true,
                 Title = "Data Editor - Autopilot Hardware Hash Viewer",
@@ -2593,11 +2612,11 @@ namespace SyncMLViewer
             {
                 text = TextEditorMessages.SelectedText.Trim();
             }
-            else if (TextEditorSyncMlRequests.IsVisible && !string.IsNullOrWhiteSpace(TextEditorSyncMlRequests.SelectedText))
+            else if (TextEditorSyncMlRequests.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequests.SelectedText))
             {
                 text = TextEditorSyncMlRequests.SelectedText.Trim();
             }
-            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && !string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
+            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
             {
                 text = TextEditorSyncMlRequestsRequestViewer.SelectedText.Trim();
             }
