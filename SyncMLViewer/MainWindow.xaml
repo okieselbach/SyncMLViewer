@@ -332,7 +332,7 @@
                             </Grid>
                         </TabItem>
 
-                        <TabItem x:Name="TabItemWiredLan" Header="Wired Profiles" IsVisibleChanged="TabItemWiredLan_IsVisibleChanged">
+                        <TabItem x:Name="TabItemWiredLan" Header="Wired Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                                 <ListBox x:Name="ListBoxWiredLan" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWiredLan_SelectionChanged" />

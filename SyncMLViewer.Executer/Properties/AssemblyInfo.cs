@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("oliverkieselbach.com")]
 [assembly: AssemblyProduct("SyncMLViewer.Executer")]
-[assembly: AssemblyCopyright("Copyright © 2024")]
+[assembly: AssemblyCopyright("Copyright © Oliver Kieselbach")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

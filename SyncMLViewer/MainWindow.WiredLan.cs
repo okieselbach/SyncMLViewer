@@ -14,23 +14,6 @@ namespace SyncMLViewer
     {
         // Wired LAN / 802.1x profiles
         public List<WiredLanProfile> WiredLanProfileList { get; set; }
-        private bool _wiredLanProfilesLoadedOnce;
-
-        //private void EnsureWiredLanInitialized()
-        //{
-        //    if (WiredLanProfileList != null)
-        //    {
-        //        return;
-        //    }
-
-        //    WiredLanProfileList = new List<WiredLanProfile>();
-
-        //    // In case InitializeComponent hasn't wired these yet, guard with null checks.
-        //    if (ListBoxWiredLan != null)
-        //    {
-        //        ListBoxWiredLan.ItemsSource = WiredLanProfileList;
-        //    }
-        //}
 
         private void ListBoxWiredLan_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -57,26 +40,6 @@ namespace SyncMLViewer
             {
                 // ignored
             }
-        }
-
-        private async void TabItemWiredLan_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            //try
-            //{
-            //    if (!(sender is TabItem tab)) return;
-            //    if (!tab.IsVisible) return;
-
-            //    //EnsureWiredLanInitialized();
-
-            //    if (_wiredLanProfilesLoadedOnce) return;
-            //    _wiredLanProfilesLoadedOnce = true;
-
-            //    await RefreshWiredLanProfilesAsync();
-            //}
-            //catch (Exception)
-            //{
-            //    // ignored
-            //}
         }
 
         private async void ButtonRefreshWiredLan_Click(object sender, RoutedEventArgs e)
