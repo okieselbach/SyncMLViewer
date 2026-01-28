@@ -331,6 +331,7 @@
     <Compile Include="AutoCompleteModel.cs" />
     <Compile Include="AutopilotUtility.cs" />
     <Compile Include="BindableBase.cs" />
+    <Compile Include="CspDocumentationModel.cs" />
     <Compile Include="DataEditor.xaml.cs">
       <DependentUpon>DataEditor.xaml</DependentUpon>
     </Compile>

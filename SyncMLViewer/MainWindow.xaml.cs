@@ -83,6 +83,7 @@ namespace SyncMLViewer
         private readonly StatusCodeLookupModel _statusCodeLookupModel = new StatusCodeLookupModel();
         private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelStream;
         private readonly ICSharpCode.AvalonEdit.Search.SearchPanel _searchPanelMessages;
+        private readonly CspDocumentationModel _cspDocumentationModel = new CspDocumentationModel();
 
         private string _updateTempFileName;
         private bool _updateStarted;
@@ -145,6 +146,7 @@ namespace SyncMLViewer
         public ICommand CaptureCommand { get; }
         public ICommand SearchWithGoogleCommand { get; }
         public ICommand OpenInNotepadCommand { get; }
+        public ICommand CspDocCommand { get; }
         #endregion
 
         public MainWindow()
@@ -205,6 +207,7 @@ namespace SyncMLViewer
             });
             SearchWithGoogleCommand = new RelayCommand(() => { MenuItemSearchWithGoogle_Click(null, null); });
             OpenInNotepadCommand = new RelayCommand(() => { MenuItemViewMessageInNotepad_Click(null, null); });
+            CspDocCommand = new RelayCommand(() => { MenuItemLookupCspDocumentation_Click(null, null); });
             #endregion
 
             _syncMDMSwitch = false;
@@ -2573,8 +2576,75 @@ namespace SyncMLViewer
 
             if (int.TryParse(text, out _))
             { 
-                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
+                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
             }
+        }
+
+        private void MenuItemLookupCspDocumentation_Click(object sender, RoutedEventArgs e)
+        {
+            var text = string.Empty;
+
+            // Get selected text from the visible text editor
+            if (TextEditorStream.IsVisible)
+            {
+                text = TextEditorStream.SelectedText.Trim();
+            }
+            else if (TextEditorMessages.IsVisible)
+            {
+                text = TextEditorMessages.SelectedText.Trim();
+            }
+            else if (TextEditorSyncMlRequests.IsVisible && !string.IsNullOrWhiteSpace(TextEditorSyncMlRequests.SelectedText))
+            {
+                text = TextEditorSyncMlRequests.SelectedText.Trim();
+            }
+            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && !string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
+            {
+                text = TextEditorSyncMlRequestsRequestViewer.SelectedText.Trim();
+            }
+
+            // If no text is selected, try to use the OMA-URI from the TextBoxUri
+            //if (string.IsNullOrWhiteSpace(text) && !string.IsNullOrWhiteSpace(TextBoxUri.Text))
+            //{
+            //    text = TextBoxUri.Text.Trim();
+            //}
+
+            string documentationUrl;
+
+            // Check if the text looks like an OMA-URI (starts with ./)
+            if (text.StartsWith("./"))
+            {
+                documentationUrl = _cspDocumentationModel.GetDocumentationUrlFromOmaUri(text);
+                var cspName = _cspDocumentationModel.ExtractCspName(text);
+                if (!string.IsNullOrEmpty(cspName))
+                {
+                    System.Diagnostics.Debug.WriteLine($"CSP Documentation lookup for: {cspName}");
+                }
+            }
+            // Check if it might be XML containing a LocURI
+            else if (text.Contains("<LocURI>"))
+            {
+                var locUri = _cspDocumentationModel.ExtractLocUriFromXml(text);
+                if (!string.IsNullOrEmpty(locUri))
+                {
+                    documentationUrl = _cspDocumentationModel.GetDocumentationUrlFromOmaUri(locUri);
+                }
+                else
+                {
+                    documentationUrl = _cspDocumentationModel.GetCspListUrl();
+                }
+            }
+            // Assume it might be a CSP name directly
+            else if (!string.IsNullOrWhiteSpace(text))
+            {
+                documentationUrl = _cspDocumentationModel.GetDocumentationUrl(text);
+            }
+            else
+            {
+                // No selection, open the CSP list
+                documentationUrl = _cspDocumentationModel.GetCspListUrl();
+            }
+
+            Helper.OpenUrl(documentationUrl);
         }
 
         private void MenuItemFind_Click(object sender, RoutedEventArgs e)
