@@ -156,6 +156,8 @@
                 <MenuItem Header="Open Folder" StaysOpenOnClick="True">
                     <MenuItem Header="-> _IME logs folder" InputGestureText="Ctrl+Shift+I" Click="MenuItemOpenImeLogs_Click"/>
                     <MenuItem Header="-> MDM Diagnostics _folder" InputGestureText="Ctrl+Shift+M" Click="MenuItemOpenMDMDiagnosticsFolder_Click"/>
+                    <MenuItem Header="-> dot3svc\Profiles folder" InputGestureText="Ctrl+Shift+W" Click="MenuItemWiredLanProfiles_Click" ToolTip="Folder C:\ProgramData\microsoft\dot3svc\Profiles\Interfaces is for Wired .xml files"/>
+                    <MenuItem Header="-> Wlansvc\Profiles folder" InputGestureText="Ctrl+Shift+I" Click="MenuItemWiFiProfiles_Click_1" ToolTip="Folder C:\ProgramData\microsoft\Wlansvc\Profiles\Interfaces is for WiFi .xml files"/>
                     <MenuItem Header="-> DC\HostOS folder" InputGestureText="Ctrl+Shift+D" Click="MenuItemOpenDeclaredConfigurationHostOSFolder_Click" ToolTip="Folder C:\ProgramData\microsoft\DC\HostOS is for DeclaredConfiguration .xml files"/>
                     <MenuItem Header="-> SystemProfile\AppData\Local\mdm folder" Click="MenuItemOpenSystemProfileMDM_Click" ToolTip="IME Agent will be installed from C:\Windows\System32\Config\SystemProfile\AppData\Local\mdm as MSI and log files are written there."/>
                 </MenuItem>

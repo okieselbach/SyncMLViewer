@@ -335,6 +335,8 @@
       <DependentUpon>DataEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
+    <Compile Include="MainWindow.Vpn.cs" />
+    <Compile Include="MainWindow.Wifi.cs" />
     <Compile Include="MainWindow.WiredLan.cs" />
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="RelayCommand.cs" />

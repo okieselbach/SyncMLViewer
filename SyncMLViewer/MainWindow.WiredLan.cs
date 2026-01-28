@@ -16,21 +16,21 @@ namespace SyncMLViewer
         public List<WiredLanProfile> WiredLanProfileList { get; set; }
         private bool _wiredLanProfilesLoadedOnce;
 
-        private void EnsureWiredLanInitialized()
-        {
-            if (WiredLanProfileList != null)
-            {
-                return;
-            }
+        //private void EnsureWiredLanInitialized()
+        //{
+        //    if (WiredLanProfileList != null)
+        //    {
+        //        return;
+        //    }
 
-            WiredLanProfileList = new List<WiredLanProfile>();
+        //    WiredLanProfileList = new List<WiredLanProfile>();
 
-            // In case InitializeComponent hasn't wired these yet, guard with null checks.
-            if (ListBoxWiredLan != null)
-            {
-                ListBoxWiredLan.ItemsSource = WiredLanProfileList;
-            }
-        }
+        //    // In case InitializeComponent hasn't wired these yet, guard with null checks.
+        //    if (ListBoxWiredLan != null)
+        //    {
+        //        ListBoxWiredLan.ItemsSource = WiredLanProfileList;
+        //    }
+        //}
 
         private void ListBoxWiredLan_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -61,29 +61,29 @@ namespace SyncMLViewer
 
         private async void TabItemWiredLan_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            try
-            {
-                if (!(sender is TabItem tab)) return;
-                if (!tab.IsVisible) return;
+            //try
+            //{
+            //    if (!(sender is TabItem tab)) return;
+            //    if (!tab.IsVisible) return;
 
-                EnsureWiredLanInitialized();
+            //    //EnsureWiredLanInitialized();
 
-                if (_wiredLanProfilesLoadedOnce) return;
-                _wiredLanProfilesLoadedOnce = true;
+            //    if (_wiredLanProfilesLoadedOnce) return;
+            //    _wiredLanProfilesLoadedOnce = true;
 
-                await RefreshWiredLanProfilesAsync();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+            //    await RefreshWiredLanProfilesAsync();
+            //}
+            //catch (Exception)
+            //{
+            //    // ignored
+            //}
         }
 
         private async void ButtonRefreshWiredLan_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                EnsureWiredLanInitialized();
+                //EnsureWiredLanInitialized();
                 await RefreshWiredLanProfilesAsync();
             }
             catch (Exception)
@@ -94,7 +94,7 @@ namespace SyncMLViewer
 
         private async void ButtonDeleteWiredLan_Click(object sender, RoutedEventArgs e)
         {
-            EnsureWiredLanInitialized();
+            //EnsureWiredLanInitialized();
 
             if (!(ListBoxWiredLan.SelectedItem is WiredLanProfile wiredProfile))
             {
@@ -120,7 +120,7 @@ namespace SyncMLViewer
 
         private async Task RefreshWiredLanProfilesAsync()
         {
-            EnsureWiredLanInitialized();
+            //EnsureWiredLanInitialized();
 
             WiredLanProfileList.Clear();
             TextEditorWiredLanProfiles.Clear();

@@ -98,9 +98,10 @@ namespace SyncMLViewer
         private WindowState _storedWindowState = WindowState.Normal;
         private AutoCompleteModel _autoCompleteModel = new AutoCompleteModel();
 
-        public List<WifiProfile> WifiProfileList { get; set; }
-        public List<VpnProfile> VpnProfileList { get; set; }
-        
+        // WiFi/VPN partials:
+        // - `MainWindow.Wifi.cs`
+        // - `MainWindow.Vpn.cs`
+
         public static TraceEventSessionState TraceEventSessionState { get; set; }
         public SyncMlProgress SyncMlProgress { get; set; }
         public ObservableCollection<SyncMlSession> SyncMlSessions { get; }
@@ -264,6 +265,9 @@ namespace SyncMLViewer
 
             VpnProfileList = new List<VpnProfile>();
             ListBoxVpn.ItemsSource = VpnProfileList;
+
+            WiredLanProfileList = new List<WiredLanProfile>();
+            ListBoxWiredLan.ItemsSource = WiredLanProfileList;
 
             _searchPanelStream = ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorStream);
             _searchPanelMessages = ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorMessages);
@@ -1645,174 +1649,7 @@ namespace SyncMLViewer
             }
         }
 
-        private void ListBoxWifi_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (ListBoxWifi.SelectedItem is WifiProfile wifiProfile)
-                {
-                    TextEditorWifiProfiles.Text = TryFormatXml(wifiProfile.Xml);
-                }
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        private void ListBoxVpn_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (ListBoxVpn.SelectedItem is VpnProfile vpnProfile)
-                {
-                    TextEditorVpnProfiles.Text = TryFormatXml(vpnProfile.Xml);
-                }
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        private async void ButtonRefreshWifi_Click(object sender, RoutedEventArgs e)
-        {
-            WifiProfileList.Clear();
-
-            var output = await Task.Run(() => Helper.RunCommand("netsh", "wlan show interfaces"));
-            var guid = Helper.RegexExtractStringValueAfterKeyAndColon(output, "GUID"); // Hopefully this is in every language the same as netsh is localized
-
-            var directoryPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Wlansvc\Profiles\Interfaces\{" + guid + "}";
-            List<XmlDocument> xmlProfiles = Helper.ParseXmlFiles(directoryPath);
-
-            List<WifiProfile> wifiProfiles = new List<WifiProfile>();
-            foreach (var xmlProfile in xmlProfiles)
-            {
-                var name = xmlProfile.SelectSingleNode("/*[local-name()='WLANProfile']/*[local-name()='name']").InnerText;
-                wifiProfiles.Add(new WifiProfile(name, xmlProfile.OuterXml));
-            }
-
-            foreach (var wifiProfile in wifiProfiles)
-            {
-                WifiProfileList.Add(new WifiProfile(wifiProfile.Name, wifiProfile.Xml));
-            }
-
-            ListBoxWifi.Items.Refresh();
-        }
-
-        private void ButtonDeleteWifi_Click(object sender, RoutedEventArgs e)
-        {
-            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
-            {
-                return;
-            }
-
-            var rc = MessageBox.Show($"Do you really want to delete the WiFi profile '{wifiProfile.Name}'?", "SyncML Viewer", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (rc == MessageBoxResult.No)
-            {
-                return;
-            }
-
-            Helper.RunCommand("netsh", $"wlan delete profile name=\"{wifiProfile.Name}\"");
-
-            TextEditorWifiProfiles.Clear();
-
-            ButtonRefreshWifi_Click(null, null);
-        }
-
-        private async void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
-        {
-            VpnProfileList.Clear();
-
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-VpnConnection");
-
-                var psOutput = await Task.Run(() => ps.Invoke());
-
-                foreach (var item in psOutput)
-                {
-                    var name = item.Members["Name"].Value as string;
-                    var xml = item.Members["VpnConfigurationXml"].Value as string;
-                    VpnProfileList.Add(new VpnProfile(name, xml));
-                }
-            }
-
-            ListBoxVpn.Items.Refresh();
-        }
-
-        private void ButtonDeleteVpn_Click(object sender, RoutedEventArgs e)
-        {
-            if (!(ListBoxVpn.SelectedItem is VpnProfile vpnProfile))
-            {
-                return;
-            }
-
-            var rc = MessageBox.Show($"Do you really want to delete the VPN profile '{vpnProfile.Name}'?", "SyncML Viewer", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (rc == MessageBoxResult.No)
-            {
-                return;
-            }
-
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Remove-VpnConnection")
-                    .AddParameter("Name", $"{vpnProfile.Name}")
-                    .AddParameter("Force");
-
-                var result = ps.Invoke();
-            }
-
-            TextEditorVpnProfiles.Clear();
-
-            ButtonRefreshVpn_Click(null, null);
-        }
-
-        private void LabelWifiKey_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
-            {
-                return;
-            }
-
-            DataEditor dataEditor = new DataEditor
-            {
-                DataFromMainWindow = wifiProfile.GetKeyContent() ?? "No key material found!",
-                HideButonClear = true,
-                Title = "Data Editor - WiFi Key",
-                TextEditorData = { ShowLineNumbers = false }
-            };
-
-            dataEditor.Show();
-        }
-
-        private void LabelWifiInfo_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (!(ListBoxWifi.SelectedItem is WifiProfile wifiProfile))
-            {
-                return;
-            }
-
-            DataEditor dataEditor = new DataEditor
-            {
-                DataFromMainWindow = wifiProfile.GetInformation() ?? string.Empty,
-                HideButonClear = true,
-                Title = "Data Editor - WiFi Information",
-                TextEditorData = { ShowLineNumbers = false }
-            };
-
-            dataEditor.Show();
-        }
-
-        private void LabelBackToTopWifi_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            TextEditorWifiProfiles.ScrollToHome();
-        }
-
-        private void LabelBackToTopVpn_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            TextEditorVpnProfiles.ScrollToHome();
-        }
+        // (WiFi / VPN handlers moved to dedicated partial class files)
 
         private void HideAutoCompleteStackPanel(object sender, RoutedEventArgs e)
         {
@@ -2253,7 +2090,7 @@ namespace SyncMLViewer
         private void MenuItemDecodeBase64_Click(object sender, RoutedEventArgs e)
         {
             try
-            {
+ {
                 var text = string.Empty;
                 var prettyJson = string.Empty;
                 var resultText = string.Empty;
@@ -2446,15 +2283,15 @@ namespace SyncMLViewer
 
             if (TextEditorStream.IsVisible)
             {
-                text = TextEditorStream.SelectedText;
+                text = TextEditorStream.SelectedText.Trim();
             }
             else if (TextEditorMessages.IsVisible)
             {
-                text = TextEditorMessages.SelectedText;
+                text = TextEditorMessages.SelectedText.Trim();
             }
             else if (TextEditorSyncMlRequests.IsVisible)
             {
-                text = TextEditorSyncMlRequests.SelectedText;
+                text = TextEditorSyncMlRequests.SelectedText.Trim();
             }
 
             var statusCode = string.Empty;
@@ -2575,6 +2412,10 @@ namespace SyncMLViewer
             else if (TextEditorWifiProfiles.IsVisible)
             {
                 text = TextEditorWifiProfiles.SelectedText;
+            }
+            else if (TextEditorWiredLanProfiles.IsVisible)
+            {
+                text = TextEditorVpnProfiles.SelectedText;
             }
             else if (TextEditorVpnProfiles.IsVisible)
             {
@@ -2746,6 +2587,16 @@ namespace SyncMLViewer
             {
                 _searchPanelMessages.Open();
             }
+        }
+
+        private void MenuItemWiredLanProfiles_Click(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\dot3svc\Profiles\Interfaces"));
+        }
+
+        private void MenuItemWiFiProfiles_Click_1(object sender, RoutedEventArgs e)
+        {
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Wlansvc\Profiles\Interfaces"));
         }
     }
 }
