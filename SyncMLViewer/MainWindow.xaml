@@ -203,7 +203,32 @@
                         FontSize="10pt" Margin="10,10,10,44.4"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
-                        IsReadOnly="True"/>
+                        IsReadOnly="True">
+                        <avalonedit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                <Separator/>
+                                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click"/>
+                                <MenuItem Header="_Jump to Message" InputGestureText="Ctrl+J" Click="MenuItemJumpToMessage_Click" ToolTip="Jump to the corresponding Session/Message"/>
+                                <Separator/>
+                                <MenuItem Header="Decode" FontWeight="Bold"/>
+                                <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
+                                <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                                <MenuItem Header="Decode _Autopilot Hash" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
+                                <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Lookup" FontWeight="Bold"/>
+                                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                                <MenuItem Header="Lookup NodeCache Entry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+D" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Open in Notepad" InputGestureText="Ctrl+Shift+O" Click="ContextMenuOpenStreamInNotepad_Click"/>
+                            </ContextMenu>
+                        </avalonedit:TextEditor.ContextMenu>
+                    </avalonedit:TextEditor>
                     <Button x:Name="ButtonClearStream" Content="_Clear Stream" Margin="0,0,112,9.8" Click="ButtonClear_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Clear the SyncML stream. (Ctrl+P)"/>
                     <Button x:Name="ButtonSaveAs" Content="_Save As" Margin="0,0,10,9.8" Click="ButtonSaveAs_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="97" IsEnabled="{Binding Path=SyncMlProgress.NotInProgress}" ToolTip="Save SyncML stream as xml file. (Ctrl+S)"/>
                 </Grid>
@@ -219,9 +244,47 @@
                         FontSize="10pt" Margin="224,10,10,34"
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
-                        IsReadOnly="True" MouseDoubleClick="TextEditorMessages_MouseDoubleClick"/>
-                    <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxSessions_SelectionChanged" MouseDoubleClick="ListBoxSessions_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxSessions_KeyDown"/>
-                    <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxMessages_SelectionChanged" MouseDoubleClick="ListBoxMessages_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxMessages_KeyDown"/>
+                        IsReadOnly="True" MouseDoubleClick="TextEditorMessages_MouseDoubleClick">
+                        <avalonedit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                <Separator/>
+                                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Decode" FontWeight="Bold"/>
+                                <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
+                                <MenuItem Header="Decode _BASE64" InputGestureText="Ctrl+B" Click="MenuItemDecodeBase64_Click"/>
+                                <MenuItem Header="Decode Certificate" InputGestureText="Ctrl+N" Click="MenuItemDecodeCertificate_Click"/>
+                                <MenuItem Header="Decode _Autopilot Hash" InputGestureText="Ctrl+U" Click="MenuItemDecodeAutopilot_Click"/>
+                                <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Lookup" FontWeight="Bold"/>
+                                <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
+                                <MenuItem Header="Lookup NodeCache Entry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+D" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Open Message in Notepad" InputGestureText="Ctrl+Shift+O" Click="MenuItemViewMessageInNotepad_Click"/>
+                            </ContextMenu>
+                        </avalonedit:TextEditor.ContextMenu>
+                    </avalonedit:TextEditor>
+                    <ListBox x:Name="ListBoxSessions" Margin="10,30,0,0" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxSessions_SelectionChanged" MouseDoubleClick="ListBoxSessions_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxSessions_KeyDown">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Add/Edit _Comment..." Click="ContextMenuAddCommentSession_Click" ToolTip="Add or edit a comment for this session"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                    <ListBox x:Name="ListBoxMessages" Margin="10,228,0,34" HorizontalAlignment="Left" Width="209" SelectionChanged="ListBoxMessages_SelectionChanged" MouseDoubleClick="ListBoxMessages_MouseDoubleClick" ToolTip="DoubleClick selected item to add comment, marked with *" KeyDown="ListBoxMessages_KeyDown">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Add/Edit _Comment..." Click="ContextMenuAddCommentMessage_Click" ToolTip="Add or edit a comment for this message"/>
+                                <Separator/>
+                                <MenuItem Header="Open in Notepad" Click="MenuItemViewMessageInNotepad_Click"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                     <Label Content="SyncML Sessions" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                     <Label Content="SyncML Messages" HorizontalAlignment="Left" Margin="10,197,0,0" VerticalAlignment="Top"/>
                     <Label x:Name="LabelBackToTop" Content="[Top]" Margin="0,0,6,2" MouseUp="LabelBackToTop_MouseUp" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="40" Height="26" VerticalAlignment="Bottom" Grid.Column="1"/>
@@ -289,7 +352,25 @@
                         FontSize="10pt"
                         HorizontalScrollBarVisibility="Auto"
                         IsReadOnly="True"
-                        WordWrap="True" Margin="10,31,10,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="0"/>
+                        WordWrap="True" Margin="10,31,10,28" BorderThickness="1" BorderBrush="Gray" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="0">
+                        <avalonedit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                <Separator/>
+                                <MenuItem Header="Decode" FontWeight="Bold"/>
+                                <MenuItem Header="Decode _HTML" Click="MenuItemDecodeHTML_Click"/>
+                                <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                <MenuItem Header="Decode Certificate" Click="MenuItemDecodeCertificate_Click"/>
+                                <MenuItem Header="View as HEX" Click="MenuItemViewAsHex_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Lookup" FontWeight="Bold"/>
+                                <MenuItem Header="Lookup Status Code" Click="MenuItemLookupStatusCode_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                            </ContextMenu>
+                        </avalonedit:TextEditor.ContextMenu>
+                    </avalonedit:TextEditor>
 
                     <GridSplitter Grid.Column="1" Grid.Row="1" Width="2" Background="#FFEEEEEE" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
@@ -303,7 +384,29 @@
                         HorizontalScrollBarVisibility="Auto"
                         ShowLineNumbers="True"
                         IsReadOnly="True"
-                        WordWrap="True" Margin="5,31,10,28" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="2"/>
+                        WordWrap="True" Margin="5,31,10,28" GotFocus="HideAutoCompleteStackPanel" Grid.Row="1" Grid.Column="2">
+                        <avalonedit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                <Separator/>
+                                <MenuItem Header="Decode" FontWeight="Bold"/>
+                                <MenuItem Header="Decode _HTML" Click="MenuItemDecodeHTML_Click"/>
+                                <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                <MenuItem Header="Decode Certificate" Click="MenuItemDecodeCertificate_Click"/>
+                                <MenuItem Header="Decode _Autopilot Hash" Click="MenuItemDecodeAutopilot_Click"/>
+                                <MenuItem Header="View as HEX" Click="MenuItemViewAsHex_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Lookup" FontWeight="Bold"/>
+                                <MenuItem Header="Lookup Status Code" Click="MenuItemLookupStatusCode_Click"/>
+                                <MenuItem Header="Lookup NodeCache Entry" Click="MenuItemLookupNodeCache_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Open in Notepad" Click="ContextMenuOpenRequestsInNotepad_Click"/>
+                            </ContextMenu>
+                        </avalonedit:TextEditor.ContextMenu>
+                    </avalonedit:TextEditor>
                     
                     <CheckBox x:Name="CheckBoxUseSyncML" Content="Use SyncML Editor" HorizontalAlignment="Left" Margin="10,0,0,7" Click="CheckBoxUseSyncML_Click" Height="15" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0"/>
                     <Label x:Name="LabelFormat" Content="[Format Document]" Margin="0,0,8,3" Cursor="Hand" Foreground="#FF002AF8" MouseUp="LabelFormat_MouseUp" Height="25" VerticalAlignment="Bottom" ToolTip="Try to format SycML xml (Ctrl+Alt+F)" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Width="114"/>
@@ -318,7 +421,15 @@
                         <TabItem x:Name="TabItemWifi" Header="Wifi Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                                <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWifi_SelectionChanged" />
+                                <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWifi_SelectionChanged">
+                                    <ListBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="_Refresh Profiles" Click="ButtonRefreshWifi_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="_Delete Selected Profile" Click="ButtonDeleteWifi_Click"/>
+                                        </ContextMenu>
+                                    </ListBox.ContextMenu>
+                                </ListBox>
                                 <avalonedit:TextEditor
                                     x:Name="TextEditorWifiProfiles"
                                     SyntaxHighlighting="XML"
@@ -327,7 +438,19 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="220,10,10,34"/>
+                                    WordWrap="True" Margin="220,10,10,34">
+                                    <avalonedit:TextEditor.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                            <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                            <Separator/>
+                                            <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                            <MenuItem Header="View as HEX" Click="MenuItemViewAsHex_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                                        </ContextMenu>
+                                    </avalonedit:TextEditor.ContextMenu>
+                                </avalonedit:TextEditor>
                                 <Label x:Name="LabelBackToTopWifi" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWifi_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiInfo" Content="[Information]" Margin="230,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="80" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiInfo_MouseLeftButtonUp"/>
                                 <Label x:Name="LabelWifiKey" Content="[Key]" Margin="310,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Left" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelWifiKey_MouseLeftButtonUp"/>
@@ -339,7 +462,15 @@
                         <TabItem x:Name="TabItemWiredLan" Header="Wired Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                                <ListBox x:Name="ListBoxWiredLan" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWiredLan_SelectionChanged" />
+                                <ListBox x:Name="ListBoxWiredLan" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWiredLan_SelectionChanged">
+                                    <ListBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="_Refresh Profiles" Click="ButtonRefreshWiredLan_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="_Delete Selected Profile" Click="ButtonDeleteWiredLan_Click"/>
+                                        </ContextMenu>
+                                    </ListBox.ContextMenu>
+                                </ListBox>
                                 <avalonedit:TextEditor
                                     x:Name="TextEditorWiredLanProfiles"
                                     SyntaxHighlighting="XML"
@@ -348,7 +479,19 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="220,10,10,34"/>
+                                    WordWrap="True" Margin="220,10,10,34">
+                                    <avalonedit:TextEditor.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                            <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                            <Separator/>
+                                            <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                            <MenuItem Header="View as HEX" Click="MenuItemViewAsHex_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                                        </ContextMenu>
+                                    </avalonedit:TextEditor.ContextMenu>
+                                </avalonedit:TextEditor>
                                 <Label x:Name="LabelBackToTopWiredLan" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" MouseLeftButtonUp="LabelBackToTopWiredLan_MouseLeftButtonUp"/>
                                 <Button x:Name="ButtonRefreshWiredLan" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshWiredLan_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" ToolTip="Refresh Wired LAN / 802.1x profiles list"/>
                                 <Button x:Name="ButtonDeleteWiredLan" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteWiredLan_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected Wired LAN / 802.1x profile"/>
@@ -358,7 +501,15 @@
                         <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
                             <Grid Background="White">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
-                                <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxVpn_SelectionChanged" />
+                                <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxVpn_SelectionChanged">
+                                    <ListBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="_Refresh Profiles" Click="ButtonRefreshVpn_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="_Delete Selected Profile" Click="ButtonDeleteVpn_Click"/>
+                                        </ContextMenu>
+                                    </ListBox.ContextMenu>
+                                </ListBox>
                                 <avalonedit:TextEditor
                                     x:Name="TextEditorVpnProfiles"
                                     SyntaxHighlighting="XML"
@@ -367,7 +518,19 @@
                                     HorizontalScrollBarVisibility="Auto"
                                     ShowLineNumbers="True"
                                     IsReadOnly="True"
-                                    WordWrap="True" Margin="220,10,10,34"/>
+                                    WordWrap="True" Margin="220,10,10,34">
+                                    <avalonedit:TextEditor.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                            <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                            <Separator/>
+                                            <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                            <MenuItem Header="View as HEX" Click="MenuItemViewAsHex_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                                        </ContextMenu>
+                                    </avalonedit:TextEditor.ContextMenu>
+                                </avalonedit:TextEditor>
                                 <Label x:Name="LabelBackToTopVpn" Content="[Top]" Margin="0,0,0,1" Cursor="Hand" Foreground="#FF002AF8" HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" Grid.Column="1" MouseLeftButtonUp="LabelBackToTopVpn_MouseLeftButtonUp"/>
                                 <Button x:Name="ButtonRefreshVpn" Content="Refresh" Margin="7,0,0,0" Click="ButtonRefreshVpn_Click" Height="29" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="83" ToolTip="Refresh VPN profiles list"/>
                                 <Button x:Name="ButtonDeleteVpn" Content="Delete" HorizontalAlignment="Left" Margin="95,0,0,0" Click="ButtonDeleteVpn_Click" VerticalAlignment="Bottom" Height="29" Width="83" ToolTip="Delete selected VPN profile"/>

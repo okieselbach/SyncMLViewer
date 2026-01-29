@@ -559,7 +559,7 @@ namespace SyncMLViewer
 
             if (_hideWhenMinimizedSwitch)
             {
-                // prevent ballon tip on startup for commandline start
+                // prevent balloon tip on startup for commandline start
                 _notifyIconBallonShownOnce = true;
 
                 menuItemHideWhenMinimized.IsChecked = true;
@@ -567,7 +567,7 @@ namespace SyncMLViewer
                 Hide();
             }
 
-            // only one MDM sync can be triggert at a time, so we check for the commandline args and trigger the sync
+            // only one MDM sync can be triggered at a time, so we check for the commandline args and trigger the sync
             // if both are set, the MDM sync is triggered
             if (_syncMDMSwitch)
             {
@@ -682,7 +682,7 @@ namespace SyncMLViewer
 
                     if (!valueSyncMl.EndsWith("</SyncML>", StringComparison.OrdinalIgnoreCase))
                     {
-                        // if the message is not complete (truncated becasue of ETW 64KB buffer), we add a closing tag to get the parsing right for the Sessions/Messages viewer tab
+                        // if the message is not complete (truncated becasuse of ETW 64KB buffer), we add a closing tag to get the parsing right for the Sessions/Messages viewer tab
                         valueSyncMl += "\n<!-- ignore this line, closing SyncML tag added to support parsing of truncated xml data --></SyncML>";
                         valueSyncMl = Helper.TryFormatTruncatedXml(valueSyncMl);
                     }
@@ -2114,7 +2114,7 @@ namespace SyncMLViewer
         private void MenuItemDecodeBase64_Click(object sender, RoutedEventArgs e)
         {
             try
- {
+            {
                 var text = string.Empty;
                 var prettyJson = string.Empty;
                 var resultText = string.Empty;
@@ -2131,6 +2131,18 @@ namespace SyncMLViewer
                 else if (TextEditorSyncMlRequests.IsVisible)
                 {
                     text = TextEditorSyncMlRequests.SelectedText;
+                }
+                else if (TextEditorWifiProfiles.IsVisible)
+                {
+                    text = TextEditorWifiProfiles.SelectedText;
+                }
+                else if (TextEditorWiredLanProfiles.IsVisible)
+                {
+                    text = TextEditorWiredLanProfiles.SelectedText;
+                }
+                else if (TextEditorVpnProfiles.IsVisible)
+                {
+                    text = TextEditorVpnProfiles.SelectedText;
                 }
 
                 // try to be nice and remove some unwanted characters for higher success rate
@@ -2246,7 +2258,7 @@ namespace SyncMLViewer
                 text = TextEditorMessages.SelectedText;
             }
             else if (TextEditorSyncMlRequests.IsVisible)
-            { 
+            {
                 text = TextEditorSyncMlRequests.SelectedText;
             }
             
@@ -2387,6 +2399,18 @@ namespace SyncMLViewer
             {
                 text = TextEditorSyncMlRequests.SelectedText;
             }
+            else if (TextEditorWifiProfiles.IsVisible)
+            {
+                text = TextEditorWifiProfiles.SelectedText;
+            }
+            else if (TextEditorWiredLanProfiles.IsVisible)
+            {
+                text = TextEditorWiredLanProfiles.SelectedText;
+            }
+            else if (TextEditorVpnProfiles.IsVisible)
+            {
+                text = TextEditorVpnProfiles.SelectedText;
+            }
 
             try
             {
@@ -2439,7 +2463,7 @@ namespace SyncMLViewer
             }
             else if (TextEditorWiredLanProfiles.IsVisible)
             {
-                text = TextEditorVpnProfiles.SelectedText;
+                text = TextEditorWiredLanProfiles.SelectedText;
             }
             else if (TextEditorVpnProfiles.IsVisible)
             {
@@ -2468,11 +2492,23 @@ namespace SyncMLViewer
             {
                 Debug.Listeners.Add(new TextWriterTraceListener($"SyncMLStream-DebugLogging-{Environment.MachineName}-{DateTime.Now:MM-dd-yy_H-mm-ss}.log", listenerName));
                 Debug.AutoFlush = true;
+
+                SyncMlSessions.Clear();
+                ListBoxMessages.ItemsSource = null;
+
+                TextEditorStream.Clear();
+                TextEditorMessages.Clear();
+
+                TextEditorStream.IsEnabled = false;
+                TextEditorStream.AppendText($"{Environment.NewLine}\t'Debug Logging Mode' enabled.");
             }
             else
             {
                 Debug.Close();
                 Debug.Listeners.Remove(listenerName);
+
+                TextEditorStream.Clear();
+                TextEditorStream.IsEnabled = true;
             }
         }
 
@@ -2552,6 +2588,18 @@ namespace SyncMLViewer
             else if (TextEditorSyncMlRequests.IsVisible)
             {
                 text = TextEditorSyncMlRequests.SelectedText;
+            }
+            else if (TextEditorWifiProfiles.IsVisible)
+            {
+                text = TextEditorWifiProfiles.SelectedText;
+            }
+            else if (TextEditorWiredLanProfiles.IsVisible)
+            {
+                text = TextEditorWiredLanProfiles.SelectedText;
+            }
+            else if (TextEditorVpnProfiles.IsVisible)
+            {
+                text = TextEditorVpnProfiles.SelectedText;
             }
 
             try
@@ -2683,6 +2731,34 @@ namespace SyncMLViewer
         private void MenuItemJumpToMessage_Click(object sender, RoutedEventArgs e)
         {
             JumpToMessageFromStream();
+        }
+
+        private void ContextMenuOpenStreamInNotepad_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(TextEditorStream.Text))
+            {
+                Helper.OpenInNotepad(TextEditorStream.Text);
+            }
+        }
+
+        private void ContextMenuOpenRequestsInNotepad_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(TextEditorSyncMlRequests.Text))
+            {
+                Helper.OpenInNotepad(TextEditorSyncMlRequests.Text);
+            }
+        }
+
+        private void ContextMenuAddCommentSession_Click(object sender, RoutedEventArgs e)
+        {
+            // Reuse the existing double-click logic for adding comments to sessions
+            ListBoxSessions_MouseDoubleClick(sender, null);
+        }
+
+        private void ContextMenuAddCommentMessage_Click(object sender, RoutedEventArgs e)
+        {
+            // Reuse the existing double-click logic for adding comments to messages
+            ListBoxMessages_MouseDoubleClick(sender, null);
         }
 
         private void MenuItemWiredLanProfiles_Click(object sender, RoutedEventArgs e)
