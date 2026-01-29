@@ -36,6 +36,9 @@ namespace SyncMLViewer
         public ICommand FormatCommand { get; }
         public ICommand DecodeHtmlCommand { get; }
         public ICommand ViewAsHexCommand { get; }
+        public ICommand CspDocCommand { get; }
+
+        private readonly CspDocumentationModel _cspDocumentationModel = new CspDocumentationModel();
 
         public DataEditor()
         {
@@ -234,6 +237,43 @@ namespace SyncMLViewer
             FormatCommand = new RelayCommand(() =>
             {
                 LabelFormat_MouseUp(null, null);
+            });
+
+            CspDocCommand = new RelayCommand(() =>
+            {
+                var text = TextEditorData.SelectedText.Trim();
+                string documentationUrl;
+
+                // Check if the text looks like an OMA-URI (starts with ./)
+                if (text.StartsWith("./"))
+                {
+                    documentationUrl = _cspDocumentationModel.GetDocumentationUrlFromOmaUri(text);
+                }
+                // Check if it might be XML containing a LocURI
+                else if (text.Contains("<LocURI>"))
+                {
+                    var locUri = _cspDocumentationModel.ExtractLocUriFromXml(text);
+                    if (!string.IsNullOrEmpty(locUri))
+                    {
+                        documentationUrl = _cspDocumentationModel.GetDocumentationUrlFromOmaUri(locUri);
+                    }
+                    else
+                    {
+                        documentationUrl = _cspDocumentationModel.GetCspListUrl();
+                    }
+                }
+                // Assume it might be a CSP name directly
+                else if (!string.IsNullOrWhiteSpace(text))
+                {
+                    documentationUrl = _cspDocumentationModel.GetDocumentationUrl(text);
+                }
+                else
+                {
+                    // No selection, open the CSP list
+                    documentationUrl = _cspDocumentationModel.GetCspListUrl();
+                }
+
+                Helper.OpenUrl(documentationUrl);
             });
 
             // a little hacky, setting DataContext (ViewModel) of the window to this class MainWindow
