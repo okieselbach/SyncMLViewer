@@ -41,6 +41,7 @@ namespace SyncMLViewer
                 { "CertificateStore", "certificatestore-csp" },
                 { "ClientCertificateInstall", "clientcertificateinstall-csp" },
                 { "RootCACertificates", "rootcacertificates-csp" },
+                { "RootCATrustedCertificates", "rootcacertificates-csp" },
                 
                 // Network
                 { "WiFi", "wifi-csp" },

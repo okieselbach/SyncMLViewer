@@ -48,7 +48,7 @@
         <KeyBinding Key="E" Modifiers="Ctrl+Alt" Command="{Binding RegEnrollmentCommand}" />
         <KeyBinding Key="O" Modifiers="Ctrl+Alt" Command="{Binding RegProvisioningCommand}" />
         <KeyBinding Key="I" Modifiers="Ctrl+Alt" Command="{Binding RegImeCommand}" />
-        <KeyBinding Key="D" Modifiers="Ctrl+Alt" Command="{Binding RegDcCommand}" />
+        <KeyBinding Key="D" Modifiers="Ctrl+Alt" Command="{Binding CspDocCommand}" />
         <KeyBinding Key="K" Modifiers="Ctrl+Alt" Command="{Binding RegRebootUrisCommand}" />
         <KeyBinding Key="U" Modifiers="Ctrl+Alt" Command="{Binding CheckUpdateCommand}" />
         <KeyBinding Key="H" Modifiers="Ctrl+Alt" Command="{Binding HideMinimizedCommand}" />
@@ -61,12 +61,11 @@
         <KeyBinding Key="O" Modifiers="Ctrl+Shift" Command="{Binding OpenInNotepadCommand}" />
         <KeyBinding Key="F12" Command="{Binding CaptureCommand}" />
         <KeyBinding Key="F1" Command="{Binding SearchWithGoogleCommand}" />
-        <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding CspDocCommand}" />
     </Window.InputBindings>
     
     <Grid>
 
-        <Menu Height="21" VerticalAlignment="Top" Background="White" Margin="0,0,-0.4,0">
+        <Menu Height="21" VerticalAlignment="Top" Background="WHITE" Margin="0,0,-0.4,0">
             
             <MenuItem Header="_File">
                 <MenuItem x:Name="menuItemCaptureTraffic" Header="Capture traffic" InputGestureText="F12" IsCheckable="True" IsChecked="{Binding Path=TraceEventSessionState.Started}" Click="MenuItemCaptureTraffic_Click"/>
@@ -128,7 +127,7 @@
                 <MenuItem Header="View as HEX" InputGestureText="Ctrl+T" Click="MenuItemViewAsHex_Click" />
                 <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click" ToolTip="Lookup for MDM Status Code and Windows Error Code"/>
                 <MenuItem Header="Lookup NodeCache Entry in Registry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click" ToolTip="Open Registry NodeCache Entry with Number XYZ"/>
-                <MenuItem Header="Lookup CSP _Documentation" InputGestureText="Ctrl+D" Click="MenuItemLookupCspDocumentation_Click" ToolTip="Open CSP documentation for selected OMA-URI or CSP name"/>
+                <MenuItem Header="Lookup CSP _Documentation" InputGestureText="Ctrl+Alt+D" Click="MenuItemLookupCspDocumentation_Click" ToolTip="Open CSP documentation for selected OMA-URI or CSP name"/>
                 <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                 <Separator />
                 <MenuItem Header="View Message in Notepad" Click="MenuItemViewMessageInNotepad_Click" InputGestureText="Ctrl+Shift+O"/>
@@ -152,7 +151,7 @@
                     <MenuItem Header="-> Provisioning" InputGestureText="Ctrl+Alt+O" Click="MenuItemRegistryProvisioning_Click"/>
                     <MenuItem Header="-> PolicyManager" InputGestureText="Ctrl+Alt+P" Click="MenuItemRegistryPolicyManager_OnClick"/>
                     <MenuItem Header="-> RebootRequiredURIs" InputGestureText="Ctrl+Alt+K" Click="MenuItemRegistryRebootRequiredUris_Click"/>
-                    <MenuItem Header="-> DeclaredConfiguration" InputGestureText="Ctrl+Alt+D" Click="MenuItemRegistryDeclaredConfiguration_Click"/>
+                    <MenuItem Header="-> DeclaredConfiguration" Click="MenuItemRegistryDeclaredConfiguration_Click"/>
                     <MenuItem Header="-> IntuneManagementExtension" InputGestureText="Ctrl+Alt+I" Click="MenuItemRegistryIntuneManagementExtension_Click" x:Name="menuItemIntuneManagementExtension"/>
                     <MenuItem Header="-> EnterpriseDesktopAppManagement" Click="MenuItemRegistryEnterpriseDesktopAppManagement_Click"/>
                 </MenuItem>
@@ -195,7 +194,7 @@
         <TabControl x:Name="TabControlSyncMlViewer" Margin="0,26,0,50" SelectionChanged="TabControlSyncMlViewer_SelectionChanged">
             
             <TabItem Header="SyncML Representation Protocol Stream">
-                <Grid Background="White" Margin="0,0,0,-0.4">
+                <Grid Background="WHITE" Margin="0,0,0,-0.4">
                     <avalonedit:TextEditor
                         x:Name="TextEditorStream"
                         SyntaxHighlighting="XML"
@@ -222,7 +221,7 @@
                                 <MenuItem Header="Lookup" FontWeight="Bold"/>
                                 <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
                                 <MenuItem Header="Lookup NodeCache Entry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
-                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+D" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+Alt+D" Click="MenuItemLookupCspDocumentation_Click"/>
                                 <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                                 <Separator/>
                                 <MenuItem Header="Open in Notepad" InputGestureText="Ctrl+Shift+O" Click="ContextMenuOpenStreamInNotepad_Click"/>
@@ -235,7 +234,7 @@
             </TabItem>
             
             <TabItem x:Name="TabItemMessages" Header="SyncML Sessions/Messages" >
-                <Grid Background="White">
+                <Grid Background="WHITE">
                     <CheckBox x:Name="CheckBoxHtmlDecode" Content="HTML _decode inline" Margin="224,0,0,7" Checked="CheckBoxHtmlDecode_Checked" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="132" ToolTip="Convert &amp;lt; &amp;gt; &amp;quot; to &lt; &gt; &quot;"/>
                     <avalonedit:TextEditor
                         x:Name="TextEditorMessages"
@@ -262,7 +261,7 @@
                                 <MenuItem Header="Lookup" FontWeight="Bold"/>
                                 <MenuItem Header="Lookup Status Code" InputGestureText="Ctrl+E" Click="MenuItemLookupStatusCode_Click"/>
                                 <MenuItem Header="Lookup NodeCache Entry" InputGestureText="Ctrl+G" Click="MenuItemLookupNodeCache_Click"/>
-                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+D" Click="MenuItemLookupCspDocumentation_Click"/>
+                                <MenuItem Header="Lookup CSP Documentation" InputGestureText="Ctrl+Alt+D" Click="MenuItemLookupCspDocumentation_Click"/>
                                 <MenuItem Header="Search with Google" InputGestureText="F1" Click="MenuItemSearchWithGoogle_Click"/>
                                 <Separator/>
                                 <MenuItem Header="Open Message in Notepad" InputGestureText="Ctrl+Shift+O" Click="MenuItemViewMessageInNotepad_Click"/>
@@ -293,7 +292,7 @@
             </TabItem>
             
             <TabItem x:Name="TabItemSyncMLRequests" Header="SyncML Requests">
-                <Grid Name="GridRequests" Background="White">
+                <Grid Name="GridRequests" Background="WHITE">
                     
                     <Grid.RowDefinitions>
                         <RowDefinition Height="55" />
@@ -320,7 +319,7 @@
                     <TextBox x:Name="TextBoxUri" Margin="90,14,380,0" TextWrapping="NoWrap" Text="./DevDetail/Ext/DeviceHardwareData" VerticalAlignment="Top" KeyUp="TextBoxUri_KeyUp" Height="22" ToolTip="OMA-URI (case sensitive)" VerticalScrollBarVisibility="Hidden" Grid.Row="0" Grid.ColumnSpan="3"/>
                     <!-- AutoComplete Panel -->
                     <Canvas Panel.ZIndex="10">
-                        <Border x:Name="BorderAutoComplete" BorderBrush="LightGray" BorderThickness="1" Canvas.Left="90" Canvas.Top="36" Background="White" Visibility="Collapsed" Width="508" Height="154" VerticalAlignment="Top" >
+                        <Border x:Name="BorderAutoComplete" BorderBrush="LightGray" BorderThickness="1" Canvas.Left="90" Canvas.Top="36" Background="WHITE" Visibility="Collapsed" Width="508" Height="154" VerticalAlignment="Top" >
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel Name="resultStack"/>
                             </ScrollViewer>
@@ -416,10 +415,10 @@
             </TabItem>
             
             <TabItem x:Name="TabItemConnectivityProfiles" Header="Connectivity Profiles">
-                <Grid Background="White">
+                <Grid Background="WHITE">
                     <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">
                         <TabItem x:Name="TabItemWifi" Header="Wifi Profiles">
-                            <Grid Background="White">
+                            <Grid Background="WHITE">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                                 <ListBox x:Name="ListBoxWifi" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWifi_SelectionChanged">
                                     <ListBox.ContextMenu>
@@ -460,7 +459,7 @@
                         </TabItem>
 
                         <TabItem x:Name="TabItemWiredLan" Header="Wired Profiles">
-                            <Grid Background="White">
+                            <Grid Background="WHITE">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                                 <ListBox x:Name="ListBoxWiredLan" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxWiredLan_SelectionChanged">
                                     <ListBox.ContextMenu>
@@ -499,7 +498,7 @@
                         </TabItem>
 
                         <TabItem x:Name="TabItemVpn" Header="VPN Profiles">
-                            <Grid Background="White">
+                            <Grid Background="WHITE">
                                 <Label Content="Stored Profiles" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
                                 <ListBox x:Name="ListBoxVpn" Margin="7,30,0,34" HorizontalAlignment="Left" Width="208" SelectionChanged="ListBoxVpn_SelectionChanged">
                                     <ListBox.ContextMenu>
@@ -541,7 +540,7 @@
             </TabItem>
             
             <TabItem x:Name="TabItemDiagnostics" Header="MDM Diagnostics">
-                <Grid Background="White">
+                <Grid Background="WHITE">
                     <avalonedit:TextEditor
                         x:Name="TextEditorDiagnostics"
                         FontFamily="Consolas"
@@ -554,7 +553,7 @@
             </TabItem>
             
             <TabItem x:Name="TabItemCodes" Header="Response Status Codes Reference" Visibility="Visible">
-                <Grid Background="White">
+                <Grid Background="WHITE">
                     <avalonedit:TextEditor
                         x:Name="TextEditorCodes"
                         FontFamily="Consolas"
@@ -567,7 +566,7 @@
             </TabItem>
             
             <TabItem x:Name="TabItemAbout" Header="About">
-                <Grid Background="White">
+                <Grid Background="WHITE">
                     <avalonedit:TextEditor
                         x:Name="TextEditorAbout"
                         FontFamily="Consolas"

@@ -164,12 +164,14 @@ namespace SyncMLViewer
                     {
                         // ignore
                     }
+                    finally
+                    {
+                        p.Dispose();
+                    }
                 };
 
-                if (p.Start())
-                {
-                    p.WaitForExit();
-                }
+                p.Start();
+                // Don't wait for exit - let Notepad run independently
             }
             catch (Exception)
             {
