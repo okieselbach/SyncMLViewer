@@ -147,6 +147,7 @@ namespace SyncMLViewer
         public ICommand SearchWithGoogleCommand { get; }
         public ICommand OpenInNotepadCommand { get; }
         public ICommand CspDocCommand { get; }
+        public ICommand JumpToMessageCommand { get; }
         #endregion
 
         public MainWindow()
@@ -208,6 +209,7 @@ namespace SyncMLViewer
             SearchWithGoogleCommand = new RelayCommand(() => { MenuItemSearchWithGoogle_Click(null, null); });
             OpenInNotepadCommand = new RelayCommand(() => { MenuItemViewMessageInNotepad_Click(null, null); });
             CspDocCommand = new RelayCommand(() => { MenuItemLookupCspDocumentation_Click(null, null); });
+            JumpToMessageCommand = new RelayCommand(() => { JumpToMessageFromStream(); });
             #endregion
 
             _syncMDMSwitch = false;
@@ -2612,11 +2614,11 @@ namespace SyncMLViewer
             {
                 text = TextEditorMessages.SelectedText.Trim();
             }
-            else if (TextEditorSyncMlRequests.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequests.SelectedText))
+            else if (TextEditorSyncMlRequests.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
             {
                 text = TextEditorSyncMlRequests.SelectedText.Trim();
             }
-            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && string.IsNullOrWhiteSpace(TextEditorSyncMlRequestsRequestViewer.SelectedText))
+            else if (TextEditorSyncMlRequestsRequestViewer.IsVisible && string.IsNullOrEmpty(TextEditorSyncMlRequests.SelectedText))
             {
                 text = TextEditorSyncMlRequestsRequestViewer.SelectedText.Trim();
             }
@@ -2678,6 +2680,11 @@ namespace SyncMLViewer
             }
         }
 
+        private void MenuItemJumpToMessage_Click(object sender, RoutedEventArgs e)
+        {
+            JumpToMessageFromStream();
+        }
+
         private void MenuItemWiredLanProfiles_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\dot3svc\Profiles"));
@@ -2686,6 +2693,207 @@ namespace SyncMLViewer
         private void MenuItemWiFiProfiles_Click_1(object sender, RoutedEventArgs e)
         {
             Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Wlansvc\Profiles"));
+        }
+
+        /// <summary>
+        /// Jump from the Stream tab to the Sessions/Messages tab, selecting the correct session and message
+        /// based on the current caret position in the stream, and navigate to the same position within the message.
+        /// </summary>
+        private void JumpToMessageFromStream()
+        {
+            try
+            {
+                // Get the current caret position in the stream
+                int caretOffset = TextEditorStream.CaretOffset;
+                string streamText = TextEditorStream.Text;
+
+                if (string.IsNullOrEmpty(streamText) || caretOffset < 0)
+                {
+                    MessageBox.Show("No SyncML stream content available.", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Find all SyncML message boundaries in the stream
+                var syncMlMatches = Regex.Matches(streamText, @"<SyncML[\s\S]*?</SyncML>", RegexOptions.IgnoreCase);
+
+                if (syncMlMatches.Count == 0)
+                {
+                    MessageBox.Show("No SyncML messages found in the stream.", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Find which message contains the caret position
+                Match containingMatch = null;
+                int relativeOffset = 0;
+
+                foreach (Match match in syncMlMatches)
+                {
+                    if (caretOffset >= match.Index && caretOffset <= match.Index + match.Length)
+                    {
+                        containingMatch = match;
+                        relativeOffset = caretOffset - match.Index;
+                        break;
+                    }
+                }
+
+                if (containingMatch == null)
+                {
+                    // Caret is not inside a SyncML message, find the nearest one
+                    // Find the message that starts before the caret position
+                    foreach (Match match in syncMlMatches)
+                    {
+                        if (match.Index <= caretOffset)
+                        {
+                            containingMatch = match;
+                            relativeOffset = Math.Min(caretOffset - match.Index, match.Length);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (containingMatch == null && syncMlMatches.Count > 0)
+                    {
+                        // Use the first message
+                        containingMatch = syncMlMatches[0];
+                        relativeOffset = 0;
+                    }
+                }
+
+                if (containingMatch == null)
+                {
+                    MessageBox.Show("Could not find a SyncML message at the current position.", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Extract SessionID and MsgID from the found message
+                string messageXml = containingMatch.Value;
+                
+                string sessionId = "0";
+                var matchSessionId = new Regex(@"<SessionID>([0-9a-zA-Z]+)</SessionID>", RegexOptions.IgnoreCase).Match(messageXml);
+                if (matchSessionId.Success)
+                {
+                    sessionId = matchSessionId.Groups[1].Value;
+                }
+
+                string msgId = "0";
+                var matchMsgId = new Regex(@"<MsgID>([0-9]+)</MsgID>", RegexOptions.IgnoreCase).Match(messageXml);
+                if (matchMsgId.Success)
+                {
+                    msgId = matchMsgId.Groups[1].Value;
+                }
+
+                // Find the session in SyncMlSessions
+                var session = SyncMlSessions.FirstOrDefault(s => s.SessionId == sessionId);
+                if (session == null)
+                {
+                    MessageBox.Show($"Session '{sessionId}' not found in the sessions list.", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Find the message in the session
+                var message = session.Messages.FirstOrDefault(m => m.MsgId == msgId);
+                if (message == null)
+                {
+                    MessageBox.Show($"Message '{msgId}' not found in session '{sessionId}'.", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Switch to the Sessions/Messages tab
+                TabControlSyncMlViewer.SelectedItem = TabItemMessages;
+
+                // Select the session
+                ListBoxSessions.SelectedItem = session;
+                ListBoxSessions.ScrollIntoView(session);
+
+                // Select the message
+                ListBoxMessages.SelectedItem = message;
+                ListBoxMessages.ScrollIntoView(message);
+
+                // Calculate the equivalent offset in the formatted message
+                // The message in the Messages tab may be formatted differently, so we need to find the equivalent position
+                // We'll try to find a nearby text snippet from the stream and locate it in the message
+                
+                // Get a snippet of text around the caret position (for matching)
+                int snippetStart = Math.Max(0, relativeOffset - 50);
+                int snippetLength = Math.Min(100, messageXml.Length - snippetStart);
+                string snippet = messageXml.Substring(snippetStart, snippetLength);
+                
+                // Try to find this snippet in the formatted message
+                string formattedMessage = message.Xml;
+                
+                // For better matching, extract just the line containing the caret
+                int lineStart = messageXml.LastIndexOf('\n', Math.Max(0, relativeOffset - 1));
+                if (lineStart < 0) lineStart = 0;
+                else lineStart++; // Skip the newline character
+                
+                int lineEnd = messageXml.IndexOf('\n', relativeOffset);
+                if (lineEnd < 0) lineEnd = messageXml.Length;
+                
+                string currentLine = messageXml.Substring(lineStart, lineEnd - lineStart).Trim();
+                
+                // Try to find this line in the formatted message
+                int targetOffset = 0;
+                if (!string.IsNullOrWhiteSpace(currentLine) && currentLine.Length > 5)
+                {
+                    // Search for the line content in the formatted message
+                    int foundIndex = formattedMessage.IndexOf(currentLine, StringComparison.OrdinalIgnoreCase);
+                    if (foundIndex >= 0)
+                    {
+                        // Adjust for the position within the line
+                        int positionInLine = relativeOffset - lineStart;
+                        targetOffset = foundIndex + Math.Min(positionInLine, currentLine.Length);
+                    }
+                    else
+                    {
+                        // Try to find a shorter unique segment
+                        string segment = currentLine.Length > 30 ? currentLine.Substring(0, 30) : currentLine;
+                        foundIndex = formattedMessage.IndexOf(segment, StringComparison.OrdinalIgnoreCase);
+                        if (foundIndex >= 0)
+                        {
+                            targetOffset = foundIndex;
+                        }
+                    }
+                }
+
+                // Navigate to the position in TextEditorMessages
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try
+                    {
+                        if (targetOffset > 0 && targetOffset < TextEditorMessages.Text.Length)
+                        {
+                            TextEditorMessages.CaretOffset = targetOffset;
+                            
+                            // Get the line number and scroll to it
+                            var location = TextEditorMessages.Document.GetLocation(targetOffset);
+                            TextEditorMessages.ScrollTo(location.Line, location.Column);
+                            
+                            // Highlight the line briefly by selecting some text
+                            int lineStartOffset = TextEditorMessages.Document.GetLineByNumber(location.Line).Offset;
+                            int lineLength = TextEditorMessages.Document.GetLineByNumber(location.Line).Length;
+                            TextEditorMessages.Select(lineStartOffset, lineLength);
+                        }
+                        else
+                        {
+                            // Just scroll to top if we couldn't find the position
+                            TextEditorMessages.ScrollToHome();
+                        }
+                        
+                        TextEditorMessages.Focus();
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore navigation errors
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"JumpToMessageFromStream error: {ex.Message}");
+                MessageBox.Show($"Error jumping to message: {ex.Message}", "Jump to Message", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

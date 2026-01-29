@@ -38,6 +38,7 @@
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="{Binding HelpCspCommand}" />
         <KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding StatusCodeCommand}" />
         <KeyBinding Key="G" Modifiers="Ctrl" Command="{Binding NodeCacheCommand}" />
+        <KeyBinding Key="J" Modifiers="Ctrl" Command="{Binding JumpToMessageCommand}" />
         <KeyBinding Key="F" Modifiers="Ctrl+Alt" Command="{Binding FormatCommand}" />
         <KeyBinding Key="T" Modifiers="Ctrl+Alt" Command="{Binding TopMostCommand}" />
         <KeyBinding Key="S" Modifiers="Ctrl+Alt" Command="{Binding AutoScrollCommand}" />
@@ -117,6 +118,7 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuItemFind_Click" />
+                <MenuItem Header="_Jump to Message" InputGestureText="Ctrl+J" Click="MenuItemJumpToMessage_Click" ToolTip="Jump from Stream to the corresponding Session/Message (Ctrl+J)"/>
                 <Separator />
                 <MenuItem Header="Actions for selected text" StaysOpenOnClick="True" FontWeight="Bold"/>
                 <MenuItem Header="Decode _HTML" InputGestureText="Ctrl+H" Click="MenuItemDecodeHTML_Click"/>
