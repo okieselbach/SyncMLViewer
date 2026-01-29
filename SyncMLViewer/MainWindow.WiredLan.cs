@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -46,7 +48,6 @@ namespace SyncMLViewer
         {
             try
             {
-                //EnsureWiredLanInitialized();
                 await RefreshWiredLanProfilesAsync();
             }
             catch (Exception)
@@ -57,41 +58,153 @@ namespace SyncMLViewer
 
         private async void ButtonDeleteWiredLan_Click(object sender, RoutedEventArgs e)
         {
-            //EnsureWiredLanInitialized();
-
             if (!(ListBoxWiredLan.SelectedItem is WiredLanProfile wiredProfile))
             {
                 return;
             }
 
+            string warningMessage;
+            string interfaceToDelete;
+
+            if (wiredProfile.Location == WiredLanProfileLocation.Machine)
+            {
+                // Machine profiles - need to specify an interface to delete from
+                var interfaces = GetEthernetInterfaceNames();
+                
+                if (interfaces.Count == 0)
+                {
+                    MessageBox.Show(
+                        "No Ethernet interfaces found to delete the profile from.",
+                        "SyncML Viewer",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (interfaces.Count == 1)
+                {
+                    interfaceToDelete = interfaces[0];
+                    warningMessage = $"Do you want to try to delete the Machine Wired LAN profile '{wiredProfile.Name}' from interface '{interfaceToDelete}'?\n\n" +
+                                     "Note: Machine/Group Policy profiles may not be deletable via netsh.";
+                }
+                else
+                {
+                    // Multiple interfaces - let user choose or delete from all
+                    var interfaceList = string.Join("\n", interfaces.Select((name, idx) => $"  {idx + 1}. {name}"));
+                    var result = MessageBox.Show(
+                        $"The Machine profile '{wiredProfile.Name}' can be applied to multiple interfaces:\n\n{interfaceList}\n\n" +
+                        "Click 'Yes' to try to delete from ALL interfaces, or 'No' to cancel.\n\n" +
+                        "Note: Machine/Group Policy profiles may not be deletable via netsh.",
+                        "SyncML Viewer - Delete Machine Profile",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+
+                    // Try to delete from all interfaces and collect results
+                    var results = new StringBuilder();
+                    bool anySuccess = false;
+
+                    foreach (var ifName in interfaces)
+                    {
+                        var output = Helper.RunCommandWithResult("netsh", $"lan delete profile interface=\"{ifName}\"", out int exitCode);
+                        results.AppendLine($"Interface '{ifName}':");
+                        results.AppendLine($"  Exit Code: {exitCode}");
+                        if (!string.IsNullOrWhiteSpace(output))
+                        {
+                            results.AppendLine($"  Result: {output}");
+                        }
+                        results.AppendLine();
+
+                        if (exitCode == 0)
+                        {
+                            anySuccess = true;
+                        }
+                    }
+
+                    // Show results
+                    MessageBox.Show(
+                        $"Delete operation completed.\n\n{results}",
+                        anySuccess ? "SyncML Viewer - Delete Result" : "SyncML Viewer - Delete Failed",
+                        MessageBoxButton.OK,
+                        anySuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+
+                    await RefreshWiredLanProfilesAsync();
+                    return;
+                }
+            }
+            else
+            {
+                // Interface-specific profile (applied instance)
+                interfaceToDelete = wiredProfile.InterfaceName ?? wiredProfile.InterfaceGuid;
+                warningMessage = $"Do you want to try to delete the Wired LAN profile '{wiredProfile.Name}' from interface '{interfaceToDelete}'?\n\n" +
+                                 "Note: Applied/Machine profiles may not be deletable via netsh.\n" +
+                                 "To fully remove MDM-deployed profiles, remove the assignment in your MDM and sync the device.";
+            }
+
             var rc = MessageBox.Show(
-                $"Do you really want to delete the Wired LAN / 802.1x profile '{wiredProfile.Name}'?",
-                "SyncML Viewer",
+                warningMessage,
+                "SyncML Viewer - Delete Profile",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Question);
 
             if (rc == MessageBoxResult.No)
             {
                 return;
             }
 
-            // Supported deletion method.
-            Helper.RunCommand("netsh", $"lan delete profile name=\"{wiredProfile.Name}\"");
+            // Execute the delete command and capture the result
+            var deleteOutput = Helper.RunCommandWithResult("netsh", $"lan delete profile interface=\"{interfaceToDelete}\"", out int deleteExitCode);
+
+            // Show the result to the user
+            string resultMessage;
+            MessageBoxImage icon;
+
+            if (deleteExitCode == 0)
+            {
+                resultMessage = $"Profile deletion successful.\n\nInterface: {interfaceToDelete}\nExit Code: {deleteExitCode}";
+                if (!string.IsNullOrWhiteSpace(deleteOutput))
+                {
+                    resultMessage += $"\n\nOutput:\n{deleteOutput}";
+                }
+                icon = MessageBoxImage.Information;
+            }
+            else
+            {
+                resultMessage = $"Profile deletion failed.\n\nInterface: {interfaceToDelete}\nExit Code: {deleteExitCode}";
+                if (!string.IsNullOrWhiteSpace(deleteOutput))
+                {
+                    resultMessage += $"\n\nError:\n{deleteOutput}";
+                }
+                resultMessage += "\n\nNote: Machine/Group Policy profiles cannot be deleted via netsh.\n" +
+                                "To remove MDM-deployed profiles, remove the assignment in your MDM and sync the device.";
+                icon = MessageBoxImage.Warning;
+            }
+
+            MessageBox.Show(
+                resultMessage,
+                deleteExitCode == 0 ? "SyncML Viewer - Delete Successful" : "SyncML Viewer - Delete Failed",
+                MessageBoxButton.OK,
+                icon);
 
             await RefreshWiredLanProfilesAsync();
         }
 
         private async Task RefreshWiredLanProfilesAsync()
         {
-            //EnsureWiredLanInitialized();
-
             WiredLanProfileList.Clear();
             TextEditorWiredLanProfiles.Clear();
 
-            // Robust enumeration: read dot3svc stored profiles from ProgramData.
-            var profiles = await Task.Run(EnumerateWiredLanProfilesFromDisk);
+            // Build a mapping of interface GUID to friendly name
+            var guidToName = await Task.Run(() => GetInterfaceGuidToNameMap());
 
-            foreach (var p in profiles.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
+            // Enumerate profiles from both Machine and Interfaces folders
+            var profiles = await Task.Run(() => EnumerateWiredLanProfilesFromDisk(guidToName));
+
+            foreach (var p in profiles.OrderBy(p => p.Location).ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
             {
                 WiredLanProfileList.Add(p);
             }
@@ -104,46 +217,142 @@ namespace SyncMLViewer
             }
         }
 
-        private static List<WiredLanProfile> EnumerateWiredLanProfilesFromDisk()
+        /// <summary>
+        /// Gets a list of Ethernet interface friendly names
+        /// </summary>
+        private static List<string> GetEthernetInterfaceNames()
+        {
+            var result = new List<string>();
+            try
+            {
+                foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    // Filter for Ethernet adapters (wired)
+                    if (nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet)
+                    {
+                        result.Add(nic.Name);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Builds a dictionary mapping interface GUIDs to friendly names
+        /// </summary>
+        private static Dictionary<string, string> GetInterfaceGuidToNameMap()
+        {
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    // The GUID is typically the Id property
+                    map[nic.Id] = nic.Name;
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            return map;
+        }
+
+        private static List<WiredLanProfile> EnumerateWiredLanProfilesFromDisk(Dictionary<string, string> guidToNameMap)
         {
             var result = new List<WiredLanProfile>();
+            int machineProfileIndex = 0;
+            int interfaceProfileIndex = 0;
 
             try
             {
-                var root = Path.Combine(
+                var baseRoot = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                     "Microsoft",
                     "dot3svc",
-                    "Profiles",
-                    "Interfaces");
+                    "Profiles");
 
-                if (!Directory.Exists(root))
+                if (!Directory.Exists(baseRoot))
                 {
                     return result;
                 }
 
-                foreach (var interfaceDir in Directory.EnumerateDirectories(root))
+                // 1. Enumerate Machine profiles (e.g., from Intune/MDM)
+                var machineDir = Path.Combine(baseRoot, "Machine");
+                if (Directory.Exists(machineDir))
                 {
-                    foreach (var file in Directory.EnumerateFiles(interfaceDir, "*.xml"))
+                    foreach (var file in Directory.EnumerateFiles(machineDir, "*.xml"))
                     {
                         try
                         {
                             var xml = File.ReadAllText(file);
-                            var name = GetWiredLanProfileName(xml) ?? Path.GetFileNameWithoutExtension(file);
+                            var name = GetWiredLanProfileName(xml, file, ref machineProfileIndex);
 
-                            // Disambiguate duplicates across interfaces.
-                            var interfaceName = new DirectoryInfo(interfaceDir).Name;
-                            var displayName = name;
-                            if (result.Any(x => string.Equals(x.Name, displayName, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                displayName = $"{name} ({interfaceName})";
-                            }
-
-                            result.Add(new WiredLanProfile(displayName, xml));
+                            // Machine profiles - deletable via netsh (but may fail for GP/MDM profiles)
+                            result.Add(new WiredLanProfile(
+                                name, 
+                                xml, 
+                                WiredLanProfileLocation.Machine, 
+                                file,
+                                interfaceGuid: null,
+                                interfaceName: null,
+                                isDeletable: true));
                         }
                         catch (Exception)
                         {
-                            // ignore
+                            // ignore individual file errors
+                        }
+                    }
+                }
+
+                // 2. Enumerate Interface-specific profiles (applied instances)
+                var interfacesDir = Path.Combine(baseRoot, "Interfaces");
+                if (Directory.Exists(interfacesDir))
+                {
+                    foreach (var interfaceDir in Directory.EnumerateDirectories(interfacesDir))
+                    {
+                        var interfaceGuid = new DirectoryInfo(interfaceDir).Name;
+                        
+                        // Try to get friendly name from the map
+                        string interfaceName = null;
+                        
+                        // The folder name might be the GUID with or without braces
+                        var guidVariants = new[] { interfaceGuid, $"{{{interfaceGuid}}}", interfaceGuid.Trim('{', '}') };
+                        foreach (var variant in guidVariants)
+                        {
+                            if (guidToNameMap.TryGetValue(variant, out var friendlyName))
+                            {
+                                interfaceName = friendlyName;
+                                break;
+                            }
+                        }
+
+                        foreach (var file in Directory.EnumerateFiles(interfaceDir, "*.xml"))
+                        {
+                            try
+                            {
+                                var xml = File.ReadAllText(file);
+                                var name = GetWiredLanProfileName(xml, file, ref interfaceProfileIndex);
+
+                                // Interface profiles are applied instances - can try to delete but may fail
+                                result.Add(new WiredLanProfile(
+                                    name,
+                                    xml,
+                                    WiredLanProfileLocation.Interface,
+                                    file,
+                                    interfaceGuid,
+                                    interfaceName,
+                                    isDeletable: true)); // Allow attempt, show result
+                            }
+                            catch (Exception)
+                            {
+                                // ignore individual file errors
+                            }
                         }
                     }
                 }
@@ -156,22 +365,70 @@ namespace SyncMLViewer
             return result;
         }
 
-        private static string GetWiredLanProfileName(string xml)
+        /// <summary>
+        /// Extracts the profile name from the XML, with fallbacks for Intune-deployed profiles
+        /// that may not have a name node.
+        /// </summary>
+        private static string GetWiredLanProfileName(string xml, string filePath, ref int profileIndex)
         {
+            // Try to get name from XML first
             try
             {
                 var doc = new XmlDocument();
                 doc.LoadXml(xml);
 
-                var node = doc.SelectSingleNode("/*[local-name()='LANProfile']/*[local-name()='name']")
-                           ?? doc.SelectSingleNode("//*[local-name()='name']");
+                // Try standard LANProfile/name path
+                var node = doc.SelectSingleNode("/*[local-name()='LANProfile']/*[local-name()='name']");
+                if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
+                {
+                    return node.InnerText;
+                }
 
-                return node?.InnerText;
+                // Try any name element
+                node = doc.SelectSingleNode("//*[local-name()='name']");
+                if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
+                {
+                    return node.InnerText;
+                }
             }
             catch (Exception)
             {
-                return null;
+                // XML parsing failed, continue to fallbacks
             }
+
+            // Fallback 1: Use filename (without extension)
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            
+            // Check if filename looks like a GUID (not very descriptive)
+            if (!string.IsNullOrEmpty(fileName) && !IsGuidLike(fileName))
+            {
+                return fileName;
+            }
+
+            // Fallback 2: Generate a descriptive name
+            profileIndex++;
+            return $"Wired Profile {profileIndex}";
+        }
+
+        /// <summary>
+        /// Checks if a string looks like a GUID (to avoid using GUIDs as display names)
+        /// </summary>
+        private static bool IsGuidLike(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            // Remove braces and hyphens, check if remaining chars are hex
+            var cleaned = value.Trim('{', '}').Replace("-", "");
+            
+            // GUIDs are 32 hex characters
+            if (cleaned.Length == 32 && cleaned.All(c => Uri.IsHexDigit(c)))
+            {
+                return true;
+            }
+
+            // Also check if it can be parsed as a GUID
+            return Guid.TryParse(value, out _);
         }
     }
 }

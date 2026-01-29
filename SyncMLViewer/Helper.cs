@@ -281,6 +281,63 @@ namespace SyncMLViewer
             return output;
         }
 
+        /// <summary>
+        /// Runs a command and captures both stdout and stderr, along with the exit code.
+        /// </summary>
+        /// <param name="command">The command to run</param>
+        /// <param name="arguments">Command arguments</param>
+        /// <param name="exitCode">The exit code of the process</param>
+        /// <returns>Combined output from stdout and stderr</returns>
+        public static string RunCommandWithResult(string command, string arguments, out int exitCode)
+        {
+            var output = new StringBuilder();
+            exitCode = -1;
+
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = command,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                p.Start();
+                
+                // Read both stdout and stderr
+                string stdout = p.StandardOutput.ReadToEnd();
+                string stderr = p.StandardError.ReadToEnd();
+                
+                p.WaitForExit();
+                exitCode = p.ExitCode;
+
+                if (!string.IsNullOrWhiteSpace(stdout))
+                {
+                    output.AppendLine(stdout.Trim());
+                }
+                if (!string.IsNullOrWhiteSpace(stderr))
+                {
+                    output.AppendLine(stderr.Trim());
+                }
+
+                Debug.WriteLine($"RunCommandWithResult: {command} {arguments} ExitCode: {exitCode}");
+
+                p.Dispose();
+            }
+            catch (Exception ex)
+            {
+                output.AppendLine($"Error executing command: {ex.Message}");
+            }
+
+            return output.ToString().Trim();
+        }
+
         public static string ConvertTextToHex(string input)
         {
             //StringBuilder hexBuilder = new StringBuilder();

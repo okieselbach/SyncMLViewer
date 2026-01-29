@@ -2680,12 +2680,12 @@ namespace SyncMLViewer
 
         private void MenuItemWiredLanProfiles_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\dot3svc\Profiles\Interfaces"));
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\dot3svc\Profiles"));
         }
 
         private void MenuItemWiFiProfiles_Click_1(object sender, RoutedEventArgs e)
         {
-            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Wlansvc\Profiles\Interfaces"));
+            Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Wlansvc\Profiles"));
         }
     }
 }
