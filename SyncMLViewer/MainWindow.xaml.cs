@@ -2643,9 +2643,47 @@ namespace SyncMLViewer
                 text = TextEditorSyncMlRequests.SelectedText.Trim();
             }
 
-            if (int.TryParse(text, out _))
-            { 
-                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
+            string nodeId = null;
+
+            // First, try to extract node ID from NodeCache OMA-URI pattern
+            // Pattern: ./Vendor/MSFT/NodeCache/.../Nodes/{NodeId}/... or similar variations
+            var nodeCachePattern = new Regex(@"/Nodes/(\d+)(?:/|$|<)", RegexOptions.IgnoreCase);
+            var nodeCacheMatch = nodeCachePattern.Match(text);
+            if (nodeCacheMatch.Success)
+            {
+                nodeId = nodeCacheMatch.Groups[1].Value;
+            }
+
+            // If not found, try to extract from LocURI XML element
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                var locUriPattern = new Regex(@"<LocURI>([^<]+)</LocURI>", RegexOptions.IgnoreCase);
+                var locUriMatch = locUriPattern.Match(text);
+                if (locUriMatch.Success)
+                {
+                    var locUri = locUriMatch.Groups[1].Value;
+                    var innerNodeMatch = nodeCachePattern.Match(locUri);
+                    if (innerNodeMatch.Success)
+                    {
+                        nodeId = innerNodeMatch.Groups[1].Value;
+                    }
+                }
+            }
+
+            // Fallback: if the selected text is just a number, use it directly
+            if (string.IsNullOrEmpty(nodeId) && int.TryParse(text, out _))
+            {
+                nodeId = text;
+            }
+
+            if (!string.IsNullOrEmpty(nodeId))
+            {
+                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{nodeId}");
+            }
+            else
+            {
+                MessageBox.Show("Could not extract a Node ID from the selected text.\n\nSelect a NodeCache OMA-URI like:\n./Vendor/MSFT/NodeCache/.../Nodes/123/...\n\nOr just select the node number.", 
+                    "NodeCache Lookup", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
