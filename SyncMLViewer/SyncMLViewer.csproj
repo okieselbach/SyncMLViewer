@@ -339,6 +339,7 @@
     <Compile Include="MainWindow.Vpn.cs" />
     <Compile Include="MainWindow.Wifi.cs" />
     <Compile Include="MainWindow.WiredLan.cs" />
+    <Compile Include="MainWindow.Wns.cs" />
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="StatusCodeLookupModel.cs" />
@@ -349,6 +350,7 @@
     <Compile Include="VpnProfile.cs" />
     <Compile Include="WifiProfile.cs" />
     <Compile Include="WiredLanProfile.cs" />
+    <Compile Include="WnsMessage.cs" />
     <Page Include="DataEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

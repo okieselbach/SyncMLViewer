@@ -414,6 +414,117 @@
                 </Grid>
             </TabItem>
             
+            <TabItem x:Name="TabItemWns" Header="WNS Messages">
+                <Grid Background="WHITE">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="2"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Header row -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="3" Margin="10,5,10,5">
+                        <CheckBox x:Name="CheckBoxWnsCapture" Content="Capture WNS Traffic" VerticalAlignment="Center" Margin="0,0,20,0" 
+                                  Checked="CheckBoxWnsCapture_Changed" Unchecked="CheckBoxWnsCapture_Changed"
+                                  ToolTip="Enable/Disable WNS ETW event capturing"/>
+                        <Image x:Name="ImageWnsCapture" Source="/Icons/data-traffic.ico" Width="20" Height="20" 
+                               ToolTip="WNS capture is active" Visibility="Hidden" Margin="0,0,20,0"/>
+                        <Button x:Name="ButtonClearWns" Content="Clear" Width="70" Height="24" Click="ButtonClearWns_Click" 
+                                ToolTip="Clear all WNS messages" Margin="0,0,10,0"/>
+                        <Button x:Name="ButtonSaveWns" Content="Save" Width="70" Height="24" Click="ButtonSaveWns_Click" 
+                                ToolTip="Save WNS stream to file" Margin="0,0,10,0"/>
+                        <Button x:Name="ButtonTestWns" Content="Test Event" Width="80" Height="24" Click="ButtonTestWns_Click" 
+                                ToolTip="Generate a test WNS event to verify the UI is working"/>
+                        <Label Content="(WNS events appear when Windows receives push notifications from Intune/WNS service)" 
+                               VerticalAlignment="Center" FontSize="10" Foreground="Gray" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    
+                    <!-- Left side: Message list -->
+                    <Grid Grid.Row="1" Grid.Column="0">
+                        <Label Content="WNS Events" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
+                        <ListBox x:Name="ListBoxWnsMessages" Margin="5,26,5,5" 
+                                 ItemsSource="{Binding WnsMessages}"
+                                 DisplayMemberPath="Entry"
+                                 SelectionChanged="ListBoxWnsMessages_SelectionChanged">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Clear All" Click="ButtonClearWns_Click"/>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                        </ListBox>
+                    </Grid>
+                    
+                    <GridSplitter Grid.Row="1" Grid.Column="1" Width="2" Background="#FFEEEEEE" 
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    
+                    <!-- Right side: Stream and Details -->
+                    <Grid Grid.Row="1" Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="2"/>
+                            <RowDefinition Height="200"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Stream view -->
+                        <Grid Grid.Row="0">
+                            <Label Content="WNS Event Stream" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
+                            <avalonedit:TextEditor
+                                x:Name="TextEditorWnsStream"
+                                FontFamily="Consolas"
+                                FontSize="10pt"
+                                HorizontalScrollBarVisibility="Auto"
+                                ShowLineNumbers="True"
+                                IsReadOnly="True"
+                                WordWrap="True" 
+                                Margin="5,26,5,30">
+                                <avalonedit:TextEditor.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                        <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                        <Separator/>
+                                        <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                        <MenuItem Header="Search with Google" Click="MenuItemSearchWithGoogle_Click"/>
+                                    </ContextMenu>
+                                </avalonedit:TextEditor.ContextMenu>
+                            </avalonedit:TextEditor>
+                            <Label x:Name="LabelBackToTopWns" Content="[Top]" Margin="0,0,5,2" Cursor="Hand" Foreground="#FF002AF8" 
+                                   HorizontalAlignment="Right" Width="36" Height="26" VerticalAlignment="Bottom" 
+                                   MouseLeftButtonUp="LabelBackToTopWns_MouseLeftButtonUp"/>
+                        </Grid>
+                        
+                        <GridSplitter Grid.Row="1" Height="2" Background="#FFEEEEEE" 
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        
+                        <!-- Details view -->
+                        <Grid Grid.Row="2">
+                            <Label Content="Event Details" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
+                            <avalonedit:TextEditor
+                                x:Name="TextEditorWnsDetails"
+                                FontFamily="Consolas"
+                                FontSize="10pt"
+                                HorizontalScrollBarVisibility="Auto"
+                                ShowLineNumbers="False"
+                                IsReadOnly="True"
+                                WordWrap="True" 
+                                Margin="5,26,5,5">
+                                <avalonedit:TextEditor.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C"/>
+                                        <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" InputGestureText="Ctrl+A"/>
+                                        <Separator/>
+                                        <MenuItem Header="Decode _BASE64" Click="MenuItemDecodeBase64_Click"/>
+                                    </ContextMenu>
+                                </avalonedit:TextEditor.ContextMenu>
+                            </avalonedit:TextEditor>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            
             <TabItem x:Name="TabItemConnectivityProfiles" Header="Connectivity Profiles">
                 <Grid Background="WHITE">
                     <TabControl x:Name="TabControlSyncMlViewerResourceAccessPolicies" Margin="0,0,0,0">

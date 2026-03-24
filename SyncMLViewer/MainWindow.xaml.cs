@@ -609,7 +609,20 @@ namespace SyncMLViewer
                         traceEventSession.EnableProvider(OmaDmClient);
                         traceEventSession.EnableProvider(OmaDmClientProvider);
 
-                        new RegisteredTraceEventParser(traceEventSource).All += (data => (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
+                        // Enable WNS providers with verbose level and all keywords
+                        traceEventSession.EnableProvider(WnsPushNotificationsPlatform, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
+                        traceEventSession.EnableProvider(WnsPushNotificationsDeveloper, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
+                        traceEventSession.EnableProvider(WnsPushNotificationsInProc, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
+                        traceEventSession.EnableProvider(WnsMdmPushRouter, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
+
+                        // Use all three parsers so no events are silently dropped:
+                        // RegisteredTraceEventParser: manifest in Windows Event Log registry
+                        // Dynamic.All: manifest embedded in the event stream
+                        // UnhandledEvents: everything else (MOF, WPP, classic providers)
+                        var reportProgress = (Action<TraceEvent>)(data => (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
+                        new RegisteredTraceEventParser(traceEventSource).All += reportProgress;
+                        traceEventSource.Dynamic.All += reportProgress;
+                        traceEventSource.UnhandledEvents += reportProgress;
                         traceEventSource.Process();
 
                         TraceEventSessionState.Started = true;
@@ -629,6 +642,13 @@ namespace SyncMLViewer
                 if (!(e.UserState is TraceEvent userState))
                 {
                     throw new ArgumentException("No TraceEvent received.");
+                }
+
+                // Check if this is a WNS event and process it if WNS capture is enabled
+                if (_wnsTraceEnabled && IsWnsProvider(userState.ProviderGuid))
+                {
+                    ProcessWnsEvent(userState);
+                    return; // WNS events are handled separately
                 }
 
                 // show all events
@@ -2949,7 +2969,7 @@ namespace SyncMLViewer
                 
                 // Try to find this line in the formatted message
                 int targetOffset = 0;
-                if (!string.IsNullOrWhiteSpace(currentLine) && currentLine.Length > 5)
+                if (!string.IsNullOrEmpty(currentLine) && currentLine.Length > 5)
                 {
                     // Search for the line content in the formatted message
                     int foundIndex = formattedMessage.IndexOf(currentLine, StringComparison.OrdinalIgnoreCase);
