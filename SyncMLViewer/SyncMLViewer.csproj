@@ -340,6 +340,11 @@
     <Compile Include="MainWindow.Wifi.cs" />
     <Compile Include="MainWindow.WiredLan.cs" />
     <Compile Include="MainWindow.Wns.cs" />
+    <Compile Include="MainWindow.Etw.cs" />
+    <Compile Include="EtwMessage.cs" />
+    <Compile Include="EtwProviderDialog.xaml.cs">
+      <DependentUpon>EtwProviderDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MdmDiagnostics.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="StatusCodeLookupModel.cs" />
@@ -351,6 +356,9 @@
     <Compile Include="WifiProfile.cs" />
     <Compile Include="WiredLanProfile.cs" />
     <Compile Include="WnsMessage.cs" />
+    <Compile Include="WnsOptionsDialog.xaml.cs">
+      <DependentUpon>WnsOptionsDialog.xaml</DependentUpon>
+    </Compile>
     <Page Include="DataEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -358,6 +366,14 @@
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WnsOptionsDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EtwProviderDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

@@ -280,6 +280,15 @@ namespace SyncMLViewer
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorDiagnostics);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequests);
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorSyncMlRequestsRequestViewer);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorWnsStream);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorWnsDetails);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorEtwStream);
+            ICSharpCode.AvalonEdit.Search.SearchPanel.Install(TextEditorEtwDetails);
+
+            InitWnsCollectionView();
+
+            // Parse default provider text to initialize custom ETW providers
+            _etwCustomProviders = ParseProviderGuids(_etwProviderText);
             _foldingManager = FoldingManager.Install(TextEditorMessages.TextArea);
             _foldingStrategy = new XmlFoldingStrategy();
             _foldingStrategy.UpdateFoldings(_foldingManager, TextEditorMessages.Document);
@@ -532,6 +541,9 @@ namespace SyncMLViewer
             TraceEventSession.GetActiveSession(SessionName)?.Stop(true);
             _backgroundWorker.Dispose();
 
+            CleanupWnsSession();
+            CleanupEtwSession();
+
             Trace.Close();
             Trace.Listeners.Remove("listenerSyncMLStream");
 
@@ -609,20 +621,8 @@ namespace SyncMLViewer
                         traceEventSession.EnableProvider(OmaDmClient);
                         traceEventSession.EnableProvider(OmaDmClientProvider);
 
-                        // Enable WNS providers with verbose level and all keywords
-                        traceEventSession.EnableProvider(WnsPushNotificationsPlatform, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
-                        traceEventSession.EnableProvider(WnsPushNotificationsDeveloper, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
-                        traceEventSession.EnableProvider(WnsPushNotificationsInProc, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
-                        traceEventSession.EnableProvider(WnsMdmPushRouter, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
-
-                        // Use all three parsers so no events are silently dropped:
-                        // RegisteredTraceEventParser: manifest in Windows Event Log registry
-                        // Dynamic.All: manifest embedded in the event stream
-                        // UnhandledEvents: everything else (MOF, WPP, classic providers)
                         var reportProgress = (Action<TraceEvent>)(data => (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
                         new RegisteredTraceEventParser(traceEventSource).All += reportProgress;
-                        traceEventSource.Dynamic.All += reportProgress;
-                        traceEventSource.UnhandledEvents += reportProgress;
                         traceEventSource.Process();
 
                         TraceEventSessionState.Started = true;
@@ -642,13 +642,6 @@ namespace SyncMLViewer
                 if (!(e.UserState is TraceEvent userState))
                 {
                     throw new ArgumentException("No TraceEvent received.");
-                }
-
-                // Check if this is a WNS event and process it if WNS capture is enabled
-                if (_wnsTraceEnabled && IsWnsProvider(userState.ProviderGuid))
-                {
-                    ProcessWnsEvent(userState);
-                    return; // WNS events are handled separately
                 }
 
                 // show all events

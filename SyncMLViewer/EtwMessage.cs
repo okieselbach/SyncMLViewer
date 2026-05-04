@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace SyncMLViewer
 {
     /// <summary>
-    /// Represents a Windows Notification Service (WNS) message captured via ETW.
+    /// Represents a generic ETW event captured from user-defined providers.
     /// </summary>
-    public class WnsMessage
+    public class EtwMessage
     {
         public int EventId { get; set; }
         public string EventName { get; set; }
@@ -15,8 +15,6 @@ namespace SyncMLViewer
         public DateTime Timestamp { get; set; }
         public Dictionary<string, string> PayloadFields { get; set; }
         public string FormattedMessage { get; set; }
-        public string DecodedPayload { get; set; }
-        public string RawPayloadHex { get; set; }
 
         public string Entry => $"[{Timestamp:HH:mm:ss.fff}] {ProviderName}: {EventName}";
 
@@ -25,13 +23,13 @@ namespace SyncMLViewer
             return Entry;
         }
 
-        public WnsMessage()
+        public EtwMessage()
         {
             PayloadFields = new Dictionary<string, string>();
             Timestamp = DateTime.Now;
         }
 
-        public WnsMessage(int eventId, string eventName, string providerName, Guid providerGuid)
+        public EtwMessage(int eventId, string eventName, string providerName, Guid providerGuid)
             : this()
         {
             EventId = eventId;
@@ -40,15 +38,7 @@ namespace SyncMLViewer
             ProviderGuid = providerGuid;
         }
 
-        /// <summary>
-        /// Gets a formatted string representation of all payload fields.
-        /// </summary>
         public string GetFormattedPayload()
-        {
-            return GetFormattedPayload(true);
-        }
-
-        public string GetFormattedPayload(bool showDecoded)
         {
             if (PayloadFields == null || PayloadFields.Count == 0)
             {
@@ -56,32 +46,16 @@ namespace SyncMLViewer
             }
 
             var lines = new List<string>();
-            lines.Add($"=== WNS Event: {EventName} (ID: {EventId}) ===");
+            lines.Add($"=== ETW Event: {EventName} (ID: {EventId}) ===");
             lines.Add($"Provider: {ProviderName}");
+            lines.Add($"Provider GUID: {ProviderGuid}");
             lines.Add($"Timestamp: {Timestamp:yyyy-MM-dd HH:mm:ss.fff}");
             lines.Add("");
             lines.Add("--- Payload Fields ---");
 
             foreach (var kvp in PayloadFields)
             {
-                if (!string.IsNullOrEmpty(DecodedPayload)
-                    && kvp.Key.Equals("Payload", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (showDecoded)
-                    {
-                        lines.Add("");
-                        lines.Add("--- Decoded Payload ---");
-                        lines.Add(DecodedPayload);
-                    }
-                    else
-                    {
-                        lines.Add($"{kvp.Key}: {kvp.Value}");
-                    }
-                }
-                else
-                {
-                    lines.Add($"{kvp.Key}: {kvp.Value}");
-                }
+                lines.Add($"{kvp.Key}: {kvp.Value}");
             }
 
             return string.Join(Environment.NewLine, lines);

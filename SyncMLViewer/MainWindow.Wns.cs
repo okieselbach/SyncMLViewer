@@ -1,12 +1,18 @@
 using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Diagnostics.Tracing.Session;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Xml.Linq;
 
 namespace SyncMLViewer
@@ -53,77 +59,280 @@ namespace SyncMLViewer
         public ObservableCollection<WnsMessage> WnsMessages { get; } = new ObservableCollection<WnsMessage>();
 
         private bool _wnsTraceEnabled = false;
+        private bool _wnsFilterByEventId = false;
+        private HashSet<int> _wnsFilterEventIds = new HashSet<int>();
+        private bool _wnsShowDecodedPayload = true;
+
+        // WNS provider filter settings (which providers to capture)
+        private HashSet<Guid> _wnsEnabledProviders = new HashSet<Guid>
+        {
+            WnsPushNotificationsPlatform
+        };
+
+        // ETW parser settings
+        private bool _wnsUseDynamicAll = true;
+        private bool _wnsUseUnhandledEvents = true;
+
+        private const string WnsSessionName = "SyncMLViewer-WnsListener";
+        private BackgroundWorker _wnsBackgroundWorker;
+        private TraceEventSession _wnsTraceEventSession;
 
         /// <summary>
-        /// Checks if the given provider GUID is a WNS provider.
+        /// Checks if the given provider GUID is a WNS provider and currently enabled.
         /// </summary>
         private bool IsWnsProvider(Guid providerGuid)
         {
-            return WnsProviderNames.ContainsKey(providerGuid);
+            return WnsProviderNames.ContainsKey(providerGuid) && _wnsEnabledProviders.Contains(providerGuid);
+        }
+
+        /// <summary>
+        /// Starts the dedicated WNS ETW session.
+        /// </summary>
+        private void StartWnsSession()
+        {
+            if (_wnsBackgroundWorker != null && _wnsBackgroundWorker.IsBusy)
+                return;
+
+            if (_wnsEnabledProviders.Count == 0)
+                return;
+
+            _wnsBackgroundWorker = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            _wnsBackgroundWorker.DoWork += WnsWorkerDoWork;
+            _wnsBackgroundWorker.ProgressChanged += WnsWorkerProgressChanged;
+            _wnsBackgroundWorker.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Stops the dedicated WNS ETW session.
+        /// </summary>
+        private void StopWnsSession()
+        {
+            try
+            {
+                _wnsTraceEventSession?.Stop();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error stopping WNS session: {ex.Message}");
+            }
+            _wnsTraceEventSession = null;
+        }
+
+        /// <summary>
+        /// Restarts the WNS session (e.g. after provider/parser changes).
+        /// </summary>
+        private void RestartWnsSession()
+        {
+            StopWnsSession();
+            if (_wnsTraceEnabled)
+            {
+                StartWnsSession();
+            }
+        }
+
+        /// <summary>
+        /// Cleans up the WNS session on window close.
+        /// </summary>
+        internal void CleanupWnsSession()
+        {
+            StopWnsSession();
+        }
+
+        private void WnsWorkerDoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                if (TraceEventSession.IsElevated() != true)
+                {
+                    Debug.WriteLine("WNS Listener: Administrative privileges required.");
+                    return;
+                }
+
+                if (TraceEventSession.GetActiveSessionNames().Contains(WnsSessionName))
+                {
+                    Debug.WriteLine($"WNS Listener: Session '{WnsSessionName}' already active, stopping it.");
+                    TraceEventSession.GetActiveSession(WnsSessionName).Stop(true);
+                }
+
+                using (var session = new TraceEventSession(WnsSessionName))
+                {
+                    _wnsTraceEventSession = session;
+                    session.StopOnDispose = true;
+
+                    using (var source = new ETWTraceEventSource(WnsSessionName, TraceEventSourceType.Session))
+                    {
+                        // Enable all configured WNS providers
+                        foreach (var providerGuid in _wnsEnabledProviders)
+                        {
+                            session.EnableProvider(providerGuid, TraceEventLevel.Verbose, 0xFFFFFFFFFFFFFFFF);
+                        }
+
+                        var reportProgress = (Action<TraceEvent>)(data =>
+                            (sender as BackgroundWorker)?.ReportProgress(0, data.Clone()));
+
+                        new RegisteredTraceEventParser(source).All += reportProgress;
+                        if (_wnsUseDynamicAll)
+                            source.Dynamic.All += reportProgress;
+                        if (_wnsUseUnhandledEvents)
+                            source.UnhandledEvents += reportProgress;
+
+                        source.Process();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"WNS Listener exception: {ex}");
+            }
+            finally
+            {
+                _wnsTraceEventSession = null;
+            }
+        }
+
+        private void WnsWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (!(e.UserState is TraceEvent data))
+                return;
+
+            if (IsWnsProvider(data.ProviderGuid))
+            {
+                ProcessWnsEvent(data);
+            }
         }
 
         /// <summary>
         /// Processes a WNS ETW event and adds it to the WnsMessages collection.
         /// </summary>
+        // Cache event IDs that throw FormatException to avoid repeated exceptions
+        private readonly HashSet<int> _wnsEventIdsWithFormatErrors = new HashSet<int>();
+
         private void ProcessWnsEvent(TraceEvent data)
         {
             try
             {
+                int eventId = (int)data.ID;
                 string providerName = WnsProviderNames.GetValueOrDefault(data.ProviderGuid, data.ProviderName ?? "Unknown");
+                bool hasFormatErrors = _wnsEventIdsWithFormatErrors.Contains(eventId);
 
-                var wnsMessage = new WnsMessage(
-                    (int)data.ID,
-                    data.EventName ?? $"EventID_{(int)data.ID}",
-                    providerName,
-                    data.ProviderGuid)
+                // Use event ID directly to avoid FormatException from EventName
+                string eventName = $"EventID({eventId})";
+                if (!hasFormatErrors)
                 {
-                    Timestamp = data.TimeStamp,
-                    FormattedMessage = data.FormattedMessage
-                };
-
-                // Extract payload fields
-                for (int i = 0; i < data.PayloadNames.Length; i++)
-                {
-                    string name = data.PayloadNames[i];
-                    object val = data.PayloadValue(i);
-                    string valStr;
-
-                    if (val is byte[] bytes)
+                    try
                     {
-                        valStr = BitConverter.ToString(bytes).Replace("-", " ") + $" ({bytes.Length} bytes)";
+                        string name = data.EventName;
+                        if (!string.IsNullOrEmpty(name))
+                            eventName = name;
                     }
-                    else if (val == null)
+                    catch (FormatException)
                     {
-                        valStr = "(null)";
-                    }
-                    else
-                    {
-                        valStr = val.ToString() ?? "(empty)";
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(valStr))
-                    {
-                        wnsMessage.PayloadFields[name] = valStr;
+                        _wnsEventIdsWithFormatErrors.Add(eventId);
                     }
                 }
 
-                // Update UI on dispatcher thread
-                Dispatcher.BeginInvoke(new Action(() =>
+                var wnsMessage = new WnsMessage(
+                    eventId,
+                    eventName,
+                    providerName,
+                    data.ProviderGuid)
                 {
-                    WnsMessages.Add(wnsMessage);
+                    Timestamp = data.TimeStamp
+                };
 
-                    // Auto-scroll if enabled
-                    if (menuItemAutoScroll.IsChecked && ListBoxWnsMessages.Items.Count > 0)
+                // Skip FormattedMessage for events known to throw - it's rarely useful anyway
+                if (!hasFormatErrors)
+                {
+                    try
                     {
-                        ListBoxWnsMessages.ScrollIntoView(ListBoxWnsMessages.Items[ListBoxWnsMessages.Items.Count - 1]);
+                        wnsMessage.FormattedMessage = data.FormattedMessage;
                     }
+                    catch (FormatException)
+                    {
+                        _wnsEventIdsWithFormatErrors.Add(eventId);
+                    }
+                }
 
-                    // Update stream view if WNS tab is selected
-                    if (TabItemWns.IsSelected)
+                // Extract payload fields
+                string[] payloadNames = null;
+                try
+                {
+                    payloadNames = data.PayloadNames;
+                }
+                catch (FormatException)
+                {
+                    _wnsEventIdsWithFormatErrors.Add(eventId);
+                }
+
+                if (payloadNames != null)
+                {
+                    for (int i = 0; i < payloadNames.Length; i++)
                     {
-                        AppendWnsMessageToStream(wnsMessage);
+                        string name = payloadNames[i];
+                        object val;
+                        try
+                        {
+                            val = data.PayloadValue(i);
+                        }
+                        catch (FormatException)
+                        {
+                            continue;
+                        }
+
+                        string valStr;
+
+                        if (val is byte[] bytes)
+                        {
+                            valStr = BitConverter.ToString(bytes).Replace("-", " ") + $" ({bytes.Length} bytes)";
+                        }
+                        else if (val == null)
+                        {
+                            valStr = "(null)";
+                        }
+                        else
+                        {
+                            valStr = val.ToString() ?? "(empty)";
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(valStr))
+                        {
+                            wnsMessage.PayloadFields[name] = valStr;
+                        }
                     }
-                }));
+                }
+
+                // Try to decode hex payload from any event that has a "Payload" field
+                string payloadKey = wnsMessage.PayloadFields.Keys
+                    .FirstOrDefault(k => k.Equals("Payload", StringComparison.OrdinalIgnoreCase));
+
+                if (payloadKey != null && LooksLikeHexPayload(wnsMessage.PayloadFields[payloadKey]))
+                {
+                    string hexValue = wnsMessage.PayloadFields[payloadKey];
+                    wnsMessage.RawPayloadHex = hexValue;
+                    string decoded = TryDecodeHexPayload(hexValue);
+                    if (decoded != null)
+                    {
+                        wnsMessage.DecodedPayload = decoded;
+                    }
+                }
+
+                WnsMessages.Add(wnsMessage);
+
+                // Auto-scroll if enabled
+                if (menuItemAutoScroll.IsChecked && ListBoxWnsMessages.Items.Count > 0)
+                {
+                    ListBoxWnsMessages.ScrollIntoView(ListBoxWnsMessages.Items[ListBoxWnsMessages.Items.Count - 1]);
+                }
+
+                // Update stream view if WNS tab is selected
+                if (TabItemWns.IsSelected)
+                {
+                    AppendWnsMessageToStream(wnsMessage);
+                }
             }
             catch (Exception ex)
             {
@@ -161,6 +370,13 @@ namespace SyncMLViewer
                         }
                     }
 
+                    // Show decoded hex payload
+                    if (kvp.Key.Equals("Payload", StringComparison.OrdinalIgnoreCase)
+                        && !string.IsNullOrEmpty(message.DecodedPayload))
+                    {
+                        value = $"{value}\n  >> Decoded Payload:\n{message.DecodedPayload}";
+                    }
+
                     sb.AppendLine($"  {kvp.Key}: {value}");
                 }
             }
@@ -195,6 +411,26 @@ namespace SyncMLViewer
             if (string.IsNullOrWhiteSpace(value)) return false;
             var trimmed = value.TrimStart();
             return trimmed.StartsWith("<") && trimmed.Contains(">");
+        }
+
+        /// <summary>
+        /// Checks if a string looks like a hex payload (e.g. "50 4E 47 20 ... (71 bytes)" or "0x504E4720...").
+        /// </summary>
+        private bool LooksLikeHexPayload(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Length < 4)
+                return false;
+
+            // BitConverter format: "XX XX XX ... (N bytes)"
+            if (Regex.IsMatch(value, @"\(\d+\s+bytes?\)\s*$", RegexOptions.IgnoreCase))
+                return true;
+
+            // 0x-prefixed hex
+            if (value.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
+                Regex.IsMatch(value.Substring(2).Trim(), @"^[0-9A-Fa-f]+$"))
+                return true;
+
+            return false;
         }
 
         /// <summary>
@@ -249,13 +485,269 @@ namespace SyncMLViewer
             }
         }
 
+        /// <summary>
+        /// Tries to decode a hex payload string to UTF-8 text, optionally pretty-printing JSON.
+        /// Handles both "0x..." format and "XX XX XX (N bytes)" BitConverter format.
+        /// </summary>
+        private string TryDecodeHexPayload(string hexValue)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(hexValue))
+                    return null;
+
+                string clean = hexValue.Trim();
+
+                // Strip "0x" prefix
+                if (clean.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                    clean = clean.Substring(2);
+
+                // Strip trailing " (N bytes)" suffix from BitConverter format
+                var byteSuffixMatch = Regex.Match(clean, @"\s+\(\d+\s+bytes?\)\s*$", RegexOptions.IgnoreCase);
+                if (byteSuffixMatch.Success)
+                    clean = clean.Substring(0, byteSuffixMatch.Index);
+
+                // Remove spaces and dashes (BitConverter uses "XX-XX" or "XX XX")
+                clean = clean.Replace(" ", "").Replace("-", "");
+
+                if (string.IsNullOrEmpty(clean) || clean.Length % 2 != 0)
+                    return null;
+
+                // Validate hex characters
+                if (!Regex.IsMatch(clean, @"^[0-9A-Fa-f]+$"))
+                    return null;
+
+                byte[] bytes = new byte[clean.Length / 2];
+                for (int i = 0; i < clean.Length; i += 2)
+                {
+                    bytes[i / 2] = Convert.ToByte(clean.Substring(i, 2), 16);
+                }
+
+                string decoded = Encoding.UTF8.GetString(bytes);
+
+                // Strip null characters (used as field separators in some WNS payloads)
+                decoded = decoded.Replace("\0", "");
+
+                if (string.IsNullOrWhiteSpace(decoded))
+                    return null;
+
+                // Check that most characters are readable text (allow some control chars)
+                int printable = decoded.Count(c => !char.IsControl(c) || c == '\n' || c == '\r' || c == '\t');
+                if (printable < decoded.Length * 0.8)
+                    return null;
+
+                return PrettyFormatDecodedPayload(decoded);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Pretty-formats decoded payload text. Handles:
+        /// - Pure JSON (pretty-printed with nested JSON expansion)
+        /// - Pure XML (indented)
+        /// - Headers + body (headers preserved, body pretty-printed)
+        /// </summary>
+        private string PrettyFormatDecodedPayload(string decoded)
+        {
+            if (string.IsNullOrWhiteSpace(decoded))
+                return decoded;
+
+            var trimmed = decoded.Trim();
+
+            // Try pure JSON
+            string json = TryPrettyPrintJson(trimmed);
+            if (json != null) return json;
+
+            // Try pure XML
+            if (LooksLikeXml(trimmed))
+            {
+                string xml = TryFormatWnsXml(trimmed);
+                if (xml != trimmed) return xml.TrimStart('\n');
+            }
+
+            // Find embedded JSON object/array in the text (look for last { or [ that starts a valid JSON)
+            int jsonStart = FindJsonStart(trimmed);
+            if (jsonStart > 0)
+            {
+                string before = trimmed.Substring(0, jsonStart).TrimEnd();
+                string jsonPart = trimmed.Substring(jsonStart);
+                string prettyJson = TryPrettyPrintJson(jsonPart);
+
+                if (prettyJson != null)
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine(before);
+                    sb.AppendLine();
+                    sb.Append(prettyJson);
+                    return sb.ToString();
+                }
+            }
+
+            // Find embedded XML in the text
+            int xmlStart = trimmed.IndexOf('<');
+            if (xmlStart > 0)
+            {
+                string before = trimmed.Substring(0, xmlStart).TrimEnd();
+                string xmlPart = trimmed.Substring(xmlStart);
+                if (LooksLikeXml(xmlPart))
+                {
+                    string prettyXml = TryFormatWnsXml(xmlPart);
+                    if (prettyXml != xmlPart)
+                    {
+                        var sb = new StringBuilder();
+                        sb.AppendLine(before);
+                        sb.AppendLine();
+                        sb.Append(prettyXml.TrimStart('\n'));
+                        return sb.ToString();
+                    }
+                }
+            }
+
+            return decoded;
+        }
+
+        /// <summary>
+        /// Finds the start index of an embedded JSON object/array in a string.
+        /// Scans forward to find the first { or [ whose JSON extends to the end of the string.
+        /// </summary>
+        private int FindJsonStart(string text)
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+                if (c == '{' || c == '[')
+                {
+                    string candidate = text.Substring(i).TrimEnd();
+                    try
+                    {
+                        using (var reader = new Newtonsoft.Json.JsonTextReader(new System.IO.StringReader(candidate)))
+                        {
+                            JToken.Load(reader);
+                            // Ensure the JSON consumes the entire remaining text (no trailing content)
+                            if (!reader.Read())
+                                return i;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Tries to parse and pretty-print JSON, expanding nested escaped JSON strings.
+        /// </summary>
+        private string TryPrettyPrintJson(string text)
+        {
+            try
+            {
+                var token = JToken.Parse(text);
+                ExpandNestedJson(token);
+                return token.ToString(Newtonsoft.Json.Formatting.Indented);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Recursively expands string values that contain escaped JSON into actual JSON objects.
+        /// </summary>
+        private void ExpandNestedJson(JToken token)
+        {
+            if (token is JObject obj)
+            {
+                var properties = obj.Properties().ToList();
+                foreach (var prop in properties)
+                {
+                    if (prop.Value.Type == JTokenType.String)
+                    {
+                        string strVal = prop.Value.Value<string>();
+                        if (!string.IsNullOrEmpty(strVal) && (strVal.TrimStart().StartsWith("{") || strVal.TrimStart().StartsWith("[")))
+                        {
+                            try
+                            {
+                                var nested = JToken.Parse(strVal);
+                                ExpandNestedJson(nested);
+                                prop.Value = nested;
+                            }
+                            catch { }
+                        }
+                    }
+                    else
+                    {
+                        ExpandNestedJson(prop.Value);
+                    }
+                }
+            }
+            else if (token is JArray arr)
+            {
+                for (int i = 0; i < arr.Count; i++)
+                {
+                    if (arr[i].Type == JTokenType.String)
+                    {
+                        string strVal = arr[i].Value<string>();
+                        if (!string.IsNullOrEmpty(strVal) && (strVal.TrimStart().StartsWith("{") || strVal.TrimStart().StartsWith("[")))
+                        {
+                            try
+                            {
+                                var nested = JToken.Parse(strVal);
+                                ExpandNestedJson(nested);
+                                arr[i] = nested;
+                            }
+                            catch { }
+                        }
+                    }
+                    else
+                    {
+                        ExpandNestedJson(arr[i]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes ICollectionView filtering for the WnsMessages collection.
+        /// </summary>
+        internal void InitWnsCollectionView()
+        {
+            var view = CollectionViewSource.GetDefaultView(WnsMessages);
+            view.Filter = WnsEventFilter;
+        }
+
+        private bool WnsEventFilter(object item)
+        {
+            if (!_wnsFilterByEventId || _wnsFilterEventIds.Count == 0)
+                return true;
+            return item is WnsMessage msg && _wnsFilterEventIds.Contains(msg.EventId);
+        }
+
+        private void ParseWnsFilterEventIds()
+        {
+            _wnsFilterEventIds.Clear();
+            if (TextBoxWnsFilterEventIds == null)
+                return;
+
+            foreach (var part in TextBoxWnsFilterEventIds.Text.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(part.Trim(), out int id))
+                {
+                    _wnsFilterEventIds.Add(id);
+                }
+            }
+        }
+
         #region UI Event Handlers
 
         private void ListBoxWnsMessages_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ListBoxWnsMessages.SelectedItem is WnsMessage wnsMessage)
             {
-                TextEditorWnsDetails.Text = wnsMessage.GetFormattedPayload();
+                TextEditorWnsDetails.Text = wnsMessage.GetFormattedPayload(_wnsShowDecodedPayload);
             }
         }
 
@@ -297,10 +789,12 @@ namespace SyncMLViewer
             if (_wnsTraceEnabled)
             {
                 ImageWnsCapture.Visibility = Visibility.Visible;
+                StartWnsSession();
             }
             else
             {
                 ImageWnsCapture.Visibility = Visibility.Hidden;
+                StopWnsSession();
             }
         }
 
@@ -309,42 +803,56 @@ namespace SyncMLViewer
             TextEditorWnsStream.ScrollToHome();
         }
 
-        private void ButtonTestWns_Click(object sender, RoutedEventArgs e)
+        private void ButtonWnsOptions_Click(object sender, RoutedEventArgs e)
         {
-            // Generate a test WNS message to verify the UI is working
-            var testMessage = new WnsMessage(
-                9999,
-                "TestEvent",
-                "Test-Provider",
-                Guid.NewGuid())
+            var dialog = new WnsOptionsDialog(
+                _wnsEnabledProviders,
+                WnsProviderNames,
+                _wnsUseDynamicAll,
+                _wnsUseUnhandledEvents)
             {
-                Timestamp = DateTime.Now,
-                FormattedMessage = "This is a test WNS event to verify the UI is working correctly."
+                Owner = this
             };
 
-            testMessage.PayloadFields["ChannelUri"] = "https://wns.windows.com/test-channel-uri";
-            testMessage.PayloadFields["AppId"] = "Microsoft.CompanyPortal_8wekyb3d8bbwe";
-            testMessage.PayloadFields["NotificationType"] = "Raw";
-            testMessage.PayloadFields["Payload"] = "Test payload content - in real scenarios this would contain MDM sync triggers or other notification data";
-            testMessage.PayloadFields["Status"] = "Success";
-            testMessage.PayloadFields["Timestamp"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            if (dialog.ShowDialog() == true)
+            {
+                _wnsEnabledProviders = dialog.EnabledProviders;
+                _wnsUseDynamicAll = dialog.UseDynamicAll;
+                _wnsUseUnhandledEvents = dialog.UseUnhandledEvents;
 
-            WnsMessages.Add(testMessage);
-            AppendWnsMessageToStream(testMessage);
+                // Restart session with new settings if capture is active
+                if (_wnsTraceEnabled)
+                {
+                    RestartWnsSession();
+                }
+            }
+        }
 
-            MessageBox.Show(
-                "A test WNS event has been added to the list.\n\n" +
-                "To capture real WNS events:\n" +
-                "1. Check 'Capture WNS Traffic'\n" +
-                "2. Trigger an MDM sync or wait for push notifications\n" +
-                "3. WNS events will appear in the list\n\n" +
-                "Note: WNS events are generated when:\n" +
-                "- Intune sends push notifications to the device\n" +
-                "- Company Portal or other WNS-enabled apps receive notifications\n" +
-                "- Windows receives sync triggers from MDM",
-                "WNS Test Event",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+        private void CheckBoxWnsFilterEvents_Changed(object sender, RoutedEventArgs e)
+        {
+            _wnsFilterByEventId = CheckBoxWnsFilterEvents.IsChecked == true;
+            ParseWnsFilterEventIds();
+            CollectionViewSource.GetDefaultView(WnsMessages)?.Refresh();
+        }
+
+        private void TextBoxWnsFilterEventIds_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ParseWnsFilterEventIds();
+            if (_wnsFilterByEventId)
+            {
+                CollectionViewSource.GetDefaultView(WnsMessages)?.Refresh();
+            }
+        }
+
+        private void LabelToggleWnsPayload_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _wnsShowDecodedPayload = !_wnsShowDecodedPayload;
+            LabelToggleWnsPayload.Content = _wnsShowDecodedPayload ? "[Show Raw]" : "[Show Decoded]";
+
+            if (ListBoxWnsMessages.SelectedItem is WnsMessage wnsMessage)
+            {
+                TextEditorWnsDetails.Text = wnsMessage.GetFormattedPayload(_wnsShowDecodedPayload);
+            }
         }
 
         #endregion

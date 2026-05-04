@@ -1,0 +1,45 @@
+<Window x:Class="SyncMLViewer.EtwProviderDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ETW Provider Settings" SizeToContent="Height" Width="500" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Description -->
+        <TextBlock Grid.Row="0" TextWrapping="Wrap" Margin="0,0,0,10"
+                   Text="Enter ETW provider GUIDs (one per line). Use the format {GUID} or just the GUID. Lines starting with # are comments."/>
+
+        <!-- Provider input -->
+        <TextBlock Grid.Row="1" Text="ETW Providers" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox x:Name="TextBoxProviders" Grid.Row="2"
+                 AcceptsReturn="True" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 Height="180" Margin="0,0,0,10"
+                 FontFamily="Consolas" FontSize="10pt"
+                 ToolTip="One provider GUID per line. Lines starting with # are treated as comments."/>
+
+        <!-- ETW Parser Options -->
+        <TextBlock Grid.Row="3" Text="ETW Parser Registration" FontWeight="Bold" Margin="0,0,0,8"/>
+        <StackPanel Grid.Row="4" Margin="10,0,0,0">
+            <CheckBox x:Name="CheckBoxEtwDynamicAll" Content="Register Dynamic.All parser" Margin="0,3"
+                      ToolTip="Captures events with manifest embedded in the event stream"/>
+            <CheckBox x:Name="CheckBoxEtwUnhandledEvents" Content="Register UnhandledEvents parser" Margin="0,3"
+                      ToolTip="Captures MOF, WPP, and classic provider events"/>
+            <TextBlock Text="Parser changes take effect after restart." FontSize="10" Foreground="Gray" Margin="0,8,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Content="OK" Width="75" Height="26" IsDefault="True" Click="ButtonOk_Click" Margin="0,0,10,0"/>
+            <Button Content="Cancel" Width="75" Height="26" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

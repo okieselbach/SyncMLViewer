@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,23 +31,32 @@ namespace SyncMLViewer
 
         private async void ButtonRefreshVpn_Click(object sender, RoutedEventArgs e)
         {
-            VpnProfileList.Clear();
-
-            using (var ps = PowerShell.Create())
+            try
             {
-                ps.AddCommand("Get-VpnConnection");
+                VpnProfileList.Clear();
 
-                var psOutput = await Task.Run(() => ps.Invoke());
-
-                foreach (var item in psOutput)
+                using (var ps = PowerShell.Create())
                 {
-                    var name = item.Members["Name"].Value as string;
-                    var xml = item.Members["VpnConfigurationXml"].Value as string;
-                    VpnProfileList.Add(new VpnProfile(name, xml));
-                }
-            }
+                    ps.AddCommand("Get-VpnConnection");
 
-            ListBoxVpn.Items.Refresh();
+                    var psOutput = await Task.Run(() => ps.Invoke());
+
+                    foreach (var item in psOutput)
+                    {
+                        var name = item.Members["Name"].Value as string;
+                        var xml = item.Members["VpnConfigurationXml"].Value as string;
+                        VpnProfileList.Add(new VpnProfile(name, xml));
+                    }
+                }
+
+                ListBoxVpn.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to refresh VPN profiles: {ex.Message}");
+                MessageBox.Show($"Failed to retrieve VPN profiles.\n\nThe VPN cmdlets may not be available on this device.\n\n{ex.Message}",
+                    "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void ButtonDeleteVpn_Click(object sender, RoutedEventArgs e)
@@ -62,18 +72,27 @@ namespace SyncMLViewer
                 return;
             }
 
-            using (var ps = PowerShell.Create())
+            try
             {
-                ps.AddCommand("Remove-VpnConnection")
-                    .AddParameter("Name", $"{vpnProfile.Name}")
-                    .AddParameter("Force");
+                using (var ps = PowerShell.Create())
+                {
+                    ps.AddCommand("Remove-VpnConnection")
+                        .AddParameter("Name", $"{vpnProfile.Name}")
+                        .AddParameter("Force");
 
-                ps.Invoke();
+                    ps.Invoke();
+                }
+
+                TextEditorVpnProfiles.Clear();
+
+                ButtonRefreshVpn_Click(null, null);
             }
-
-            TextEditorVpnProfiles.Clear();
-
-            ButtonRefreshVpn_Click(null, null);
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to delete VPN profile: {ex.Message}");
+                MessageBox.Show($"Failed to delete VPN profile '{vpnProfile.Name}'.\n\nThe VPN cmdlets may not be available on this device.\n\n{ex.Message}",
+                    "SyncML Viewer", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void LabelBackToTopVpn_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
