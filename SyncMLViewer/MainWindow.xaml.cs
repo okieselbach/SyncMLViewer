@@ -1962,37 +1962,37 @@ namespace SyncMLViewer
 
         private void MenuItemRegistryEnrollments_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments");
         }
 
         private void MenuItemRegistryProvisioning_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning");
         }
 
         private void MenuItemRegistryPolicyManager_OnClick(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager");
         }
 
         private void MenuItemRegistryRebootRequiredUris_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\SyncML\RebootRequiredURIs");
         }
 
         private void MenuItemRegistryDeclaredConfiguration_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DeclaredConfiguration");
         }
 
         private void MenuItemRegistryEnterpriseDesktopAppManagement_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EnterpriseDesktopAppManagement");
         }
 
         private void MenuItemRegistryIntuneManagementExtension_Click(object sender, RoutedEventArgs e)
         {
-            Helper.OpenRegistry(@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
+            Helper.OpenRegistry(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension");
         }
 
         private async void MenuItemMdmDiagnostics_OnClick(object sender, RoutedEventArgs e)
@@ -2349,6 +2349,16 @@ namespace SyncMLViewer
         private void MenuItemOpenDeclaredConfigurationHostOSFolder_Click(object sender, RoutedEventArgs e)
         {
             Helper.OpenFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\DC\HostOS"));
+        }
+
+        private void MenuItemOpenDeviceInventoryAgentFolder_Click(object sender, RoutedEventArgs e)
+        {
+            // ProgramW6432 always points to the native Program Files, SpecialFolder.ProgramFiles
+            // would resolve to Program Files (x86) when running as a 32-bit process
+            var programFiles = Environment.GetEnvironmentVariable("ProgramW6432")
+                               ?? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+            Helper.OpenFolder(Path.Combine(programFiles, "Microsoft Device Inventory Agent"));
         }
 
         private void MenuItemClearHistoryItems_Click(object sender, RoutedEventArgs e)
@@ -2732,7 +2742,7 @@ namespace SyncMLViewer
 
             if (int.TryParse(text, out _))
             { 
-                Helper.OpenRegistry($@"Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
+                Helper.OpenRegistry($@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Provisioning\NodeCache\CSP\Device\MS DM Server\Nodes\{text}"); 
             }
         }
 

@@ -18,12 +18,57 @@ namespace SyncMLViewer
 {
     internal static class Helper
     {
+        // The tree root node shown by regedit.exe comes from a localized string resource in
+        // regedit.exe.mui, it reads "Computer" on en-US and "Ordinateur" on fr-FR for example.
+        // Everything below the root node (the hive names) is not localized.
+        private static readonly string[] RegistryHiveNames =
+        {
+            "HKEY_LOCAL_MACHINE", "HKEY_CURRENT_USER", "HKEY_CLASSES_ROOT", "HKEY_USERS",
+            "HKEY_CURRENT_CONFIG", "HKEY_PERFORMANCE_DATA", "HKEY_DYN_DATA",
+            "HKLM", "HKCU", "HKCR", "HKU", "HKCC"
+        };
+
+        /// <summary>
+        /// Removes the tree root node from a registry path so that the path becomes independent of
+        /// the Windows display language.
+        /// </summary>
+        /// <remarks>
+        /// regedit.exe matches the first segment of its LastKey value against the localized name of
+        /// its tree root node. A hard coded English "Computer\" therefore only resolves on an
+        /// English Windows, on every other display language regedit silently falls back to the root
+        /// node instead of navigating to the requested key. regedit happily accepts a LastKey value
+        /// without any root node prefix and prepends the correct localized name itself, so dropping
+        /// the prefix works on all languages.
+        /// </remarks>
+        internal static string NormalizeRegistryPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            var normalized = path.Trim().Trim('\\');
+            var separatorIndex = normalized.IndexOf('\\');
+            var firstSegment = separatorIndex < 0 ? normalized : normalized.Substring(0, separatorIndex);
+
+            // already rooted at a hive, nothing to strip
+            if (RegistryHiveNames.Contains(firstSegment, StringComparer.OrdinalIgnoreCase))
+            {
+                return normalized;
+            }
+
+            // the first segment is the localized root node, drop it
+            return separatorIndex < 0 ? string.Empty : normalized.Substring(separatorIndex + 1);
+        }
+
         public static void OpenRegistry(string path)
         {
+            // CreateSubKey instead of OpenSubKey, the Regedit key does not exist yet on a profile
+            // where regedit.exe has never been started
             using (var registryKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default)
-                .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit", true))
+                .CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit"))
             {
-                registryKey?.SetValue("LastKey", path);
+                registryKey?.SetValue("LastKey", NormalizeRegistryPath(path));
             }
 
             var processes = Process.GetProcessesByName("regedit");
